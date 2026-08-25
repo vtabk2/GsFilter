@@ -182,6 +182,11 @@ class FilterPreviewView @JvmOverloads constructor(
             GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, textureId)
             GLES20.glUniform1i(GLES20.glGetUniformLocation(program, U_TEXTURE), 0)
             GLES20.glUniform1f(GLES20.glGetUniformLocation(program, U_MONO), params.isMonochrome)
+            GLES20.glUniform2f(
+                GLES20.glGetUniformLocation(program, U_TEXEL_SIZE),
+                if (imageWidth > 0) 1f / imageWidth else 0f,
+                if (imageHeight > 0) 1f / imageHeight else 0f,
+            )
             GLES20.glUniform3f(
                 GLES20.glGetUniformLocation(program, U_RGB_SHIFT),
                 params.redShift,
@@ -189,8 +194,19 @@ class FilterPreviewView @JvmOverloads constructor(
                 params.blueShift,
             )
             GLES20.glUniform1f(GLES20.glGetUniformLocation(program, U_BRIGHTNESS), params.brightness)
+            GLES20.glUniform1f(GLES20.glGetUniformLocation(program, U_EXPOSURE), params.exposure)
             GLES20.glUniform1f(GLES20.glGetUniformLocation(program, U_CONTRAST), params.contrast)
+            GLES20.glUniform1f(GLES20.glGetUniformLocation(program, U_HIGHLIGHTS), params.highlights)
+            GLES20.glUniform1f(GLES20.glGetUniformLocation(program, U_SHADOWS), params.shadows)
             GLES20.glUniform1f(GLES20.glGetUniformLocation(program, U_SATURATION), params.saturation)
+            GLES20.glUniform1f(GLES20.glGetUniformLocation(program, U_VIBRANCE), params.vibrance)
+            GLES20.glUniform1f(GLES20.glGetUniformLocation(program, U_TEMPERATURE), params.temperature)
+            GLES20.glUniform1f(GLES20.glGetUniformLocation(program, U_TINT), params.tint)
+            GLES20.glUniform1f(GLES20.glGetUniformLocation(program, U_SHARPNESS), params.sharpness)
+            GLES20.glUniform1f(GLES20.glGetUniformLocation(program, U_CLARITY), params.clarity)
+            GLES20.glUniform1f(GLES20.glGetUniformLocation(program, U_FADE), params.fade)
+            GLES20.glUniform1f(GLES20.glGetUniformLocation(program, U_VIGNETTE), params.vignette)
+            GLES20.glUniform1f(GLES20.glGetUniformLocation(program, U_GRAIN), params.grain)
         }
 
         private fun buildProgram(vertexShader: String, fragmentShader: String): Int {
@@ -228,10 +244,22 @@ class FilterPreviewView @JvmOverloads constructor(
         const val A_TEX_COORD = "aTexCoord"
         const val U_TEXTURE = "uTexture"
         const val U_MONO = "uMono"
+        const val U_TEXEL_SIZE = "uTexelSize"
         const val U_RGB_SHIFT = "uRgbShift"
         const val U_BRIGHTNESS = "uBrightness"
+        const val U_EXPOSURE = "uExposure"
         const val U_CONTRAST = "uContrast"
+        const val U_HIGHLIGHTS = "uHighlights"
+        const val U_SHADOWS = "uShadows"
         const val U_SATURATION = "uSaturation"
+        const val U_VIBRANCE = "uVibrance"
+        const val U_TEMPERATURE = "uTemperature"
+        const val U_TINT = "uTint"
+        const val U_SHARPNESS = "uSharpness"
+        const val U_CLARITY = "uClarity"
+        const val U_FADE = "uFade"
+        const val U_VIGNETTE = "uVignette"
+        const val U_GRAIN = "uGrain"
 
         val VERTICES = floatArrayOf(
             -1f,
@@ -272,21 +300,70 @@ class FilterPreviewView @JvmOverloads constructor(
             precision mediump float;
             uniform sampler2D uTexture;
             uniform float uMono;
+            uniform vec2 uTexelSize;
             uniform vec3 uRgbShift;
             uniform float uBrightness;
+            uniform float uExposure;
             uniform float uContrast;
+            uniform float uHighlights;
+            uniform float uShadows;
             uniform float uSaturation;
+            uniform float uVibrance;
+            uniform float uTemperature;
+            uniform float uTint;
+            uniform float uSharpness;
+            uniform float uClarity;
+            uniform float uFade;
+            uniform float uVignette;
+            uniform float uGrain;
             varying vec2 vTexCoord;
+
+            float random(vec2 point) {
+                return fract(sin(dot(point, vec2(12.9898, 78.233))) * 43758.5453);
+            }
 
             void main() {
                 vec4 color = texture2D(uTexture, vTexCoord);
-                vec3 rgb = color.rgb + uRgbShift;
+                vec3 left = texture2D(uTexture, vTexCoord - vec2(uTexelSize.x, 0.0)).rgb;
+                vec3 right = texture2D(uTexture, vTexCoord + vec2(uTexelSize.x, 0.0)).rgb;
+                vec3 up = texture2D(uTexture, vTexCoord - vec2(0.0, uTexelSize.y)).rgb;
+                vec3 down = texture2D(uTexture, vTexCoord + vec2(0.0, uTexelSize.y)).rgb;
+                vec3 blur = (left + right + up + down) * 0.25;
+                vec3 rgb = color.rgb + (color.rgb - blur) * ((uSharpness * 0.65) + (uClarity * 0.35));
+
+                rgb = rgb + uRgbShift;
                 float gray = dot(rgb, vec3(0.299, 0.587, 0.114));
                 rgb = mix(rgb, vec3(gray), uMono);
+
                 rgb = rgb + uBrightness;
+                rgb = rgb * pow(2.0, uExposure);
+                gray = dot(rgb, vec3(0.299, 0.587, 0.114));
+                float shadowMask = 1.0 - smoothstep(0.0, 0.6, gray);
+                float highlightMask = smoothstep(0.4, 1.0, gray);
+                rgb = rgb + (shadowMask * uShadows * 0.35);
+                rgb = rgb + (highlightMask * uHighlights * 0.35);
                 rgb = (rgb - 0.5) * uContrast + 0.5;
+
+                rgb.r = rgb.r + (uTemperature * 0.12) + (uTint * 0.06);
+                rgb.g = rgb.g - (uTint * 0.08);
+                rgb.b = rgb.b - (uTemperature * 0.12) + (uTint * 0.06);
+
                 gray = dot(rgb, vec3(0.299, 0.587, 0.114));
                 rgb = mix(vec3(gray), rgb, uSaturation);
+                float maxChannel = max(max(rgb.r, rgb.g), rgb.b);
+                float average = (rgb.r + rgb.g + rgb.b) / 3.0;
+                float vibranceMask = 1.0 - clamp(maxChannel - average, 0.0, 1.0);
+                rgb = mix(vec3(gray), rgb, 1.0 + (uVibrance * vibranceMask));
+
+                rgb = mix(rgb, vec3(0.5), clamp(uFade * 0.35, 0.0, 0.35));
+
+                float edgeDistance = distance(vTexCoord, vec2(0.5));
+                float edgeMask = smoothstep(0.35, 0.75, edgeDistance);
+                rgb = rgb * (1.0 - (uVignette * 0.7 * edgeMask));
+
+                float grain = (random(vTexCoord * vec2(1024.0, 768.0)) - 0.5) * uGrain * 0.16;
+                rgb = rgb + grain;
+
                 gl_FragColor = vec4(clamp(rgb, 0.0, 1.0), color.a);
             }
             """

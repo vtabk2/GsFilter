@@ -142,3 +142,36 @@ Status: DONE
 - Updated `app/src/main/res/values/strings.xml` to English text while preserving resource IDs.
 - Confirmed no Vietnamese diacritics remain in `strings.xml`.
 - `:app:assembleDebug` passed after the resource update.
+
+## Task: Add the full fixed Adjust control set
+
+Status: DONE
+
+### Requirements
+
+- Add these fixed adjust controls: Brightness, Exposure, Contrast, Highlights, Shadows, Saturation, Vibrance, Temperature, Tint, Sharpness, Clarity, Fade, Vignette, Grain.
+- Keep UI text in English.
+- Keep GPU preview rendering.
+- Use per-control ranges, for example Sharpness is `0..100` while tone/color controls can be `-100..100`.
+- Avoid hard-coding every slider block in XML.
+
+### Approach
+
+- Expand `Adjustments` with the full fixed set.
+- Add metadata for each adjust control so Activity can build sliders dynamically.
+- Map SeekBar progress through per-control min/max metadata.
+- Pass the new adjust values to the OpenGL shader through `ShaderFilterParams`.
+- Keep sharpness/clarity as shader placeholders if true convolution is too much for this step.
+
+### Checklist
+
+- [x] Add fixed adjust metadata and expanded state.
+- [x] Replace hard-coded adjust sliders with dynamic controls.
+- [x] Update shader uniforms and fragment shader logic.
+- [x] Update tests for shader parameter mapping.
+- [x] Run unit tests and assemble debug.
+
+### Notes
+
+- Added per-control ranges so signed controls use `-100..100` and intensity-only controls such as Sharpness use `0..100`.
+- `:app:testDebugUnitTest :app:assembleDebug` passed after the full adjust update.

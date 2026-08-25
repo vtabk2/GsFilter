@@ -30,8 +30,19 @@
     <string name="loading_image">Loading image</string>
     <string name="asset_load_failed">Could not load the sample image</string>
     <string name="brightness">Brightness</string>
+    <string name="exposure">Exposure</string>
     <string name="contrast">Contrast</string>
+    <string name="highlights">Highlights</string>
+    <string name="shadows">Shadows</string>
     <string name="saturation">Saturation</string>
+    <string name="vibrance">Vibrance</string>
+    <string name="temperature">Temperature</string>
+    <string name="tint">Tint</string>
+    <string name="sharpness">Sharpness</string>
+    <string name="clarity">Clarity</string>
+    <string name="fade">Fade</string>
+    <string name="vignette">Vignette</string>
+    <string name="grain">Grain</string>
     <string name="image_original_content">Original asset image</string>
     <string name="image_result_content">Filtered image preview</string>
 </resources>

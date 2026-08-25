@@ -137,47 +137,11 @@
             android:textSize="18sp"
             android:textStyle="bold"/>
 
-        <TextView
-            android:id="@+id/brightnessValue"
+        <LinearLayout
+            android:id="@+id/adjustContainer"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="@dimen/item_spacing"
-            android:textColor="@color/text_secondary"/>
-
-        <SeekBar
-            android:id="@+id/brightnessSeek"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:max="200"
-            android:progress="100"/>
-
-        <TextView
-            android:id="@+id/contrastValue"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="@dimen/item_spacing"
-            android:textColor="@color/text_secondary"/>
-
-        <SeekBar
-            android:id="@+id/contrastSeek"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:max="200"
-            android:progress="100"/>
-
-        <TextView
-            android:id="@+id/saturationValue"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="@dimen/item_spacing"
-            android:textColor="@color/text_secondary"/>
-
-        <SeekBar
-            android:id="@+id/saturationSeek"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:max="200"
-            android:progress="100"/>
+            android:orientation="vertical"/>
 
         <Button
             android:id="@+id/buttonResetAdjust"

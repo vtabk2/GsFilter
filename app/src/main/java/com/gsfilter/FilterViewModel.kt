@@ -41,16 +41,8 @@ class FilterViewModel(application: Application) : AndroidViewModel(application) 
         }
     }
 
-    fun setBrightness(value: Int) {
-        updateAdjustments { it.copy(brightness = value) }
-    }
-
-    fun setContrast(value: Int) {
-        updateAdjustments { it.copy(contrast = value) }
-    }
-
-    fun setSaturation(value: Int) {
-        updateAdjustments { it.copy(saturation = value) }
+    fun setAdjustment(control: AdjustControl, value: Int) {
+        updateAdjustments { control.update(it, value) }
     }
 
     fun resetAdjustments() {

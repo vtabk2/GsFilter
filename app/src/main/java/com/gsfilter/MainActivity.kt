@@ -1,10 +1,11 @@
 package com.gsfilter
 
-import android.os.Bundle
 import android.graphics.Bitmap
+import android.os.Bundle
 import android.widget.Button
 import android.widget.LinearLayout
 import android.widget.SeekBar
+import android.widget.TextView
 import androidx.activity.ComponentActivity
 import androidx.activity.viewModels
 import androidx.core.view.isVisible
@@ -21,6 +22,8 @@ class MainActivity : ComponentActivity() {
     private lateinit var binding: ActivityMainBinding
     private val categoryButtons = mutableMapOf<String, Button>()
     private val filterButtons = mutableMapOf<String, Button>()
+    private val adjustLabels = mutableMapOf<AdjustControl, TextView>()
+    private val adjustSeekBars = mutableMapOf<AdjustControl, SeekBar>()
     private var renderedCategoryId: String? = null
     private var renderedBitmap: Bitmap? = null
     private var isRenderingState = false
@@ -100,24 +103,38 @@ class MainActivity : ComponentActivity() {
     }
 
     private fun bindAdjustControls() {
-        bindSeekBar(binding.brightnessSeek) { viewModel.setBrightness(it - ADJUST_CENTER) }
-        bindSeekBar(binding.contrastSeek) { viewModel.setContrast(it) }
-        bindSeekBar(binding.saturationSeek) { viewModel.setSaturation(it) }
-        binding.buttonResetAdjust.setOnClickListener { viewModel.resetAdjustments() }
-    }
-
-    private fun bindSeekBar(seekBar: SeekBar, onProgressChanged: (Int) -> Unit) {
-        seekBar.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
-            override fun onProgressChanged(view: SeekBar, progress: Int, fromUser: Boolean) {
-                if (fromUser && !isRenderingState) {
-                    onProgressChanged(progress)
+        AdjustControl.entries.forEach { control ->
+            val label = TextView(this).apply {
+                setTextColor(getColor(R.color.text_secondary))
+                layoutParams = LinearLayout.LayoutParams(
+                    LinearLayout.LayoutParams.MATCH_PARENT,
+                    LinearLayout.LayoutParams.WRAP_CONTENT,
+                ).apply {
+                    topMargin = resources.getDimensionPixelSize(R.dimen.item_spacing)
                 }
             }
+            val seekBar = SeekBar(this).apply {
+                max = control.progressMax
+                progress = control.progressFrom(control.valueIn(Adjustments()))
+                setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
+                    override fun onProgressChanged(view: SeekBar, progress: Int, fromUser: Boolean) {
+                        if (fromUser && !isRenderingState) {
+                            viewModel.setAdjustment(control, control.valueFrom(progress))
+                        }
+                    }
 
-            override fun onStartTrackingTouch(view: SeekBar) = Unit
+                    override fun onStartTrackingTouch(view: SeekBar) = Unit
 
-            override fun onStopTrackingTouch(view: SeekBar) = Unit
-        })
+                    override fun onStopTrackingTouch(view: SeekBar) = Unit
+                })
+            }
+
+            adjustLabels[control] = label
+            adjustSeekBars[control] = seekBar
+            binding.adjustContainer.addView(label)
+            binding.adjustContainer.addView(seekBar)
+        }
+        binding.buttonResetAdjust.setOnClickListener { viewModel.resetAdjustments() }
     }
 
     private fun collectState() {
@@ -154,17 +171,12 @@ class MainActivity : ComponentActivity() {
     }
 
     private fun renderAdjustments(adjustments: Adjustments) {
-        binding.brightnessSeek.progress = adjustments.brightness + ADJUST_CENTER
-        binding.contrastSeek.progress = adjustments.contrast
-        binding.saturationSeek.progress = adjustments.saturation
         val separator = getString(R.string.label_separator)
-        val percent = getString(R.string.percent_suffix)
-        binding.brightnessValue.text =
-            getString(R.string.brightness) + separator + adjustments.brightness
-        binding.contrastValue.text =
-            getString(R.string.contrast) + separator + adjustments.contrast + percent
-        binding.saturationValue.text =
-            getString(R.string.saturation) + separator + adjustments.saturation + percent
+        AdjustControl.entries.forEach { control ->
+            val value = control.valueIn(adjustments)
+            adjustSeekBars[control]?.progress = control.progressFrom(value)
+            adjustLabels[control]?.text = getString(control.labelRes) + separator + value
+        }
     }
 
     private fun FilterError.toMessage(): String =
@@ -172,7 +184,4 @@ class MainActivity : ComponentActivity() {
             FilterError.AssetLoadFailed -> getString(R.string.asset_load_failed)
         }
 
-    private companion object {
-        const val ADJUST_CENTER = 100
-    }
 }
