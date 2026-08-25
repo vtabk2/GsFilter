@@ -1,0 +1,8 @@
+<resources>
+    <color name="screen_background">#FAFAFA</color>
+    <color name="panel_background">#FFFFFF</color>
+    <color name="preview_background">#EDEDED</color>
+    <color name="text_primary">#202124</color>
+    <color name="text_secondary">#5F6368</color>
+    <color name="accent">#176B87</color>
+</resources>

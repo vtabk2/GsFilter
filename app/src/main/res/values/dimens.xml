@@ -1,0 +1,7 @@
+<resources>
+    <dimen name="screen_padding">16dp</dimen>
+    <dimen name="section_spacing">20dp</dimen>
+    <dimen name="item_spacing">8dp</dimen>
+    <dimen name="preview_height">220dp</dimen>
+    <dimen name="button_min_height">48dp</dimen>
+</resources>

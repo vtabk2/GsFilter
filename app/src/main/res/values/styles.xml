@@ -1,0 +1,7 @@
+<resources>
+    <style name="Theme.GsFilter" parent="@android:style/Theme.Material.Light.NoActionBar">
+        <item name="android:windowBackground">@color/screen_background</item>
+        <item name="android:fontFamily">sans</item>
+        <item name="android:colorAccent">@color/accent</item>
+    </style>
+</resources>

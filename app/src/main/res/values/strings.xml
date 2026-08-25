@@ -1,0 +1,21 @@
+<resources>
+    <string name="app_name" translatable="false">GsFilter</string>
+    <string name="label_separator" translatable="false">: </string>
+    <string name="percent_suffix" translatable="false">%</string>
+    <string name="section_filter">Bộ lọc</string>
+    <string name="section_adjust">Chỉnh</string>
+    <string name="action_original">Gốc</string>
+    <string name="filter_mono">Đen trắng</string>
+    <string name="filter_warm">Ấm</string>
+    <string name="filter_cool">Lạnh</string>
+    <string name="action_reset_adjust">Đặt lại chỉnh</string>
+    <string name="source_preview">Ảnh gốc</string>
+    <string name="result_preview">Kết quả</string>
+    <string name="loading_image">Đang tải ảnh</string>
+    <string name="asset_load_failed">Không thể tải ảnh mẫu</string>
+    <string name="brightness">Độ sáng</string>
+    <string name="contrast">Tương phản</string>
+    <string name="saturation">Bão hòa</string>
+    <string name="image_original_content">Ảnh gốc từ assets</string>
+    <string name="image_result_content">Ảnh sau khi áp filter</string>
+</resources>

@@ -1,0 +1,122 @@
+package com.gsfilter
+
+import android.os.Bundle
+import android.widget.Button
+import android.widget.LinearLayout
+import android.widget.SeekBar
+import androidx.activity.ComponentActivity
+import androidx.activity.viewModels
+import androidx.core.view.isVisible
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
+import com.gsfilter.databinding.ActivityMainBinding
+import com.gsfilter.filter.Adjustments
+import kotlinx.coroutines.launch
+
+class MainActivity : ComponentActivity() {
+
+    private val viewModel: FilterViewModel by viewModels()
+    private lateinit var binding: ActivityMainBinding
+    private val filterButtons = mutableMapOf<String, Button>()
+    private var isRenderingState = false
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+
+        binding = ActivityMainBinding.inflate(layoutInflater)
+        setContentView(binding.root)
+
+        bindFilterControls()
+        bindAdjustControls()
+        collectState()
+    }
+
+    private fun bindFilterControls() {
+        val spacing = resources.getDimensionPixelSize(R.dimen.item_spacing)
+        val minHeight = resources.getDimensionPixelSize(R.dimen.button_min_height)
+        FilterCatalog.options.forEachIndexed { index, filter ->
+            val button = Button(this).apply {
+                text = getString(filter.nameRes)
+                minimumHeight = minHeight
+                setOnClickListener { viewModel.selectFilter(filter) }
+            }
+            button.layoutParams = LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.WRAP_CONTENT,
+                LinearLayout.LayoutParams.WRAP_CONTENT,
+            ).apply {
+                if (index > 0) {
+                    marginStart = spacing
+                }
+            }
+            filterButtons[filter.id] = button
+            binding.filterContainer.addView(button)
+        }
+    }
+
+    private fun bindAdjustControls() {
+        bindSeekBar(binding.brightnessSeek) { viewModel.setBrightness(it - ADJUST_CENTER) }
+        bindSeekBar(binding.contrastSeek) { viewModel.setContrast(it) }
+        bindSeekBar(binding.saturationSeek) { viewModel.setSaturation(it) }
+        binding.buttonResetAdjust.setOnClickListener { viewModel.resetAdjustments() }
+    }
+
+    private fun bindSeekBar(seekBar: SeekBar, onProgressChanged: (Int) -> Unit) {
+        seekBar.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
+            override fun onProgressChanged(view: SeekBar, progress: Int, fromUser: Boolean) {
+                if (fromUser && !isRenderingState) {
+                    onProgressChanged(progress)
+                }
+            }
+
+            override fun onStartTrackingTouch(view: SeekBar) = Unit
+
+            override fun onStopTrackingTouch(view: SeekBar) = Unit
+        })
+    }
+
+    private fun collectState() {
+        lifecycleScope.launch {
+            repeatOnLifecycle(Lifecycle.State.STARTED) {
+                viewModel.state.collect(::render)
+            }
+        }
+    }
+
+    private fun render(state: FilterUiState) {
+        isRenderingState = true
+        binding.progressBar.isVisible = state.isLoading
+        binding.errorText.isVisible = state.error != null
+        binding.errorText.text = state.error?.toMessage().orEmpty()
+        binding.imageOriginal.setImageBitmap(state.sourceBitmap)
+        binding.imageResult.setImageBitmap(state.resultBitmap)
+        filterButtons.forEach { (id, button) ->
+            button.isEnabled = id != state.selectedFilter.id
+        }
+        renderAdjustments(state.adjustments)
+        isRenderingState = false
+    }
+
+    private fun renderAdjustments(adjustments: Adjustments) {
+        binding.brightnessSeek.progress = adjustments.brightness + ADJUST_CENTER
+        binding.contrastSeek.progress = adjustments.contrast
+        binding.saturationSeek.progress = adjustments.saturation
+        val separator = getString(R.string.label_separator)
+        val percent = getString(R.string.percent_suffix)
+        binding.brightnessValue.text =
+            getString(R.string.brightness) + separator + adjustments.brightness
+        binding.contrastValue.text =
+            getString(R.string.contrast) + separator + adjustments.contrast + percent
+        binding.saturationValue.text =
+            getString(R.string.saturation) + separator + adjustments.saturation + percent
+    }
+
+    private fun FilterError.toMessage(): String =
+        when (this) {
+            FilterError.AssetLoadFailed -> getString(R.string.asset_load_failed)
+        }
+
+    private companion object {
+        const val ADJUST_CENTER = 100
+    }
+}
