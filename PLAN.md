@@ -250,7 +250,7 @@ Status: DONE
 
 ### Approach
 
-- Add a small set of new `FilterOption` presets to sparse categories.
+- Add small sets of new `FilterOption` presets to sparse categories.
 - Add English string resources for new filter names.
 - Add a catalog test for unique filter IDs.
 
@@ -265,3 +265,101 @@ Status: DONE
 
 - Added 12 data-only filter presets across the existing 10 categories.
 - `:app:testDebugUnitTest :app:assembleDebug` passed after expanding the preset pack.
+- Reopened to add another small batch of filter samples using the same preset-data model.
+- Added 8 more data-only presets: Cream, Glow, Kodak, Sunset, Mist, Cafe, Drama, Silver.
+- `:app:testDebugUnitTest :app:assembleDebug` passed after the second preset batch.
+
+## Task: Update Filter UI to category chips and thumbnail rail
+
+Status: DONE
+
+### Requirements
+
+- Apply the provided UI direction to the Filter section only.
+- Keep Adjust controls as the existing sliders.
+- Keep the existing MVVM and GPU preview path.
+- Keep filter expansion data-driven.
+- Add another small preset batch only through catalog data.
+
+### Approach
+
+- Replace text-only Filter buttons with category chips and compact filter thumbnail cards.
+- Reuse the bundled source bitmap for lightweight thumbnails.
+- Keep the existing horizontal containers; avoid adding RecyclerView or a new UI layer for this small demo.
+- Add filter presets as `FilterOption` data and English string resources.
+
+### Checklist
+
+- [x] Update Filter category controls to chip styling.
+- [x] Update Filter option controls to thumbnail cards.
+- [x] Add a small preset batch using the existing recipe model.
+- [x] Run unit tests and assemble debug.
+
+### Notes
+
+- The attached UI reference is for Filter only; Adjust remains unchanged.
+- Filter thumbnails reuse the already-loaded asset bitmap so the control rail stays cheap.
+- Added Cinematic presets: Epic, Blockbuster, Arthouse; Noir also appears in Cinematic.
+- `:app:testDebugUnitTest :app:assembleDebug` passed after the UI and preset update.
+
+## Task: Apply category default filter immediately
+
+Status: DONE
+
+### Requirements
+
+- Switching Filter category should immediately apply a new filter.
+- Keep `Original` available without making category switches fall back to the unfiltered image.
+- Preserve the existing MVVM and GPU preview path.
+
+### Approach
+
+- Add a catalog helper for the default filter of a category.
+- Prefer the first non-`Original` filter when a category has alternatives.
+- Use that helper from `FilterViewModel.selectCategory`.
+
+### Checklist
+
+- [x] Update category default filter selection.
+- [x] Add catalog coverage for the default selection rule.
+- [x] Run unit tests and assemble debug.
+
+### Notes
+
+- Root issue: `Original` belongs to categories such as Popular/Natural, so switching category could select the unfiltered preset and look like no filter was applied.
+- Category switches now use the first non-`Original` filter when available, while app startup still defaults to `Original`.
+- `:app:testDebugUnitTest :app:assembleDebug` passed after the fix.
+- Superseded: category switching must not auto-apply a filter; it only changes the visible filter group.
+
+## Task: Keep category switching filter-neutral
+
+Status: DONE
+
+### Requirements
+
+- Changing a Filter category should only change the visible filter list.
+- Do not auto-select or auto-apply a filter inside the selected category.
+- Applying a filter still requires tapping that filter item.
+- Show `Original` as a fixed leading none icon outside the category list.
+- Keep `Original` out of category filter lists.
+
+### Approach
+
+- Update `FilterViewModel.selectCategory` to preserve the current selected filter.
+- Remove the category-default helper and the test that encoded the wrong behavior.
+- Add a fixed none icon button before the scrollable category chips.
+
+### Checklist
+
+- [x] Preserve selected filter when switching categories.
+- [x] Remove wrong category default selection test/helper.
+- [x] Move `Original` out of category filter lists.
+- [x] Add fixed leading none icon action.
+- [x] Run unit tests and assemble debug.
+
+### Notes
+
+- This corrects the previous interpretation of the category-switch behavior.
+- `Original` is now a fixed leading none icon outside the scrollable category list.
+- `Original` no longer belongs to any category filter list.
+- `:app:testDebugUnitTest :app:assembleDebug` passed after the fix.

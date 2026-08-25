@@ -22,8 +22,8 @@ object FilterCatalog {
 
     val options: List<FilterOption> = listOf(
         FilterOption(
-            id = "original",
-            categoryIds = setOf(POPULAR, NATURAL),
+            id = ORIGINAL,
+            categoryIds = emptySet(),
             nameRes = R.string.action_original,
             recipe = FilterRecipe(),
         ),
@@ -368,7 +368,7 @@ object FilterCatalog {
         ),
         FilterOption(
             id = "noir",
-            categoryIds = setOf(BLACK_WHITE),
+            categoryIds = setOf(CINEMATIC, BLACK_WHITE),
             nameRes = R.string.filter_noir,
             recipe = FilterRecipe(
                 isMonochrome = true,
@@ -398,14 +398,227 @@ object FilterCatalog {
                 ),
             ),
         ),
+        FilterOption(
+            id = "cream",
+            categoryIds = setOf(POPULAR, PORTRAIT),
+            nameRes = R.string.filter_cream,
+            recipe = FilterRecipe(
+                redShift = 12,
+                greenShift = 6,
+                blueShift = -6,
+                adjustments = Adjustments(
+                    brightness = 6,
+                    contrast = -12,
+                    highlights = -8,
+                    shadows = 8,
+                    saturation = -6,
+                    temperature = 8,
+                    tint = 4,
+                    fade = 6,
+                ),
+            ),
+        ),
+        FilterOption(
+            id = "glow",
+            categoryIds = setOf(POPULAR, NATURAL, PORTRAIT),
+            nameRes = R.string.filter_glow,
+            recipe = FilterRecipe(
+                redShift = 8,
+                greenShift = 6,
+                blueShift = 2,
+                adjustments = Adjustments(
+                    brightness = 8,
+                    exposure = 6,
+                    contrast = -8,
+                    highlights = -12,
+                    shadows = 6,
+                    vibrance = 10,
+                    clarity = -6,
+                ),
+            ),
+        ),
+        FilterOption(
+            id = "kodak",
+            categoryIds = setOf(FILM, VINTAGE),
+            nameRes = R.string.filter_kodak,
+            recipe = FilterRecipe(
+                redShift = 14,
+                greenShift = 6,
+                blueShift = -6,
+                adjustments = Adjustments(
+                    contrast = 12,
+                    highlights = -12,
+                    shadows = 4,
+                    saturation = 10,
+                    temperature = 6,
+                    fade = 8,
+                    grain = 10,
+                ),
+            ),
+        ),
+        FilterOption(
+            id = "sunset",
+            categoryIds = setOf(POPULAR, WARM),
+            nameRes = R.string.filter_sunset,
+            recipe = FilterRecipe(
+                redShift = 24,
+                greenShift = 6,
+                blueShift = -18,
+                adjustments = Adjustments(
+                    exposure = -2,
+                    contrast = 12,
+                    highlights = -16,
+                    saturation = 12,
+                    vibrance = 10,
+                    temperature = 24,
+                    vignette = 10,
+                ),
+            ),
+        ),
+        FilterOption(
+            id = "mist",
+            categoryIds = setOf(COOL, NATURAL),
+            nameRes = R.string.filter_mist,
+            recipe = FilterRecipe(
+                redShift = -4,
+                greenShift = 4,
+                blueShift = 12,
+                adjustments = Adjustments(
+                    brightness = 4,
+                    contrast = -14,
+                    highlights = -12,
+                    shadows = 10,
+                    saturation = -12,
+                    temperature = -10,
+                    fade = 12,
+                ),
+            ),
+        ),
+        FilterOption(
+            id = "cafe",
+            categoryIds = setOf(FOOD, WARM),
+            nameRes = R.string.filter_cafe,
+            recipe = FilterRecipe(
+                redShift = 16,
+                greenShift = 8,
+                blueShift = -10,
+                adjustments = Adjustments(
+                    contrast = 6,
+                    saturation = 10,
+                    vibrance = 8,
+                    temperature = 16,
+                    tint = 4,
+                    fade = 8,
+                ),
+            ),
+        ),
+        FilterOption(
+            id = "drama",
+            categoryIds = setOf(CINEMATIC),
+            nameRes = R.string.filter_drama,
+            recipe = FilterRecipe(
+                redShift = -4,
+                greenShift = 4,
+                blueShift = 8,
+                adjustments = Adjustments(
+                    exposure = -8,
+                    contrast = 28,
+                    highlights = -22,
+                    shadows = -16,
+                    saturation = -12,
+                    clarity = 18,
+                    vignette = 26,
+                    grain = 6,
+                ),
+            ),
+        ),
+        FilterOption(
+            id = "epic",
+            categoryIds = setOf(CINEMATIC),
+            nameRes = R.string.filter_epic,
+            recipe = FilterRecipe(
+                redShift = 6,
+                greenShift = 2,
+                blueShift = 8,
+                adjustments = Adjustments(
+                    exposure = -4,
+                    contrast = 24,
+                    highlights = -20,
+                    shadows = -8,
+                    saturation = -6,
+                    clarity = 18,
+                    vignette = 20,
+                ),
+            ),
+        ),
+        FilterOption(
+            id = "blockbuster",
+            categoryIds = setOf(POPULAR, CINEMATIC),
+            nameRes = R.string.filter_blockbuster,
+            recipe = FilterRecipe(
+                redShift = 16,
+                greenShift = 2,
+                blueShift = 10,
+                adjustments = Adjustments(
+                    exposure = -6,
+                    contrast = 30,
+                    highlights = -24,
+                    shadows = -14,
+                    saturation = -10,
+                    temperature = 10,
+                    tint = -10,
+                    clarity = 20,
+                    vignette = 24,
+                    grain = 4,
+                ),
+            ),
+        ),
+        FilterOption(
+            id = "arthouse",
+            categoryIds = setOf(CINEMATIC, VINTAGE),
+            nameRes = R.string.filter_arthouse,
+            recipe = FilterRecipe(
+                redShift = 4,
+                greenShift = -2,
+                blueShift = 6,
+                adjustments = Adjustments(
+                    brightness = -2,
+                    contrast = -6,
+                    highlights = -14,
+                    shadows = 12,
+                    saturation = -18,
+                    tint = 6,
+                    fade = 14,
+                    vignette = 16,
+                    grain = 12,
+                ),
+            ),
+        ),
+        FilterOption(
+            id = "silver",
+            categoryIds = setOf(BLACK_WHITE),
+            nameRes = R.string.filter_silver,
+            recipe = FilterRecipe(
+                isMonochrome = true,
+                adjustments = Adjustments(
+                    brightness = 4,
+                    contrast = 10,
+                    highlights = -10,
+                    shadows = 8,
+                    clarity = 10,
+                    fade = 6,
+                ),
+            ),
+        ),
     )
 
     val defaultCategory: FilterCategory = categories.first()
-    val default: FilterOption = filtersForCategory(defaultCategory.id).first()
+    val default: FilterOption = options.first { it.id == ORIGINAL }
 
     fun filtersForCategory(categoryId: String): List<FilterOption> =
         options.filter { categoryId in it.categoryIds }
 
+    private const val ORIGINAL = "original"
     private const val POPULAR = "popular"
     private const val NATURAL = "natural"
     private const val FILM = "film"

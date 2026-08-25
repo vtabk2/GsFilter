@@ -102,18 +102,37 @@
             android:textSize="18sp"
             android:textStyle="bold"/>
 
-        <HorizontalScrollView
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="@dimen/item_spacing"
-            android:scrollbars="none">
+            android:baselineAligned="false"
+            android:orientation="horizontal">
 
-            <LinearLayout
-                android:id="@+id/categoryContainer"
-                android:layout_width="wrap_content"
+            <ImageButton
+                android:id="@+id/buttonOriginalFilter"
+                android:layout_width="@dimen/filter_chip_min_height"
+                android:layout_height="@dimen/filter_chip_min_height"
+                android:background="@drawable/bg_filter_chip"
+                android:contentDescription="@string/action_original"
+                android:padding="@dimen/filter_none_icon_padding"
+                android:scaleType="center"
+                android:src="@drawable/ic_filter_none"/>
+
+            <HorizontalScrollView
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:orientation="horizontal"/>
-        </HorizontalScrollView>
+                android:layout_marginStart="@dimen/item_spacing"
+                android:layout_weight="1"
+                android:scrollbars="none">
+
+                <LinearLayout
+                    android:id="@+id/categoryContainer"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"/>
+            </HorizontalScrollView>
+        </LinearLayout>
 
         <HorizontalScrollView
             android:layout_width="match_parent"

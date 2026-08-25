@@ -31,14 +31,7 @@ class FilterViewModel(application: Application) : AndroidViewModel(application) 
     }
 
     fun selectCategory(category: FilterCategory) {
-        val nextFilter = FilterCatalog.filtersForCategory(category.id).firstOrNull()
-            ?: _state.value.selectedFilter
-        _state.update {
-            it.copy(
-                selectedCategory = category,
-                selectedFilter = nextFilter,
-            )
-        }
+        _state.update { it.copy(selectedCategory = category) }
     }
 
     fun setAdjustment(control: AdjustControl, value: Int) {

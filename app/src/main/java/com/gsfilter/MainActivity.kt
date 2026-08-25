@@ -2,7 +2,11 @@ package com.gsfilter
 
 import android.graphics.Bitmap
 import android.os.Bundle
-import android.widget.Button
+import android.text.TextUtils
+import android.view.Gravity
+import android.view.View
+import android.widget.FrameLayout
+import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.SeekBar
 import android.widget.TextView
@@ -20,11 +24,12 @@ class MainActivity : ComponentActivity() {
 
     private val viewModel: FilterViewModel by viewModels()
     private lateinit var binding: ActivityMainBinding
-    private val categoryButtons = mutableMapOf<String, Button>()
-    private val filterButtons = mutableMapOf<String, Button>()
+    private val categoryChips = mutableMapOf<String, TextView>()
+    private val filterCards = mutableMapOf<String, View>()
     private val adjustLabels = mutableMapOf<AdjustControl, TextView>()
     private val adjustSeekBars = mutableMapOf<AdjustControl, SeekBar>()
     private var renderedCategoryId: String? = null
+    private var renderedFilterThumbnailBitmap: Bitmap? = null
     private var renderedBitmap: Bitmap? = null
     private var isRenderingState = false
 
@@ -50,46 +55,61 @@ class MainActivity : ComponentActivity() {
     }
 
     private fun bindCategoryControls() {
+        binding.buttonOriginalFilter.setOnClickListener {
+            viewModel.selectFilter(FilterCatalog.default)
+        }
         FilterCatalog.categories.forEachIndexed { index, category ->
-            val button = createControlButton(
+            val chip = createCategoryChip(
                 index = index,
                 text = getString(category.nameRes),
                 onClick = { viewModel.selectCategory(category) },
             )
-            categoryButtons[category.id] = button
-            binding.categoryContainer.addView(button)
+            categoryChips[category.id] = chip
+            binding.categoryContainer.addView(chip)
         }
     }
 
-    private fun renderFilterControls(categoryId: String) {
-        if (renderedCategoryId == categoryId) {
+    private fun renderFilterControls(categoryId: String, sourceBitmap: Bitmap?) {
+        if (renderedCategoryId == categoryId && renderedFilterThumbnailBitmap === sourceBitmap) {
             return
         }
 
         renderedCategoryId = categoryId
-        filterButtons.clear()
+        renderedFilterThumbnailBitmap = sourceBitmap
+        filterCards.clear()
         binding.filterContainer.removeAllViews()
         FilterCatalog.filtersForCategory(categoryId).forEachIndexed { index, filter ->
-            val button = createControlButton(
+            val card = createFilterCard(
                 index = index,
                 text = getString(filter.nameRes),
+                thumbnail = sourceBitmap,
                 onClick = { viewModel.selectFilter(filter) },
             )
-            filterButtons[filter.id] = button
-            binding.filterContainer.addView(button)
+            filterCards[filter.id] = card
+            binding.filterContainer.addView(card)
         }
     }
 
-    private fun createControlButton(
+    private fun createCategoryChip(
         index: Int,
         text: String,
         onClick: () -> Unit,
-    ): Button {
+    ): TextView {
         val spacing = resources.getDimensionPixelSize(R.dimen.item_spacing)
-        val minHeight = resources.getDimensionPixelSize(R.dimen.button_min_height)
-        return Button(this).apply {
+        val horizontalPadding = resources.getDimensionPixelSize(R.dimen.filter_chip_horizontal_padding)
+        val verticalPadding = resources.getDimensionPixelSize(R.dimen.filter_chip_vertical_padding)
+        return TextView(this).apply {
             this.text = text
-            minimumHeight = minHeight
+            gravity = Gravity.CENTER
+            includeFontPadding = false
+            maxLines = 1
+            minHeight = resources.getDimensionPixelSize(R.dimen.filter_chip_min_height)
+            setBackgroundResource(R.drawable.bg_filter_chip)
+            setPadding(horizontalPadding, verticalPadding, horizontalPadding, verticalPadding)
+            setTextColor(getColor(R.color.text_secondary))
+            textSize = 14f
+            isClickable = true
+            isFocusable = true
             setOnClickListener { onClick() }
             layoutParams = LinearLayout.LayoutParams(
                 LinearLayout.LayoutParams.WRAP_CONTENT,
@@ -99,6 +119,61 @@ class MainActivity : ComponentActivity() {
                     marginStart = spacing
                 }
             }
+        }
+    }
+
+    private fun createFilterCard(
+        index: Int,
+        text: String,
+        thumbnail: Bitmap?,
+        onClick: () -> Unit,
+    ): View {
+        val spacing = resources.getDimensionPixelSize(R.dimen.item_spacing)
+        val width = resources.getDimensionPixelSize(R.dimen.filter_thumbnail_width)
+        val height = resources.getDimensionPixelSize(R.dimen.filter_thumbnail_height)
+        val inset = resources.getDimensionPixelSize(R.dimen.filter_thumbnail_inset)
+        val labelHeight = resources.getDimensionPixelSize(R.dimen.filter_thumbnail_label_height)
+        val labelPadding = resources.getDimensionPixelSize(R.dimen.filter_thumbnail_label_padding)
+        return FrameLayout(this).apply {
+            setBackgroundResource(R.drawable.bg_filter_card)
+            contentDescription = text
+            isClickable = true
+            isFocusable = true
+            setOnClickListener { onClick() }
+            layoutParams = LinearLayout.LayoutParams(width, height).apply {
+                if (index > 0) {
+                    marginStart = spacing
+                }
+            }
+            addView(ImageView(this@MainActivity).apply {
+                setImageBitmap(thumbnail)
+                scaleType = ImageView.ScaleType.CENTER_CROP
+                importantForAccessibility = View.IMPORTANT_FOR_ACCESSIBILITY_NO
+                layoutParams = FrameLayout.LayoutParams(
+                    FrameLayout.LayoutParams.MATCH_PARENT,
+                    FrameLayout.LayoutParams.MATCH_PARENT,
+                ).apply {
+                    setMargins(inset, inset, inset, inset)
+                }
+            })
+            addView(TextView(this@MainActivity).apply {
+                this.text = text
+                ellipsize = TextUtils.TruncateAt.END
+                gravity = Gravity.CENTER
+                includeFontPadding = false
+                maxLines = 1
+                setBackgroundResource(R.drawable.bg_filter_label)
+                setPadding(labelPadding, 0, labelPadding, 0)
+                setTextColor(getColor(android.R.color.white))
+                textSize = 12f
+                layoutParams = FrameLayout.LayoutParams(
+                    FrameLayout.LayoutParams.MATCH_PARENT,
+                    labelHeight,
+                    Gravity.BOTTOM,
+                ).apply {
+                    setMargins(inset, 0, inset, inset)
+                }
+            })
         }
     }
 
@@ -159,12 +234,24 @@ class MainActivity : ComponentActivity() {
             recipe = state.selectedFilter.recipe,
             adjustments = state.adjustments,
         )
-        renderFilterControls(state.selectedCategory.id)
-        categoryButtons.forEach { (id, button) ->
-            button.isEnabled = id != state.selectedCategory.id
+        renderFilterControls(state.selectedCategory.id, state.sourceBitmap)
+        categoryChips.forEach { (id, chip) ->
+            val isSelected = id == state.selectedCategory.id
+            chip.setBackgroundResource(
+                if (isSelected) R.drawable.bg_filter_chip_selected else R.drawable.bg_filter_chip,
+            )
+            chip.setTextColor(
+                getColor(if (isSelected) android.R.color.white else R.color.text_secondary),
+            )
         }
-        filterButtons.forEach { (id, button) ->
-            button.isEnabled = id != state.selectedFilter.id
+        filterCards.forEach { (id, card) ->
+            card.setBackgroundResource(
+                if (id == state.selectedFilter.id) {
+                    R.drawable.bg_filter_card_selected
+                } else {
+                    R.drawable.bg_filter_card
+                },
+            )
         }
         renderAdjustments(state.adjustments)
         isRenderingState = false

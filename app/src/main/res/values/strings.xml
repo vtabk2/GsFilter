@@ -26,6 +26,17 @@
     <string name="filter_teal_orange">Teal Orange</string>
     <string name="filter_noir">Noir</string>
     <string name="filter_matte">Matte</string>
+    <string name="filter_cream">Cream</string>
+    <string name="filter_glow">Glow</string>
+    <string name="filter_kodak">Kodak</string>
+    <string name="filter_sunset">Sunset</string>
+    <string name="filter_mist">Mist</string>
+    <string name="filter_cafe">Cafe</string>
+    <string name="filter_drama">Drama</string>
+    <string name="filter_epic">Epic</string>
+    <string name="filter_blockbuster">Blockbuster</string>
+    <string name="filter_arthouse">Arthouse</string>
+    <string name="filter_silver">Silver</string>
     <string name="action_reset_adjust">Reset Adjust</string>
     <string name="category_popular">Popular</string>
     <string name="category_natural">Natural</string>

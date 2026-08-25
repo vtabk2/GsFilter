@@ -30,6 +30,16 @@ class FilterCatalogTest {
     }
 
     @Test
+    fun `category filter lists exclude original action`() {
+        FilterCatalog.categories.forEach { category ->
+            assertFalse(
+                FilterCatalog.filtersForCategory(category.id)
+                    .any { it.id == FilterCatalog.default.id },
+            )
+        }
+    }
+
+    @Test
     fun `popular category reuses filters from other categories`() {
         val popularFilters = FilterCatalog.filtersForCategory(FilterCatalog.defaultCategory.id)
 
