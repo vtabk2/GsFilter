@@ -175,3 +175,33 @@ Status: DONE
 
 - Added per-control ranges so signed controls use `-100..100` and intensity-only controls such as Sharpness use `0..100`.
 - `:app:testDebugUnitTest :app:assembleDebug` passed after the full adjust update.
+
+## Task: Bound Adjust extremes
+
+Status: DONE
+
+### Requirements
+
+- Recheck min/max behavior for all 14 Adjust sliders.
+- Keep displayed slider ranges unchanged.
+- Prevent extreme values from making the preview look broken when dragged to min/max.
+
+### Approach
+
+- Keep UI clamping in `AdjustControl`.
+- Soften shader parameter scaling in `ShaderFilterParams`.
+- Add boundary tests for min/max shader values.
+
+### Checklist
+
+- [x] Bound shader parameter scaling for all 14 adjust values.
+- [x] Add min/max regression coverage for all shader adjust values.
+- [x] Run unit tests and assemble debug.
+
+### Notes
+
+- Contrast was the risky case: `-100` previously mapped to shader contrast `0.0`, flattening the preview. It now maps to `0.5`; `100` maps to `1.5`.
+- `:app:testDebugUnitTest :app:assembleDebug` passed after bounding contrast extremes.
+- Reopened to cover all 14 adjust values, not only Contrast.
+- Tone/color/sharpness values now use safer shader strength caps while keeping the visible slider ranges unchanged.
+- `:app:testDebugUnitTest :app:assembleDebug` passed after bounding all 14 adjust values.
