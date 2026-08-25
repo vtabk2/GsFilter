@@ -34,6 +34,7 @@ class MainActivity : ComponentActivity() {
     private var scrolledSelectedCategoryId: String? = null
     private var scrolledSelectedFilterId: String? = null
     private var selectedAdjustControl = AdjustControl.Brightness
+    private var selectedControlTab = ControlTab.Filters
     private var lastAdjustments = Adjustments()
     private var renderedBitmap: Bitmap? = null
     private var isRenderingState = false
@@ -44,6 +45,7 @@ class MainActivity : ComponentActivity() {
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
+        bindControlTabs()
         bindCategoryControls()
         bindAdjustControls()
         collectState()
@@ -57,6 +59,33 @@ class MainActivity : ComponentActivity() {
     override fun onPause() {
         binding.filterPreview.onPause()
         super.onPause()
+    }
+
+    private fun bindControlTabs() {
+        binding.tabFilter.setOnClickListener { selectControlTab(ControlTab.Filters) }
+        binding.tabAdjust.setOnClickListener { selectControlTab(ControlTab.Adjust) }
+        renderControlTabs()
+    }
+
+    private fun selectControlTab(tab: ControlTab) {
+        selectedControlTab = tab
+        renderControlTabs()
+    }
+
+    private fun renderControlTabs() {
+        val isFilterSelected = selectedControlTab == ControlTab.Filters
+        binding.filterPanel.isVisible = isFilterSelected
+        binding.adjustPanel.isVisible = !isFilterSelected
+        renderControlTab(binding.tabFilter, isFilterSelected)
+        renderControlTab(binding.tabAdjust, !isFilterSelected)
+    }
+
+    private fun renderControlTab(tab: TextView, isSelected: Boolean) {
+        tab.isSelected = isSelected
+        tab.setBackgroundResource(
+            if (isSelected) R.drawable.bg_filter_chip_selected else R.drawable.bg_filter_chip,
+        )
+        tab.setTextColor(getColor(if (isSelected) android.R.color.white else R.color.text_secondary))
     }
 
     private fun bindCategoryControls() {
@@ -366,5 +395,10 @@ class MainActivity : ComponentActivity() {
         when (this) {
             FilterError.AssetLoadFailed -> getString(R.string.asset_load_failed)
         }
+
+    private enum class ControlTab {
+        Filters,
+        Adjust,
+    }
 
 }

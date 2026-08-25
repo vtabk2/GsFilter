@@ -437,3 +437,31 @@ Status: DONE
 - The top reset icon now resets only the selected adjust control.
 - Added a bottom `Reset All` button that resets all adjust controls.
 - `:app:testDebugUnitTest :app:assembleDebug` passed after the reset split.
+
+## Task: Split controls into Filter and Adjust tabs
+
+Status: DONE
+
+### Requirements
+
+- Show the editor controls as two tabs: `Filter` and `Adjust`.
+- Keep existing filter and adjust behavior unchanged.
+- Hide the inactive control panel.
+
+### Approach
+
+- Reuse the existing filter and adjust views.
+- Add a small Activity-local tab state that toggles panel visibility.
+
+### Checklist
+
+- [x] Add tab controls to the main layout.
+- [x] Wrap existing filter and adjust controls in separate panels.
+- [x] Wire tab selection in `MainActivity`.
+- [x] Run unit tests and assemble debug.
+
+### Notes
+
+- The editor now shows `Filter` and `Adjust` tabs under the preview.
+- Switching tabs only toggles panel visibility; selected filter and adjust values are preserved.
+- `:app:testDebugUnitTest :app:assembleDebug` passed after the tab update.
