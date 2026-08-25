@@ -50,7 +50,7 @@ Status: DONE
 
 ## Task: Optimize image preview filters with an extensible GPU pipeline
 
-Status: IN PROGRESS
+Status: DONE
 
 ### Requirements
 
@@ -72,10 +72,10 @@ Status: IN PROGRESS
 ### Checklist
 
 - [x] Add the 10 starter filter categories from the agreed proposal.
-- [ ] Define minimal internal GPU filter API.
-- [ ] Add a GLSurfaceView/Renderer preview path.
-- [ ] Add a minimal shader-backed filter catalog.
-- [ ] Keep CPU path available only as fallback or remove after GPU path is stable.
+- [x] Define minimal internal GPU filter API.
+- [x] Add a GLSurfaceView/Renderer preview path.
+- [x] Add a minimal shader-backed filter catalog.
+- [x] Keep CPU path available only as fallback or remove after GPU path is stable.
 - [x] Update or replace tests for the new catalog/mapping logic.
 - [x] Run unit tests and assemble debug after the category update.
 
@@ -88,3 +88,32 @@ Status: IN PROGRESS
 - Added category metadata and dynamic category/filter controls while keeping the current CPU preview path.
 - Added catalog tests for category coverage and Popular reuse.
 - `:app:testDebugUnitTest :app:assembleDebug` passed after the category update.
+- Added `FilterPreviewView`, a small OpenGL ES 2.0 renderer that applies filter recipe and fixed adjust uniforms on GPU.
+- Removed the CPU per-pixel preview renderer.
+- Added shader parameter mapping tests.
+- `:app:testDebugUnitTest :app:assembleDebug` passed after the GPU preview update.
+
+## Task: Show original and filtered previews side by side
+
+Status: DONE
+
+### Requirements
+
+- Put the original image and filtered result on the same row.
+- Split the available width evenly.
+- Keep the existing GPU preview path.
+
+### Approach
+
+- Change only `activity_main.xml`.
+- Use a horizontal `LinearLayout` with two weighted preview columns.
+
+### Checklist
+
+- [x] Move original and result previews into one weighted row.
+- [x] Run assemble debug.
+
+### Notes
+
+- Original and filtered previews now share one horizontal row with equal width.
+- `:app:assembleDebug` passed after the layout update.

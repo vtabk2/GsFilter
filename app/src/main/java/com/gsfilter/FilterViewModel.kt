@@ -6,12 +6,10 @@ import android.graphics.BitmapFactory
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.gsfilter.filter.Adjustments
-import com.gsfilter.filter.BitmapFilterRenderer
 import com.gsfilter.filter.FilterCategory
 import com.gsfilter.filter.FilterOption
 import java.io.IOException
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -24,16 +22,12 @@ class FilterViewModel(application: Application) : AndroidViewModel(application) 
     private val _state = MutableStateFlow(FilterUiState())
     val state: StateFlow<FilterUiState> = _state.asStateFlow()
 
-    private var sourceBitmap: Bitmap? = null
-    private var renderJob: Job? = null
-
     init {
         loadSample()
     }
 
     fun selectFilter(filter: FilterOption) {
         _state.update { it.copy(selectedFilter = filter) }
-        renderCurrent()
     }
 
     fun selectCategory(category: FilterCategory) {
@@ -45,7 +39,6 @@ class FilterViewModel(application: Application) : AndroidViewModel(application) 
                 selectedFilter = nextFilter,
             )
         }
-        renderCurrent()
     }
 
     fun setBrightness(value: Int) {
@@ -62,28 +55,16 @@ class FilterViewModel(application: Application) : AndroidViewModel(application) 
 
     fun resetAdjustments() {
         _state.update { it.copy(adjustments = Adjustments()) }
-        renderCurrent()
     }
 
     private fun loadSample() {
-        renderJob?.cancel()
-        renderJob = viewModelScope.launch {
+        viewModelScope.launch {
             _state.update { it.copy(isLoading = true, error = null) }
             try {
                 val bitmap = withContext(Dispatchers.IO) { decodeSampleBitmap() }
-                sourceBitmap = bitmap
-                val snapshot = _state.value
-                val rendered = withContext(Dispatchers.Default) {
-                    BitmapFilterRenderer.render(
-                        source = bitmap,
-                        filter = snapshot.selectedFilter,
-                        adjustments = snapshot.adjustments,
-                    )
-                }
                 _state.update {
                     it.copy(
                         sourceBitmap = bitmap,
-                        resultBitmap = rendered,
                         isLoading = false,
                         error = null,
                     )
@@ -98,30 +79,6 @@ class FilterViewModel(application: Application) : AndroidViewModel(application) 
 
     private fun updateAdjustments(update: (Adjustments) -> Adjustments) {
         _state.update { it.copy(adjustments = update(it.adjustments)) }
-        renderCurrent()
-    }
-
-    private fun renderCurrent() {
-        val source = sourceBitmap ?: return
-        val snapshot = _state.value
-        renderJob?.cancel()
-        renderJob = viewModelScope.launch {
-            _state.update { it.copy(isLoading = true, error = null) }
-            val rendered = withContext(Dispatchers.Default) {
-                BitmapFilterRenderer.render(
-                    source = source,
-                    filter = snapshot.selectedFilter,
-                    adjustments = snapshot.adjustments,
-                )
-            }
-            _state.update {
-                it.copy(
-                    resultBitmap = rendered,
-                    isLoading = false,
-                    error = null,
-                )
-            }
-        }
     }
 
     private fun decodeSampleBitmap(): Bitmap {

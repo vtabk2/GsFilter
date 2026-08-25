@@ -1,6 +1,7 @@
 package com.gsfilter
 
 import android.os.Bundle
+import android.graphics.Bitmap
 import android.widget.Button
 import android.widget.LinearLayout
 import android.widget.SeekBar
@@ -21,6 +22,7 @@ class MainActivity : ComponentActivity() {
     private val categoryButtons = mutableMapOf<String, Button>()
     private val filterButtons = mutableMapOf<String, Button>()
     private var renderedCategoryId: String? = null
+    private var renderedBitmap: Bitmap? = null
     private var isRenderingState = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -32,6 +34,16 @@ class MainActivity : ComponentActivity() {
         bindCategoryControls()
         bindAdjustControls()
         collectState()
+    }
+
+    override fun onResume() {
+        super.onResume()
+        binding.filterPreview.onResume()
+    }
+
+    override fun onPause() {
+        binding.filterPreview.onPause()
+        super.onPause()
     }
 
     private fun bindCategoryControls() {
@@ -122,7 +134,14 @@ class MainActivity : ComponentActivity() {
         binding.errorText.isVisible = state.error != null
         binding.errorText.text = state.error?.toMessage().orEmpty()
         binding.imageOriginal.setImageBitmap(state.sourceBitmap)
-        binding.imageResult.setImageBitmap(state.resultBitmap)
+        if (renderedBitmap !== state.sourceBitmap) {
+            renderedBitmap = state.sourceBitmap
+            binding.filterPreview.setSourceBitmap(state.sourceBitmap)
+        }
+        binding.filterPreview.setFilterState(
+            recipe = state.selectedFilter.recipe,
+            adjustments = state.adjustments,
+        )
         renderFilterControls(state.selectedCategory.id)
         categoryButtons.forEach { (id, button) ->
             button.isEnabled = id != state.selectedCategory.id
