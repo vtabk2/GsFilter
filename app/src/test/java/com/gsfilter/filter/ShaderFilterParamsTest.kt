@@ -123,6 +123,28 @@ class ShaderFilterParamsTest {
         assertEquals(1f, maxParams.grain, DELTA)
     }
 
+    @Test
+    fun `adds recipe preset adjustments before user adjustments`() {
+        val params = ShaderFilterParams.from(
+            recipe = FilterRecipe(
+                adjustments = Adjustments(
+                    contrast = 20,
+                    saturation = -10,
+                    fade = 15,
+                ),
+            ),
+            adjustments = Adjustments(
+                contrast = 10,
+                saturation = 20,
+                fade = 5,
+            ),
+        )
+
+        assertEquals(1.15f, params.contrast, DELTA)
+        assertEquals(1.05f, params.saturation, DELTA)
+        assertEquals(0.2f, params.fade, DELTA)
+    }
+
     private companion object {
         const val DELTA = 0.0001f
     }

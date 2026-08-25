@@ -205,3 +205,63 @@ Status: DONE
 - Reopened to cover all 14 adjust values, not only Contrast.
 - Tone/color/sharpness values now use safer shader strength caps while keeping the visible slider ranges unchanged.
 - `:app:testDebugUnitTest :app:assembleDebug` passed after bounding all 14 adjust values.
+
+## Task: Make filters expandable with recipe presets
+
+Status: DONE
+
+### Requirements
+
+- Implement the lightweight expansion model for filters.
+- Keep filters as data presets, not one class per filter.
+- Let each filter define preset adjust values.
+- Keep user Adjust sliders separate and additive.
+- Keep current UI and GPU preview path.
+
+### Approach
+
+- Add preset `Adjustments` to `FilterRecipe`.
+- Combine recipe adjustments with user adjustments in `ShaderFilterParams`.
+- Add starter preset values to existing filters.
+- Cover additive preset mapping with unit tests.
+
+### Checklist
+
+- [x] Add preset adjustments to filter recipes.
+- [x] Combine preset and user adjustments before shader mapping.
+- [x] Add tests for preset plus user adjust behavior.
+- [x] Run unit tests and assemble debug.
+
+### Notes
+
+- Existing filters now carry small preset `Adjustments`; user Adjust values are added on top before shader scaling.
+- `:app:testDebugUnitTest :app:assembleDebug` passed after recipe preset support.
+
+## Task: Expand starter filter preset pack
+
+Status: DONE
+
+### Requirements
+
+- Continue expanding filters using recipe preset data.
+- Keep the existing 10 starter categories.
+- Keep the GPU preview path and current UI.
+- Avoid adding LUT or a new filter engine in this step.
+
+### Approach
+
+- Add a small set of new `FilterOption` presets to sparse categories.
+- Add English string resources for new filter names.
+- Add a catalog test for unique filter IDs.
+
+### Checklist
+
+- [x] Add starter preset filters.
+- [x] Add filter name resources.
+- [x] Add catalog uniqueness test.
+- [x] Run unit tests and assemble debug.
+
+### Notes
+
+- Added 12 data-only filter presets across the existing 10 categories.
+- `:app:testDebugUnitTest :app:assembleDebug` passed after expanding the preset pack.

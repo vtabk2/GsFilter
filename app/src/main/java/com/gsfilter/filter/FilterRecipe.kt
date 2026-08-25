@@ -5,4 +5,5 @@ data class FilterRecipe(
     val redShift: Int = 0,
     val greenShift: Int = 0,
     val blueShift: Int = 0,
+    val adjustments: Adjustments = Adjustments(),
 )
