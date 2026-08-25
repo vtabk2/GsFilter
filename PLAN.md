@@ -117,3 +117,28 @@ Status: DONE
 
 - Original and filtered previews now share one horizontal row with equal width.
 - `:app:assembleDebug` passed after the layout update.
+
+## Task: Switch UI text resources to English
+
+Status: DONE
+
+### Requirements
+
+- Keep app UI text in English for now.
+- Preserve existing resource IDs and app behavior.
+
+### Approach
+
+- Update only `app/src/main/res/values/strings.xml`.
+- Run assemble debug to verify resource compilation.
+
+### Checklist
+
+- [x] Replace Vietnamese UI strings with English strings.
+- [x] Run assemble debug.
+
+### Notes
+
+- Updated `app/src/main/res/values/strings.xml` to English text while preserving resource IDs.
+- Confirmed no Vietnamese diacritics remain in `strings.xml`.
+- `:app:assembleDebug` passed after the resource update.
