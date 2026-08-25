@@ -618,6 +618,9 @@ object FilterCatalog {
     fun filtersForCategory(categoryId: String): List<FilterOption> =
         options.filter { categoryId in it.categoryIds }
 
+    fun categoryForFilter(filter: FilterOption): FilterCategory? =
+        categories.firstOrNull { it.id in filter.categoryIds }
+
     private const val ORIGINAL = "original"
     private const val POPULAR = "popular"
     private const val NATURAL = "natural"

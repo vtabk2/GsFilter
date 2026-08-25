@@ -30,6 +30,8 @@ class MainActivity : ComponentActivity() {
     private val adjustSeekBars = mutableMapOf<AdjustControl, SeekBar>()
     private var renderedCategoryId: String? = null
     private var renderedFilterThumbnailBitmap: Bitmap? = null
+    private var scrolledSelectedCategoryId: String? = null
+    private var scrolledSelectedFilterId: String? = null
     private var renderedBitmap: Bitmap? = null
     private var isRenderingState = false
 
@@ -235,6 +237,7 @@ class MainActivity : ComponentActivity() {
             adjustments = state.adjustments,
         )
         renderFilterControls(state.selectedCategory.id, state.sourceBitmap)
+        renderOriginalAction(state)
         categoryChips.forEach { (id, chip) ->
             val isSelected = id == state.selectedCategory.id
             chip.setBackgroundResource(
@@ -253,8 +256,35 @@ class MainActivity : ComponentActivity() {
                 },
             )
         }
+        scrollSelectedFilterIntoView(state)
         renderAdjustments(state.adjustments)
         isRenderingState = false
+    }
+
+    private fun renderOriginalAction(state: FilterUiState) {
+        val isSelected = state.selectedFilter.id == FilterCatalog.default.id
+        binding.buttonOriginalFilter.setBackgroundResource(
+            if (isSelected) R.drawable.bg_filter_chip_selected else R.drawable.bg_filter_chip,
+        )
+        binding.buttonOriginalFilter.setColorFilter(
+            getColor(if (isSelected) android.R.color.white else R.color.text_secondary),
+        )
+    }
+
+    private fun scrollSelectedFilterIntoView(state: FilterUiState) {
+        val selectedCard = filterCards[state.selectedFilter.id] ?: return
+        if (
+            scrolledSelectedCategoryId == state.selectedCategory.id &&
+            scrolledSelectedFilterId == state.selectedFilter.id
+        ) {
+            return
+        }
+
+        scrolledSelectedCategoryId = state.selectedCategory.id
+        scrolledSelectedFilterId = state.selectedFilter.id
+        binding.filterScrollView.post {
+            binding.filterScrollView.smoothScrollTo(selectedCard.left, 0)
+        }
     }
 
     private fun renderAdjustments(adjustments: Adjustments) {

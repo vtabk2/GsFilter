@@ -3,6 +3,7 @@ package com.gsfilter
 import com.gsfilter.filter.Adjustments
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
+import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Test
 
@@ -37,6 +38,19 @@ class FilterCatalogTest {
                     .any { it.id == FilterCatalog.default.id },
             )
         }
+    }
+
+    @Test
+    fun `category lookup returns category containing filter`() {
+        val filter = FilterCatalog.options.first { it.id != FilterCatalog.default.id }
+        val category = requireNotNull(FilterCatalog.categoryForFilter(filter))
+
+        assertTrue(category.id in filter.categoryIds)
+    }
+
+    @Test
+    fun `category lookup returns null for original action`() {
+        assertNull(FilterCatalog.categoryForFilter(FilterCatalog.default))
     }
 
     @Test

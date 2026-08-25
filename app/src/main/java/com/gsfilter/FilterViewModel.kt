@@ -31,7 +31,21 @@ class FilterViewModel(application: Application) : AndroidViewModel(application) 
     }
 
     fun selectCategory(category: FilterCategory) {
-        _state.update { it.copy(selectedCategory = category) }
+        _state.update { state ->
+            val selectedFilterCategory = FilterCatalog.categoryForFilter(state.selectedFilter)
+            val nextCategory =
+                if (
+                    state.selectedCategory.id == category.id &&
+                    category.id !in state.selectedFilter.categoryIds &&
+                    selectedFilterCategory != null
+                ) {
+                    selectedFilterCategory
+                } else {
+                    category
+                }
+
+            state.copy(selectedCategory = nextCategory)
+        }
     }
 
     fun setAdjustment(control: AdjustControl, value: Int) {

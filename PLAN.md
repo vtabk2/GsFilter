@@ -363,3 +363,34 @@ Status: DONE
 - `Original` is now a fixed leading none icon outside the scrollable category list.
 - `Original` no longer belongs to any category filter list.
 - `:app:testDebugUnitTest :app:assembleDebug` passed after the fix.
+
+## Task: Refocus category on the active filter
+
+Status: DONE
+
+### Requirements
+
+- Do not auto-apply a filter when switching categories.
+- Re-selecting the visible category should show the currently selected filter again when it belongs to another category.
+- Scroll the filter rail to the selected filter when it is present.
+- Keep the fixed leading none icon for `Original`.
+
+### Approach
+
+- Add a catalog helper that finds the first category containing a filter.
+- Use it only when the current category chip is tapped again.
+- Give the filter scroll view an id and scroll to the selected card after render.
+
+### Checklist
+
+- [x] Add active-filter category lookup.
+- [x] Re-select current category to refocus the active filter.
+- [x] Scroll selected filter card into view when present.
+- [x] Run unit tests and assemble debug.
+
+### Notes
+
+- This keeps category browsing filter-neutral while giving the user a quick way back to the active preset.
+- Re-tapping the currently visible category now refocuses the first category containing the active filter when the active filter is outside the visible category.
+- The filter rail scrolls to the selected card when that card is present.
+- `:app:testDebugUnitTest :app:assembleDebug` passed after the refocus update.
