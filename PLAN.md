@@ -47,3 +47,44 @@ Status: DONE
 - `:app:testDebugUnitTest` passed.
 - `:app:assembleDebug` passed.
 - Static searches found no `GlobalScope`, `!!`, broad `catch (Exception)`, deleted `FilterPreset`, or old hard-coded filter button IDs under `app/src/main`.
+
+## Task: Optimize image preview filters with an extensible GPU pipeline
+
+Status: IN PROGRESS
+
+### Requirements
+
+- Improve filter speed.
+- Use a minimal filter set inspired by `wasabeef/android-gpuimage`, without locking the app to GPUImage internals.
+- Keep the existing MVVM split.
+- Keep Filter expandable and Adjust fixed.
+- Continue using the bundled asset image; no CameraX.
+
+### Approach
+
+- Avoid direct GPUImage integration as the core because it is harder to extend cleanly.
+- Build a small internal GPU shader pipeline after the CPU MVP, keeping GPUImage as a reference for filter names and shader behavior.
+- Keep the ViewModel as UI state only.
+- Keep Filter as extensible shader presets and Adjust as fixed parameters.
+- Add category metadata before shader work so the UI can scale past a flat filter list.
+- Keep unit-testable mapping logic separate from Android/GPUImage classes where practical.
+
+### Checklist
+
+- [x] Add the 10 starter filter categories from the agreed proposal.
+- [ ] Define minimal internal GPU filter API.
+- [ ] Add a GLSurfaceView/Renderer preview path.
+- [ ] Add a minimal shader-backed filter catalog.
+- [ ] Keep CPU path available only as fallback or remove after GPU path is stable.
+- [x] Update or replace tests for the new catalog/mapping logic.
+- [x] Run unit tests and assemble debug after the category update.
+
+### Notes
+
+- GPUImage README documents `jp.co.cyberagent.android:gpuimage:2.x.x` and OpenGL ES 2.0 support.
+- Maven Central lists `2.1.0` as the latest current version.
+- Direct GPUImage integration is paused because the library is convenient but not ideal as a long-term extensible core.
+- Use GPUImage as reference only; save/capture are out of scope.
+- Added category metadata and dynamic category/filter controls while keeping the current CPU preview path.
+- Added catalog tests for category coverage and Popular reuse.
+- `:app:testDebugUnitTest :app:assembleDebug` passed after the category update.

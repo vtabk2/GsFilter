@@ -7,6 +7,7 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.gsfilter.filter.Adjustments
 import com.gsfilter.filter.BitmapFilterRenderer
+import com.gsfilter.filter.FilterCategory
 import com.gsfilter.filter.FilterOption
 import java.io.IOException
 import kotlinx.coroutines.Dispatchers
@@ -32,6 +33,18 @@ class FilterViewModel(application: Application) : AndroidViewModel(application) 
 
     fun selectFilter(filter: FilterOption) {
         _state.update { it.copy(selectedFilter = filter) }
+        renderCurrent()
+    }
+
+    fun selectCategory(category: FilterCategory) {
+        val nextFilter = FilterCatalog.filtersForCategory(category.id).firstOrNull()
+            ?: _state.value.selectedFilter
+        _state.update {
+            it.copy(
+                selectedCategory = category,
+                selectedFilter = nextFilter,
+            )
+        }
         renderCurrent()
     }
 
@@ -122,6 +135,6 @@ class FilterViewModel(application: Application) : AndroidViewModel(application) 
     }
 
     private companion object {
-        const val SAMPLE_ASSET = "sample.png"
+        const val SAMPLE_ASSET = "sample.jpg"
     }
 }

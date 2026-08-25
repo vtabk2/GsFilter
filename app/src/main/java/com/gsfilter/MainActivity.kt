@@ -18,7 +18,9 @@ class MainActivity : ComponentActivity() {
 
     private val viewModel: FilterViewModel by viewModels()
     private lateinit var binding: ActivityMainBinding
+    private val categoryButtons = mutableMapOf<String, Button>()
     private val filterButtons = mutableMapOf<String, Button>()
+    private var renderedCategoryId: String? = null
     private var isRenderingState = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -27,21 +29,54 @@ class MainActivity : ComponentActivity() {
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        bindFilterControls()
+        bindCategoryControls()
         bindAdjustControls()
         collectState()
     }
 
-    private fun bindFilterControls() {
+    private fun bindCategoryControls() {
+        FilterCatalog.categories.forEachIndexed { index, category ->
+            val button = createControlButton(
+                index = index,
+                text = getString(category.nameRes),
+                onClick = { viewModel.selectCategory(category) },
+            )
+            categoryButtons[category.id] = button
+            binding.categoryContainer.addView(button)
+        }
+    }
+
+    private fun renderFilterControls(categoryId: String) {
+        if (renderedCategoryId == categoryId) {
+            return
+        }
+
+        renderedCategoryId = categoryId
+        filterButtons.clear()
+        binding.filterContainer.removeAllViews()
+        FilterCatalog.filtersForCategory(categoryId).forEachIndexed { index, filter ->
+            val button = createControlButton(
+                index = index,
+                text = getString(filter.nameRes),
+                onClick = { viewModel.selectFilter(filter) },
+            )
+            filterButtons[filter.id] = button
+            binding.filterContainer.addView(button)
+        }
+    }
+
+    private fun createControlButton(
+        index: Int,
+        text: String,
+        onClick: () -> Unit,
+    ): Button {
         val spacing = resources.getDimensionPixelSize(R.dimen.item_spacing)
         val minHeight = resources.getDimensionPixelSize(R.dimen.button_min_height)
-        FilterCatalog.options.forEachIndexed { index, filter ->
-            val button = Button(this).apply {
-                text = getString(filter.nameRes)
-                minimumHeight = minHeight
-                setOnClickListener { viewModel.selectFilter(filter) }
-            }
-            button.layoutParams = LinearLayout.LayoutParams(
+        return Button(this).apply {
+            this.text = text
+            minimumHeight = minHeight
+            setOnClickListener { onClick() }
+            layoutParams = LinearLayout.LayoutParams(
                 LinearLayout.LayoutParams.WRAP_CONTENT,
                 LinearLayout.LayoutParams.WRAP_CONTENT,
             ).apply {
@@ -49,8 +84,6 @@ class MainActivity : ComponentActivity() {
                     marginStart = spacing
                 }
             }
-            filterButtons[filter.id] = button
-            binding.filterContainer.addView(button)
         }
     }
 
@@ -90,6 +123,10 @@ class MainActivity : ComponentActivity() {
         binding.errorText.text = state.error?.toMessage().orEmpty()
         binding.imageOriginal.setImageBitmap(state.sourceBitmap)
         binding.imageResult.setImageBitmap(state.resultBitmap)
+        renderFilterControls(state.selectedCategory.id)
+        categoryButtons.forEach { (id, button) ->
+            button.isEnabled = id != state.selectedCategory.id
+        }
         filterButtons.forEach { (id, button) ->
             button.isEnabled = id != state.selectedFilter.id
         }
