@@ -465,3 +465,30 @@ Status: DONE
 - The editor now shows `Filter` and `Adjust` tabs under the preview.
 - Switching tabs only toggles panel visibility; selected filter and adjust values are preserved.
 - `:app:testDebugUnitTest :app:assembleDebug` passed after the tab update.
+
+## Task: Optimize filter preview rendering
+
+Status: DONE
+
+### Requirements
+
+- Improve filter preview speed without changing visible filter behavior.
+- Keep the current GPU shader and preset model.
+- Avoid new dependencies.
+
+### Approach
+
+- Cache OpenGL attribute and uniform locations after shader program creation.
+- Skip filter-state render requests when shader params have not changed.
+
+### Checklist
+
+- [x] Cache shader handles in `FilterPreviewView`.
+- [x] Skip duplicate filter param renders.
+- [x] Run unit tests and assemble debug.
+
+### Notes
+
+- `FilterPreviewView` now resolves shader attribute/uniform locations once per GL program instead of every frame.
+- Duplicate filter params no longer enqueue another GL render request.
+- `:app:testDebugUnitTest :app:assembleDebug` passed after the rendering optimization.

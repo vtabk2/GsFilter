@@ -18,6 +18,7 @@ class FilterPreviewView @JvmOverloads constructor(
 ) : GLSurfaceView(context, attrs) {
 
     private val filterRenderer = FilterRenderer()
+    private var lastFilterParams: ShaderFilterParams? = null
 
     init {
         setEGLContextClientVersion(2)
@@ -35,6 +36,11 @@ class FilterPreviewView @JvmOverloads constructor(
 
     fun setFilterState(recipe: FilterRecipe, adjustments: Adjustments) {
         val params = ShaderFilterParams.from(recipe, adjustments)
+        if (params == lastFilterParams) {
+            return
+        }
+
+        lastFilterParams = params
         queueEvent {
             filterRenderer.setFilterParams(params)
             requestRender()
@@ -47,6 +53,7 @@ class FilterPreviewView @JvmOverloads constructor(
         private val textureBuffer = floatBufferOf(TEXTURE_COORDS)
 
         private var program = 0
+        private var handles: ProgramHandles? = null
         private var textureId = 0
         private var pendingBitmap: Bitmap? = null
         private var imageWidth = 0
@@ -57,6 +64,7 @@ class FilterPreviewView @JvmOverloads constructor(
 
         override fun onSurfaceCreated(gl: GL10?, config: EGLConfig?) {
             program = buildProgram(VERTEX_SHADER, FRAGMENT_SHADER)
+            handles = resolveProgramHandles(program)
             GLES20.glClearColor(0.93f, 0.93f, 0.93f, 1f)
         }
 
@@ -73,13 +81,14 @@ class FilterPreviewView @JvmOverloads constructor(
             if (textureId == 0 || program == 0) {
                 return
             }
+            val currentHandles = handles ?: return
 
             GLES20.glUseProgram(program)
-            bindAttributes()
-            bindUniforms()
+            bindAttributes(currentHandles)
+            bindUniforms(currentHandles)
             GLES20.glDrawArrays(GLES20.GL_TRIANGLE_STRIP, 0, VERTEX_COUNT)
-            GLES20.glDisableVertexAttribArray(GLES20.glGetAttribLocation(program, A_POSITION))
-            GLES20.glDisableVertexAttribArray(GLES20.glGetAttribLocation(program, A_TEX_COORD))
+            GLES20.glDisableVertexAttribArray(currentHandles.position)
+            GLES20.glDisableVertexAttribArray(currentHandles.textureCoordinate)
         }
 
         fun setSourceBitmap(bitmap: Bitmap?) {
@@ -161,14 +170,12 @@ class FilterPreviewView @JvmOverloads constructor(
             ).position(0)
         }
 
-        private fun bindAttributes() {
-            val position = GLES20.glGetAttribLocation(program, A_POSITION)
-            val textureCoordinate = GLES20.glGetAttribLocation(program, A_TEX_COORD)
-            GLES20.glEnableVertexAttribArray(position)
-            GLES20.glVertexAttribPointer(position, COORDS_PER_VERTEX, GLES20.GL_FLOAT, false, 0, vertexBuffer)
-            GLES20.glEnableVertexAttribArray(textureCoordinate)
+        private fun bindAttributes(handles: ProgramHandles) {
+            GLES20.glEnableVertexAttribArray(handles.position)
+            GLES20.glVertexAttribPointer(handles.position, COORDS_PER_VERTEX, GLES20.GL_FLOAT, false, 0, vertexBuffer)
+            GLES20.glEnableVertexAttribArray(handles.textureCoordinate)
             GLES20.glVertexAttribPointer(
-                textureCoordinate,
+                handles.textureCoordinate,
                 COORDS_PER_VERTEX,
                 GLES20.GL_FLOAT,
                 false,
@@ -177,37 +184,61 @@ class FilterPreviewView @JvmOverloads constructor(
             )
         }
 
-        private fun bindUniforms() {
+        private fun bindUniforms(handles: ProgramHandles) {
             GLES20.glActiveTexture(GLES20.GL_TEXTURE0)
             GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, textureId)
-            GLES20.glUniform1i(GLES20.glGetUniformLocation(program, U_TEXTURE), 0)
-            GLES20.glUniform1f(GLES20.glGetUniformLocation(program, U_MONO), params.isMonochrome)
+            GLES20.glUniform1i(handles.texture, 0)
+            GLES20.glUniform1f(handles.mono, params.isMonochrome)
             GLES20.glUniform2f(
-                GLES20.glGetUniformLocation(program, U_TEXEL_SIZE),
+                handles.texelSize,
                 if (imageWidth > 0) 1f / imageWidth else 0f,
                 if (imageHeight > 0) 1f / imageHeight else 0f,
             )
             GLES20.glUniform3f(
-                GLES20.glGetUniformLocation(program, U_RGB_SHIFT),
+                handles.rgbShift,
                 params.redShift,
                 params.greenShift,
                 params.blueShift,
             )
-            GLES20.glUniform1f(GLES20.glGetUniformLocation(program, U_BRIGHTNESS), params.brightness)
-            GLES20.glUniform1f(GLES20.glGetUniformLocation(program, U_EXPOSURE), params.exposure)
-            GLES20.glUniform1f(GLES20.glGetUniformLocation(program, U_CONTRAST), params.contrast)
-            GLES20.glUniform1f(GLES20.glGetUniformLocation(program, U_HIGHLIGHTS), params.highlights)
-            GLES20.glUniform1f(GLES20.glGetUniformLocation(program, U_SHADOWS), params.shadows)
-            GLES20.glUniform1f(GLES20.glGetUniformLocation(program, U_SATURATION), params.saturation)
-            GLES20.glUniform1f(GLES20.glGetUniformLocation(program, U_VIBRANCE), params.vibrance)
-            GLES20.glUniform1f(GLES20.glGetUniformLocation(program, U_TEMPERATURE), params.temperature)
-            GLES20.glUniform1f(GLES20.glGetUniformLocation(program, U_TINT), params.tint)
-            GLES20.glUniform1f(GLES20.glGetUniformLocation(program, U_SHARPNESS), params.sharpness)
-            GLES20.glUniform1f(GLES20.glGetUniformLocation(program, U_CLARITY), params.clarity)
-            GLES20.glUniform1f(GLES20.glGetUniformLocation(program, U_FADE), params.fade)
-            GLES20.glUniform1f(GLES20.glGetUniformLocation(program, U_VIGNETTE), params.vignette)
-            GLES20.glUniform1f(GLES20.glGetUniformLocation(program, U_GRAIN), params.grain)
+            GLES20.glUniform1f(handles.brightness, params.brightness)
+            GLES20.glUniform1f(handles.exposure, params.exposure)
+            GLES20.glUniform1f(handles.contrast, params.contrast)
+            GLES20.glUniform1f(handles.highlights, params.highlights)
+            GLES20.glUniform1f(handles.shadows, params.shadows)
+            GLES20.glUniform1f(handles.saturation, params.saturation)
+            GLES20.glUniform1f(handles.vibrance, params.vibrance)
+            GLES20.glUniform1f(handles.temperature, params.temperature)
+            GLES20.glUniform1f(handles.tint, params.tint)
+            GLES20.glUniform1f(handles.sharpness, params.sharpness)
+            GLES20.glUniform1f(handles.clarity, params.clarity)
+            GLES20.glUniform1f(handles.fade, params.fade)
+            GLES20.glUniform1f(handles.vignette, params.vignette)
+            GLES20.glUniform1f(handles.grain, params.grain)
         }
+
+        private fun resolveProgramHandles(program: Int): ProgramHandles =
+            ProgramHandles(
+                position = GLES20.glGetAttribLocation(program, A_POSITION),
+                textureCoordinate = GLES20.glGetAttribLocation(program, A_TEX_COORD),
+                texture = GLES20.glGetUniformLocation(program, U_TEXTURE),
+                mono = GLES20.glGetUniformLocation(program, U_MONO),
+                texelSize = GLES20.glGetUniformLocation(program, U_TEXEL_SIZE),
+                rgbShift = GLES20.glGetUniformLocation(program, U_RGB_SHIFT),
+                brightness = GLES20.glGetUniformLocation(program, U_BRIGHTNESS),
+                exposure = GLES20.glGetUniformLocation(program, U_EXPOSURE),
+                contrast = GLES20.glGetUniformLocation(program, U_CONTRAST),
+                highlights = GLES20.glGetUniformLocation(program, U_HIGHLIGHTS),
+                shadows = GLES20.glGetUniformLocation(program, U_SHADOWS),
+                saturation = GLES20.glGetUniformLocation(program, U_SATURATION),
+                vibrance = GLES20.glGetUniformLocation(program, U_VIBRANCE),
+                temperature = GLES20.glGetUniformLocation(program, U_TEMPERATURE),
+                tint = GLES20.glGetUniformLocation(program, U_TINT),
+                sharpness = GLES20.glGetUniformLocation(program, U_SHARPNESS),
+                clarity = GLES20.glGetUniformLocation(program, U_CLARITY),
+                fade = GLES20.glGetUniformLocation(program, U_FADE),
+                vignette = GLES20.glGetUniformLocation(program, U_VIGNETTE),
+                grain = GLES20.glGetUniformLocation(program, U_GRAIN),
+            )
 
         private fun buildProgram(vertexShader: String, fragmentShader: String): Int {
             val vertex = compileShader(GLES20.GL_VERTEX_SHADER, vertexShader)
@@ -235,6 +266,29 @@ class FilterPreviewView @JvmOverloads constructor(
             }
             return handle
         }
+
+        private data class ProgramHandles(
+            val position: Int,
+            val textureCoordinate: Int,
+            val texture: Int,
+            val mono: Int,
+            val texelSize: Int,
+            val rgbShift: Int,
+            val brightness: Int,
+            val exposure: Int,
+            val contrast: Int,
+            val highlights: Int,
+            val shadows: Int,
+            val saturation: Int,
+            val vibrance: Int,
+            val temperature: Int,
+            val tint: Int,
+            val sharpness: Int,
+            val clarity: Int,
+            val fade: Int,
+            val vignette: Int,
+            val grain: Int,
+        )
     }
 
     private companion object {
