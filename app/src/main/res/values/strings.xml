@@ -37,7 +37,8 @@
     <string name="filter_blockbuster">Blockbuster</string>
     <string name="filter_arthouse">Arthouse</string>
     <string name="filter_silver">Silver</string>
-    <string name="action_reset_adjust">Reset Adjust</string>
+    <string name="action_reset_adjust">Reset Selected Adjust</string>
+    <string name="action_reset_all_adjust">Reset All</string>
     <string name="category_popular">Popular</string>
     <string name="category_natural">Natural</string>
     <string name="category_film">Film</string>

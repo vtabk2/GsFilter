@@ -394,3 +394,46 @@ Status: DONE
 - Re-tapping the currently visible category now refocuses the first category containing the active filter when the active filter is outside the visible category.
 - The filter rail scrolls to the selected card when that card is present.
 - `:app:testDebugUnitTest :app:assembleDebug` passed after the refocus update.
+
+## Task: Update Adjust UI to icon rail
+
+Status: DONE
+
+### Requirements
+
+- Replace the vertical Adjust sliders with one active slider and a horizontal icon rail.
+- Keep labels in English.
+- Show a dot above each adjust icon when that value differs from default.
+- Keep existing adjust ranges and shader mapping.
+- Keep the fixed reset action.
+
+### Approach
+
+- Use the existing `AdjustControl` metadata as the source of truth.
+- Store the selected adjust control in `MainActivity` UI state.
+- Build adjust icon items dynamically from `AdjustControl.entries`.
+- Reuse one `SeekBar` and value label for the active adjust control.
+
+### Checklist
+
+- [x] Replace Adjust layout with reset/slider/value plus icon rail.
+- [x] Wire selected adjust control and value updates.
+- [x] Show changed dots per adjust control.
+- [x] Run unit tests and assemble debug.
+- [x] Retune Adjust text/icon colors for the no-background layout.
+- [x] Make the top reset icon reset only the selected adjust control.
+- [x] Add a bottom Reset All button for all adjust controls.
+
+### Notes
+
+- This changes only how Adjust controls are presented; it does not change adjust math.
+- Adjust now uses one active slider with reset, value, and horizontal icon controls.
+- Changed adjust controls show a blue dot above their icon.
+- `:app:testDebugUnitTest :app:assembleDebug` passed after the UI update.
+- Reopened to retune Adjust text/icon colors after removing the dark panel background.
+- Adjust colors now target the light screen background: primary text/icon dark, secondary labels gray, slider track light gray.
+- `:app:testDebugUnitTest :app:assembleDebug` passed after the color retune.
+- Reopened to split selected-control reset from reset-all behavior.
+- The top reset icon now resets only the selected adjust control.
+- Added a bottom `Reset All` button that resets all adjust controls.
+- `:app:testDebugUnitTest :app:assembleDebug` passed after the reset split.

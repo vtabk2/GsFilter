@@ -27,11 +27,14 @@ class MainActivity : ComponentActivity() {
     private val categoryChips = mutableMapOf<String, TextView>()
     private val filterCards = mutableMapOf<String, View>()
     private val adjustLabels = mutableMapOf<AdjustControl, TextView>()
-    private val adjustSeekBars = mutableMapOf<AdjustControl, SeekBar>()
+    private val adjustIcons = mutableMapOf<AdjustControl, ImageView>()
+    private val adjustDots = mutableMapOf<AdjustControl, View>()
     private var renderedCategoryId: String? = null
     private var renderedFilterThumbnailBitmap: Bitmap? = null
     private var scrolledSelectedCategoryId: String? = null
     private var scrolledSelectedFilterId: String? = null
+    private var selectedAdjustControl = AdjustControl.Brightness
+    private var lastAdjustments = Adjustments()
     private var renderedBitmap: Bitmap? = null
     private var isRenderingState = false
 
@@ -180,38 +183,92 @@ class MainActivity : ComponentActivity() {
     }
 
     private fun bindAdjustControls() {
-        AdjustControl.entries.forEach { control ->
-            val label = TextView(this).apply {
-                setTextColor(getColor(R.color.text_secondary))
+        binding.buttonResetAdjust.setOnClickListener {
+            viewModel.setAdjustment(
+                selectedAdjustControl,
+                selectedAdjustControl.valueIn(Adjustments()),
+            )
+        }
+        binding.buttonResetAllAdjust.setOnClickListener { viewModel.resetAdjustments() }
+        binding.adjustSeekBar.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
+            override fun onProgressChanged(view: SeekBar, progress: Int, fromUser: Boolean) {
+                if (fromUser && !isRenderingState) {
+                    viewModel.setAdjustment(selectedAdjustControl, selectedAdjustControl.valueFrom(progress))
+                }
+            }
+
+            override fun onStartTrackingTouch(view: SeekBar) = Unit
+
+            override fun onStopTrackingTouch(view: SeekBar) = Unit
+        })
+        AdjustControl.entries.forEachIndexed { index, control ->
+            binding.adjustContainer.addView(createAdjustControlItem(index, control))
+        }
+        renderAdjustments(lastAdjustments)
+    }
+
+    private fun createAdjustControlItem(index: Int, control: AdjustControl): View {
+        val spacing = resources.getDimensionPixelSize(R.dimen.item_spacing)
+        val itemWidth = resources.getDimensionPixelSize(R.dimen.adjust_item_width)
+        val itemMinHeight = resources.getDimensionPixelSize(R.dimen.adjust_item_min_height)
+        val dotSize = resources.getDimensionPixelSize(R.dimen.adjust_dot_size)
+        val itemGap = resources.getDimensionPixelSize(R.dimen.adjust_item_gap)
+        val iconSize = resources.getDimensionPixelSize(R.dimen.adjust_icon_size)
+        val label = TextView(this)
+        val icon = ImageView(this)
+        val dot = View(this)
+
+        adjustLabels[control] = label
+        adjustIcons[control] = icon
+        adjustDots[control] = dot
+
+        return LinearLayout(this).apply {
+            contentDescription = getString(control.labelRes)
+            gravity = Gravity.CENTER
+            isClickable = true
+            isFocusable = true
+            minimumHeight = itemMinHeight
+            orientation = LinearLayout.VERTICAL
+            setOnClickListener {
+                selectedAdjustControl = control
+                renderAdjustments(lastAdjustments)
+            }
+            layoutParams = LinearLayout.LayoutParams(
+                itemWidth,
+                LinearLayout.LayoutParams.WRAP_CONTENT,
+            ).apply {
+                if (index > 0) {
+                    marginStart = spacing
+                }
+            }
+
+            addView(dot.apply {
+                setBackgroundResource(R.drawable.bg_adjust_changed_dot)
+                visibility = View.INVISIBLE
+                layoutParams = LinearLayout.LayoutParams(dotSize, dotSize)
+            })
+            addView(icon.apply {
+                importantForAccessibility = View.IMPORTANT_FOR_ACCESSIBILITY_NO
+                setImageResource(control.iconRes)
+                layoutParams = LinearLayout.LayoutParams(iconSize, iconSize).apply {
+                    topMargin = itemGap
+                }
+            })
+            addView(label.apply {
+                ellipsize = TextUtils.TruncateAt.END
+                gravity = Gravity.CENTER
+                includeFontPadding = false
+                maxLines = 1
+                text = getString(control.labelRes)
+                textSize = 10f
                 layoutParams = LinearLayout.LayoutParams(
                     LinearLayout.LayoutParams.MATCH_PARENT,
                     LinearLayout.LayoutParams.WRAP_CONTENT,
                 ).apply {
-                    topMargin = resources.getDimensionPixelSize(R.dimen.item_spacing)
+                    topMargin = itemGap
                 }
-            }
-            val seekBar = SeekBar(this).apply {
-                max = control.progressMax
-                progress = control.progressFrom(control.valueIn(Adjustments()))
-                setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
-                    override fun onProgressChanged(view: SeekBar, progress: Int, fromUser: Boolean) {
-                        if (fromUser && !isRenderingState) {
-                            viewModel.setAdjustment(control, control.valueFrom(progress))
-                        }
-                    }
-
-                    override fun onStartTrackingTouch(view: SeekBar) = Unit
-
-                    override fun onStopTrackingTouch(view: SeekBar) = Unit
-                })
-            }
-
-            adjustLabels[control] = label
-            adjustSeekBars[control] = seekBar
-            binding.adjustContainer.addView(label)
-            binding.adjustContainer.addView(seekBar)
+            })
         }
-        binding.buttonResetAdjust.setOnClickListener { viewModel.resetAdjustments() }
     }
 
     private fun collectState() {
@@ -288,11 +345,20 @@ class MainActivity : ComponentActivity() {
     }
 
     private fun renderAdjustments(adjustments: Adjustments) {
-        val separator = getString(R.string.label_separator)
+        lastAdjustments = adjustments
+        val activeValue = selectedAdjustControl.valueIn(adjustments)
+        binding.adjustSeekBar.max = selectedAdjustControl.progressMax
+        binding.adjustSeekBar.progress = selectedAdjustControl.progressFrom(activeValue)
+        binding.adjustValueText.text = activeValue.toString()
+
+        val defaults = Adjustments()
         AdjustControl.entries.forEach { control ->
-            val value = control.valueIn(adjustments)
-            adjustSeekBars[control]?.progress = control.progressFrom(value)
-            adjustLabels[control]?.text = getString(control.labelRes) + separator + value
+            val isSelected = control == selectedAdjustControl
+            val textColor = getColor(if (isSelected) R.color.filter_selected else R.color.adjust_text_secondary)
+            adjustDots[control]?.visibility =
+                if (control.valueIn(adjustments) != control.valueIn(defaults)) View.VISIBLE else View.INVISIBLE
+            adjustIcons[control]?.setColorFilter(textColor)
+            adjustLabels[control]?.setTextColor(textColor)
         }
     }
 

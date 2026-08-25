@@ -4,23 +4,24 @@ import com.gsfilter.filter.Adjustments
 
 enum class AdjustControl(
     val labelRes: Int,
+    val iconRes: Int,
     val minValue: Int,
     val maxValue: Int,
 ) {
-    Brightness(R.string.brightness, -100, 100),
-    Exposure(R.string.exposure, -100, 100),
-    Contrast(R.string.contrast, -100, 100),
-    Highlights(R.string.highlights, -100, 100),
-    Shadows(R.string.shadows, -100, 100),
-    Saturation(R.string.saturation, -100, 100),
-    Vibrance(R.string.vibrance, -100, 100),
-    Temperature(R.string.temperature, -100, 100),
-    Tint(R.string.tint, -100, 100),
-    Sharpness(R.string.sharpness, 0, 100),
-    Clarity(R.string.clarity, -100, 100),
-    Fade(R.string.fade, 0, 100),
-    Vignette(R.string.vignette, 0, 100),
-    Grain(R.string.grain, 0, 100);
+    Brightness(R.string.brightness, R.drawable.ic_adjust_brightness, -100, 100),
+    Exposure(R.string.exposure, R.drawable.ic_adjust_exposure, -100, 100),
+    Contrast(R.string.contrast, R.drawable.ic_adjust_contrast, -100, 100),
+    Highlights(R.string.highlights, R.drawable.ic_adjust_highlights, -100, 100),
+    Shadows(R.string.shadows, R.drawable.ic_adjust_shadows, -100, 100),
+    Saturation(R.string.saturation, R.drawable.ic_adjust_saturation, -100, 100),
+    Vibrance(R.string.vibrance, R.drawable.ic_adjust_vibrance, -100, 100),
+    Temperature(R.string.temperature, R.drawable.ic_adjust_temperature, -100, 100),
+    Tint(R.string.tint, R.drawable.ic_adjust_tint, -100, 100),
+    Sharpness(R.string.sharpness, R.drawable.ic_adjust_sharpness, 0, 100),
+    Clarity(R.string.clarity, R.drawable.ic_adjust_clarity, -100, 100),
+    Fade(R.string.fade, R.drawable.ic_adjust_fade, 0, 100),
+    Vignette(R.string.vignette, R.drawable.ic_adjust_vignette, 0, 100),
+    Grain(R.string.grain, R.drawable.ic_adjust_grain, 0, 100);
 
     val progressMax: Int = maxValue - minValue
 
