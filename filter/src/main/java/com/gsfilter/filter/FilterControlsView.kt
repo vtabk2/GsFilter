@@ -4,8 +4,6 @@ import android.content.Context
 import android.content.res.TypedArray
 import android.graphics.Bitmap
 import android.graphics.Color
-import android.graphics.drawable.BitmapDrawable
-import android.graphics.drawable.ColorDrawable
 import android.os.Handler
 import android.os.Looper
 import android.text.TextUtils
@@ -18,6 +16,7 @@ import android.widget.HorizontalScrollView
 import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.TextView
+import androidx.core.graphics.drawable.toDrawable
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.ListAdapter
@@ -42,6 +41,7 @@ class FilterControlsView @JvmOverloads constructor(
     private var selectedFilter = catalog.defaultFilter
     private var thumbnailBitmap: Bitmap? = null
     private var thumbnailKey: String? = null
+    private var thumbnailGenerationId = 0
 
     var onCloseClick: (() -> Unit)? = null
     var onControlTabSelected: ((ControlTab) -> Unit)? = null
@@ -62,6 +62,7 @@ class FilterControlsView @JvmOverloads constructor(
     private val filterRecyclerView = RecyclerView(context).apply {
         layoutManager = LinearLayoutManager(context, RecyclerView.HORIZONTAL, false)
         adapter = filterAdapter
+        itemAnimator = null
         overScrollMode = OVER_SCROLL_NEVER
     }
     private val filterContent = LinearLayout(context).apply {
@@ -124,10 +125,24 @@ class FilterControlsView @JvmOverloads constructor(
         thumbnailBitmap: Bitmap?,
         thumbnailKey: String?,
     ) {
-        this.selectedCategory = catalog.categoryById(selectedCategory.id) ?: catalog.defaultCategory
-        this.selectedFilter = catalog.filterById(selectedFilter.id) ?: selectedFilter
+        val nextCategory = catalog.categoryById(selectedCategory.id) ?: catalog.defaultCategory
+        val nextFilter = catalog.filterById(selectedFilter.id) ?: selectedFilter
+        val nextThumbnailGenerationId = thumbnailBitmap?.generationId ?: 0
+        if (
+            this.selectedCategory == nextCategory &&
+            this.selectedFilter == nextFilter &&
+            this.thumbnailBitmap === thumbnailBitmap &&
+            this.thumbnailKey == thumbnailKey &&
+            this.thumbnailGenerationId == nextThumbnailGenerationId
+        ) {
+            return
+        }
+
+        this.selectedCategory = nextCategory
+        this.selectedFilter = nextFilter
         this.thumbnailBitmap = thumbnailBitmap
         this.thumbnailKey = thumbnailKey
+        this.thumbnailGenerationId = nextThumbnailGenerationId
         renderState()
     }
 
@@ -145,7 +160,7 @@ class FilterControlsView @JvmOverloads constructor(
                 isSelected = filter.id == this.selectedFilter.id,
                 thumbnailBitmap = thumbnailBitmap,
                 thumbnailKey = thumbnailKey,
-                thumbnailGenerationId = thumbnailBitmap?.generationId ?: 0,
+                thumbnailGenerationId = thumbnailGenerationId,
                 style = style,
             )
         }
@@ -177,7 +192,9 @@ class FilterControlsView @JvmOverloads constructor(
                 iconRippleRes = style.closeIconRes
                 style.iconPadding?.let { paddingRipple = it }
                 setOnClickListener { onCloseClick?.invoke() }
-                layoutParams = LayoutParams(chipMinHeight(), chipMinHeight())
+                layoutParams = LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT).apply {
+                    gravity = Gravity.CENTER_VERTICAL
+                }
             })
         }
 
@@ -186,6 +203,7 @@ class FilterControlsView @JvmOverloads constructor(
         filterContent.addView(
             LinearLayout(context).apply {
                 isBaselineAligned = false
+                gravity = Gravity.CENTER_VERTICAL
                 orientation = HORIZONTAL
                 layoutParams = LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT).apply {
                     topMargin = itemSpacing()
@@ -194,6 +212,7 @@ class FilterControlsView @JvmOverloads constructor(
                 addView(HorizontalScrollView(context).apply {
                     isHorizontalScrollBarEnabled = false
                     layoutParams = LayoutParams(0, LayoutParams.WRAP_CONTENT, 1f).apply {
+                        gravity = Gravity.CENTER_VERTICAL
                         marginStart = itemSpacing()
                     }
                     addView(categoryContainer)
@@ -224,7 +243,7 @@ class FilterControlsView @JvmOverloads constructor(
 
     private fun selectCategory(category: FilterCategory) {
         val selectedFilterCategory = catalog.categoryForFilter(selectedFilter)
-        selectedCategory =
+        val nextCategory =
             if (
                 selectedCategory.id == category.id &&
                 category.id !in selectedFilter.categoryIds &&
@@ -234,6 +253,11 @@ class FilterControlsView @JvmOverloads constructor(
             } else {
                 category
             }
+        if (selectedCategory.id == nextCategory.id) {
+            return
+        }
+
+        selectedCategory = nextCategory
         renderState()
         onCategorySelected?.invoke(selectedCategory)
     }
@@ -256,7 +280,7 @@ class FilterControlsView @JvmOverloads constructor(
             textSize = 14f
         }
         val indicator = View(context).apply {
-            background = ColorDrawable(style.tabIndicatorColor)
+            background = style.tabIndicatorColor.toDrawable()
             visibility = if (style.showTabIndicator && isSelected) VISIBLE else INVISIBLE
             layoutParams = LayoutParams(LayoutParams.MATCH_PARENT, style.tabIndicatorHeight)
         }
@@ -293,7 +317,9 @@ class FilterControlsView @JvmOverloads constructor(
             contentDescription = context.getString(R.string.gs_action_original)
             iconRippleRes = style.noneIconRes
             style.iconPadding?.let { paddingRipple = it }
-            layoutParams = LayoutParams(chipMinHeight(), chipMinHeight())
+            layoutParams = LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT).apply {
+                gravity = Gravity.CENTER_VERTICAL
+            }
         }
 
     private fun createCategoryChip(index: Int, text: String, onClick: () -> Unit): TextView =
@@ -544,7 +570,7 @@ class FilterControlsView @JvmOverloads constructor(
 
                 Glide.with(image)
                     .load(FilterThumbnailModel(sourceKey, source, item.filter))
-                    .placeholder(BitmapDrawable(itemView.resources, source))
+                    .placeholder(source.toDrawable(itemView.resources))
                     .diskCacheStrategy(DiskCacheStrategy.RESOURCE)
                     .dontAnimate()
                     .into(image)

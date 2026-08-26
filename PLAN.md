@@ -855,3 +855,66 @@ Status: DONE
 - Reopened to keep icon padding configurable only when `FilterControlsView` declares an explicit padding attr.
 - Added optional `gsFilterIconPadding`; omitted attr keeps `RippleImageView` default padding.
 - `:filter:testDebugUnitTest :app:testDebugUnitTest :app:assembleDebug` passed after the optional padding attr update.
+
+## Task: Reduce filter category switch flicker
+
+Status: DONE
+
+### Requirements
+
+- Switching filter category should feel stable and avoid visible flashing.
+- Keep filter thumbnails Glide-backed.
+- Preserve current category and filter selection behavior.
+
+### Checklist
+
+- [x] Disable unnecessary RecyclerView item animations for the filter rail.
+- [x] Skip duplicate `FilterControlsView` state renders.
+- [x] Run unit tests and assemble debug.
+
+### Notes
+
+- Category switching no longer runs RecyclerView default item animations.
+- Duplicate host state feedback no longer submits the same filter rail list again.
+- `:filter:testDebugUnitTest :app:testDebugUnitTest :app:assembleDebug` passed after the flicker reduction.
+- Removed redundant `removeBlink()` call because the category rail needs `itemAnimator = null` to stop add/remove animations, not only change animations.
+
+## Task: Let filter none and close buttons wrap content
+
+Status: DONE
+
+### Requirements
+
+- Filter none/original and close buttons should use wrap content sizing.
+- Keep `RippleImageView` default measurement and padding behavior.
+
+### Checklist
+
+- [x] Change filter close button layout params to wrap content.
+- [x] Change filter none/original button layout params to wrap content.
+- [x] Run unit tests and assemble debug.
+
+### Notes
+
+- Close and none/original `RippleImageView` buttons now use `WRAP_CONTENT` for width and height.
+- `:filter:testDebugUnitTest :app:testDebugUnitTest :app:assembleDebug` passed after the wrap-content update.
+
+## Task: Center wrap-content filter action layouts
+
+Status: DONE
+
+### Requirements
+
+- Center dependent rows/layout params after changing filter close and none/original buttons to wrap content.
+- Keep existing button behavior and default `RippleImageView` sizing.
+
+### Checklist
+
+- [x] Center the filter header close button layout params.
+- [x] Center the none/original row and related layout params.
+- [x] Run unit tests and assemble debug.
+
+### Notes
+
+- Close and none/original buttons now keep wrap-content sizing while their parent/dependent row layout params are centered vertically.
+- `:filter:testDebugUnitTest :app:testDebugUnitTest :app:assembleDebug` passed after the centering update.
