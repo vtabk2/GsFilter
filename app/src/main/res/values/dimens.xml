@@ -13,7 +13,6 @@
     <dimen name="filter_thumbnail_label_height">26dp</dimen>
     <dimen name="filter_thumbnail_label_padding">4dp</dimen>
     <dimen name="adjust_panel_padding">8dp</dimen>
-    <dimen name="adjust_reset_size">36dp</dimen>
     <dimen name="adjust_icon_size">24dp</dimen>
     <dimen name="adjust_dot_size">5dp</dimen>
     <dimen name="adjust_item_gap">2dp</dimen>

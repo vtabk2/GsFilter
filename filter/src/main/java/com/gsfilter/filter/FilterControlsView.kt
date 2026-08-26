@@ -306,9 +306,13 @@ class FilterControlsView @JvmOverloads constructor(
 
     private fun renderTab(tab: LinearLayout, isSelected: Boolean) {
         tab.isSelected = isSelected
-        tab.setBackgroundResource(if (isSelected) style.selectedChipBackgroundRes else style.chipBackgroundRes)
+        if (style.useTabBackground) {
+            tab.setBackgroundResource(if (isSelected) style.selectedTabBackgroundRes else style.tabBackgroundRes)
+        } else {
+            tab.background = null
+        }
         val parts = tab.tag as TabParts
-        parts.label.setTextColor(if (isSelected) style.selectedTextColor else style.textColor)
+        parts.label.setTextColor(if (isSelected) style.selectedTabTextColor else style.tabTextColor)
         parts.indicator.visibility = if (style.showTabIndicator && isSelected) VISIBLE else INVISIBLE
     }
 
@@ -382,8 +386,13 @@ class FilterControlsView @JvmOverloads constructor(
     private data class FilterControlsStyle(
         val textColor: Int,
         val selectedTextColor: Int,
+        val tabTextColor: Int,
+        val selectedTabTextColor: Int,
         val chipBackgroundRes: Int,
         val selectedChipBackgroundRes: Int,
+        val tabBackgroundRes: Int,
+        val selectedTabBackgroundRes: Int,
+        val useTabBackground: Boolean,
         val cardBackgroundRes: Int,
         val selectedCardBackgroundRes: Int,
         val labelBackgroundRes: Int,
@@ -410,6 +419,24 @@ class FilterControlsView @JvmOverloads constructor(
                 R.styleable.FilterControlsView_gsFilterSelectedTextColor,
                 Color.WHITE,
             ),
+            tabTextColor = array.getColor(
+                R.styleable.FilterControlsView_gsFilterTabTextColor,
+                array.getColor(
+                    R.styleable.FilterControlsView_gsFilterTextColor,
+                    context.getColor(R.color.gs_text_secondary),
+                ),
+            ),
+            selectedTabTextColor = array.getColor(
+                R.styleable.FilterControlsView_gsFilterSelectedTabTextColor,
+                if (array.getBoolean(R.styleable.FilterControlsView_gsFilterUseTabBackground, true)) {
+                    array.getColor(R.styleable.FilterControlsView_gsFilterSelectedTextColor, Color.WHITE)
+                } else {
+                    array.getColor(
+                        R.styleable.FilterControlsView_gsFilterSelectedColor,
+                        context.getColor(R.color.gs_filter_selected),
+                    )
+                },
+            ),
             chipBackgroundRes = array.getResourceId(
                 R.styleable.FilterControlsView_gsFilterChipBackground,
                 R.drawable.gs_bg_filter_chip,
@@ -418,6 +445,21 @@ class FilterControlsView @JvmOverloads constructor(
                 R.styleable.FilterControlsView_gsFilterSelectedChipBackground,
                 R.drawable.gs_bg_filter_chip_selected,
             ),
+            tabBackgroundRes = array.getResourceId(
+                R.styleable.FilterControlsView_gsFilterTabBackground,
+                array.getResourceId(
+                    R.styleable.FilterControlsView_gsFilterChipBackground,
+                    R.drawable.gs_bg_filter_chip,
+                ),
+            ),
+            selectedTabBackgroundRes = array.getResourceId(
+                R.styleable.FilterControlsView_gsFilterSelectedTabBackground,
+                array.getResourceId(
+                    R.styleable.FilterControlsView_gsFilterSelectedChipBackground,
+                    R.drawable.gs_bg_filter_chip_selected,
+                ),
+            ),
+            useTabBackground = array.getBoolean(R.styleable.FilterControlsView_gsFilterUseTabBackground, true),
             cardBackgroundRes = array.getResourceId(
                 R.styleable.FilterControlsView_gsFilterCardBackground,
                 R.drawable.gs_bg_filter_card,

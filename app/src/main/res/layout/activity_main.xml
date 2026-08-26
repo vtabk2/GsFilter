@@ -98,9 +98,12 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="@dimen/section_spacing"
             android:orientation="vertical"
+            app:gsFilterSelectedTabTextColor="@color/filter_selected"
             app:gsFilterShowTabIndicator="true"
             app:gsFilterTabIndicatorColor="@color/filter_selected"
-            app:gsFilterTextColor="@color/text_primary"/>
+            app:gsFilterTabTextColor="@color/text_primary"
+            app:gsFilterTextColor="@color/text_primary"
+            app:gsFilterUseTabBackground="false"/>
 
         <LinearLayout
             android:id="@+id/adjustPanel"
@@ -120,8 +123,8 @@
 
                 <com.core.gscore.view.RippleImageView
                     android:id="@+id/buttonResetAdjust"
-                    android:layout_width="@dimen/adjust_reset_size"
-                    android:layout_height="@dimen/adjust_reset_size"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
                     android:contentDescription="@string/action_reset_adjust"
                     app:riv_icon_ripple="@drawable/ic_adjust_reset"/>
 

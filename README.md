@@ -209,11 +209,16 @@ Available XML attributes:
 
 | Attribute | Purpose |
 | --- | --- |
-| `gsFilterTextColor` | Normal tab/category/icon color |
-| `gsFilterSelectedTextColor` | Selected tab/category/icon color |
+| `gsFilterTextColor` | Normal category/icon color and tab text fallback |
+| `gsFilterSelectedTextColor` | Selected category/icon color and selected tab fallback when tab backgrounds are enabled |
+| `gsFilterTabTextColor` | Normal Filter/Adjust tab text color; defaults to `gsFilterTextColor` |
+| `gsFilterSelectedTabTextColor` | Selected Filter/Adjust tab text color; defaults to `gsFilterSelectedTextColor`, or `gsFilterSelectedColor` when tab backgrounds are disabled |
 | `gsFilterSelectedColor` | Default selected accent fallback |
-| `gsFilterChipBackground` | Normal tab/category/original background |
-| `gsFilterSelectedChipBackground` | Selected tab/category/original background |
+| `gsFilterChipBackground` | Normal category chip background |
+| `gsFilterSelectedChipBackground` | Selected category chip background |
+| `gsFilterTabBackground` | Normal Filter/Adjust tab background; defaults to `gsFilterChipBackground` |
+| `gsFilterSelectedTabBackground` | Selected Filter/Adjust tab background; defaults to `gsFilterSelectedChipBackground` |
+| `gsFilterUseTabBackground` | Set `false` to render Filter/Adjust tabs without a background |
 | `gsFilterCardBackground` | Normal filter thumbnail card background |
 | `gsFilterSelectedCardBackground` | Selected filter thumbnail card background |
 | `gsFilterLabelBackground` | Thumbnail label background |

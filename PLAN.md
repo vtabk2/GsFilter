@@ -918,3 +918,72 @@ Status: DONE
 
 - Close and none/original buttons now keep wrap-content sizing while their parent/dependent row layout params are centered vertically.
 - `:filter:testDebugUnitTest :app:testDebugUnitTest :app:assembleDebug` passed after the centering update.
+
+## Task: Split tab background styling from category chips
+
+Status: DONE
+
+### Requirements
+
+- Filter/Adjust tabs should have their own background attrs.
+- Host should be able to disable Filter/Adjust tab backgrounds through an attr.
+- Category chips should keep using chip background attrs.
+- Preserve existing appearance when the new tab attrs are not set.
+
+### Checklist
+
+- [x] Add separate normal/selected tab background attrs.
+- [x] Add an attr to disable tab backgrounds.
+- [x] Apply the new attrs in tab rendering.
+- [x] Document the attrs and run verification.
+
+### Notes
+
+- Added `gsFilterTabBackground`, `gsFilterSelectedTabBackground`, and `gsFilterUseTabBackground`.
+- Tab backgrounds default to the existing chip backgrounds unless overridden.
+- Setting `gsFilterUseTabBackground="false"` removes Filter/Adjust tab backgrounds while leaving category chip backgrounds intact.
+- `:filter:testDebugUnitTest :app:testDebugUnitTest :app:assembleDebug` passed after splitting tab background attrs.
+
+## Task: Split tab text color styling from category chips
+
+Status: DONE
+
+### Requirements
+
+- Filter/Adjust tab text colors should be configurable separately from category chips.
+- Disabling tab backgrounds should not leave selected tab text white on a light background by default.
+- Existing hosts should keep the same look when tab backgrounds are enabled.
+
+### Checklist
+
+- [x] Add separate normal/selected tab text color attrs.
+- [x] Apply the new tab text colors in tab rendering.
+- [x] Use a non-white selected tab fallback when tab backgrounds are disabled.
+- [x] Document the attrs and run verification.
+
+### Notes
+
+- Added `gsFilterTabTextColor` and `gsFilterSelectedTabTextColor`.
+- Tab text defaults to the existing global text attrs, but selected tab text falls back to `gsFilterSelectedColor` when tab backgrounds are disabled.
+- `:filter:testDebugUnitTest :app:testDebugUnitTest :app:assembleDebug` passed after splitting tab text color attrs.
+
+## Task: Let adjust reset icon wrap content
+
+Status: DONE
+
+### Requirements
+
+- The adjust reset `RippleImageView` should not be forced to a large fixed size.
+- Keep existing reset behavior and default `RippleImageView` padding.
+
+### Checklist
+
+- [x] Change adjust reset button width/height to wrap content.
+- [x] Remove the now-unused fixed reset size dimen.
+- [x] Run unit tests and assemble debug.
+
+### Notes
+
+- The reset adjust `RippleImageView` was large because it was forced to `36dp x 36dp`.
+- It now uses `wrap_content` so `RippleImageView` default sizing/padding controls its measured size.
+- `:filter:testDebugUnitTest :app:testDebugUnitTest :app:assembleDebug` passed after the reset icon size update.
