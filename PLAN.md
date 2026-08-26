@@ -495,7 +495,7 @@ Status: DONE
 
 ## Task: Optimize filter thumbnails and adjust dragging
 
-Status: SUPERSEDED
+Status: DONE
 
 ### Requirements
 
@@ -511,15 +511,17 @@ Status: SUPERSEDED
 
 ### Checklist
 
-- [ ] Add thumbnail bitmap to filter UI state.
-- [ ] Generate a small thumbnail after sample decode.
-- [ ] Use the thumbnail for filter cards.
-- [ ] Coalesce pending filter preview params.
-- [ ] Run unit tests and assemble debug.
+- [x] Add thumbnail bitmap to filter UI state.
+- [x] Generate a small thumbnail after sample decode.
+- [x] Use the thumbnail for filter cards.
+- [x] Coalesce pending filter preview params.
+- [x] Run unit tests and assemble debug.
 
 ### Notes
 
 - Superseded by the module extraction request before source changes were made.
+- Reopened after module extraction; continuing only the thumbnail and render coalescing work.
+- `:filter:testDebugUnitTest :app:testDebugUnitTest :app:assembleDebug` passed after this optimization.
 
 ## Task: Extract filter code into library module
 
@@ -608,3 +610,89 @@ Status: DONE
 - Renamed filter module strings from generic names to `gs_*`.
 - Updated `FilterCatalog`, `AdjustControl`, and the sample layout content description to use the prefixed strings.
 - `:filter:testDebugUnitTest :app:testDebugUnitTest :app:assembleDebug` passed after the string prefix update.
+
+## Task: Cache filtered rail thumbnails
+
+Status: DONE
+
+### Requirements
+
+- Show filtered sample thumbnails in the filter rail.
+- Cache generated thumbnails so returning to a category does not recompute them.
+- Avoid Glide/GPUImage and new dependencies.
+
+### Approach
+
+- Add a small in-memory thumbnail cache in the `:filter` module.
+- Render filter recipes against the existing small thumbnail bitmap.
+- Load filtered thumbnails off the main thread in the sample app.
+
+### Checklist
+
+- [x] Add filtered thumbnail renderer/cache.
+- [x] Use cached filtered thumbnails in filter cards.
+- [x] Add focused unit coverage for thumbnail color logic.
+- [x] Run unit tests and assemble debug.
+
+### Notes
+
+- Based on the `love-frame` Glide model idea, but kept as a lightweight library cache for this shader-based module.
+- Cache keys use a stable source key so a previously selected image can reuse its filter rail thumbnails when selected again.
+- `:filter:testDebugUnitTest :app:testDebugUnitTest :app:assembleDebug` passed after this cache work.
+
+## Task: Load filtered rail thumbnails with Glide
+
+Status: DONE
+
+### Requirements
+
+- Use Glide to load and cache filtered sample thumbnails in the filter rail.
+- Keep cache keys stable across switching images and switching back.
+- Remove manual Activity coroutine/cache plumbing for thumbnail loading.
+
+### Approach
+
+- Add Glide to the sample app module.
+- Register a small custom Glide `ModelLoader` through `AppGlideModule`.
+- Keep the filter thumbnail render logic in the `:filter` library and let Glide own loading/caching.
+
+### Checklist
+
+- [x] Add Glide dependency.
+- [x] Register filtered thumbnail loading through `AppGlideModule`.
+- [x] Replace manual thumbnail cache usage with Glide model loading.
+- [x] Keep stable source keys for reusable thumbnail cache entries.
+- [x] Run unit tests and assemble debug.
+
+### Notes
+
+- This follows the `love-frame` approach more closely while avoiding GPUImage in this module.
+- Added `GsFilterGlideModule` so Glide registers filtered thumbnail loading during app initialization.
+- `:filter:testDebugUnitTest :app:testDebugUnitTest :app:assembleDebug` passed after the Glide integration.
+
+## Task: Move Glide thumbnail loader into filter module
+
+Status: DONE
+
+### Requirements
+
+- Keep reusable filtered thumbnail Glide model/loader in `:filter`.
+- Keep `AppGlideModule` in the app module as the host registration point.
+- Preserve current filter rail behavior.
+
+### Approach
+
+- Move `FilterThumbnailModel` and `FilterThumbnailModelLoader` into `:filter`.
+- Add Glide as a compile-time dependency for `:filter`.
+- Update app imports and Glide registration.
+
+### Checklist
+
+- [x] Move thumbnail Glide model/loader into `:filter`.
+- [x] Update app imports.
+- [x] Run unit tests and assemble debug.
+
+### Notes
+
+- `AppGlideModule` stays in `:app`; reusable loader code moves to `:filter`.
+- `:filter:testDebugUnitTest :app:testDebugUnitTest :app:assembleDebug` passed after moving the loader.

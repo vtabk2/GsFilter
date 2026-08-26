@@ -19,6 +19,8 @@ class FilterPreviewView @JvmOverloads constructor(
 
     private val filterRenderer = FilterRenderer()
     private var lastFilterParams: ShaderFilterParams? = null
+    private var pendingFilterParams: ShaderFilterParams? = null
+    private var isFilterRenderPosted = false
 
     init {
         setEGLContextClientVersion(2)
@@ -41,9 +43,22 @@ class FilterPreviewView @JvmOverloads constructor(
         }
 
         lastFilterParams = params
-        queueEvent {
-            filterRenderer.setFilterParams(params)
-            requestRender()
+        pendingFilterParams = params
+        if (isFilterRenderPosted) {
+            return
+        }
+
+        isFilterRenderPosted = true
+        postOnAnimation {
+            val nextParams = pendingFilterParams
+            pendingFilterParams = null
+            isFilterRenderPosted = false
+            if (nextParams != null) {
+                queueEvent {
+                    filterRenderer.setFilterParams(nextParams)
+                    requestRender()
+                }
+            }
         }
     }
 

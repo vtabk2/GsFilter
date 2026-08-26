@@ -11,6 +11,7 @@ import com.gsfilter.filter.FilterCategory
 import com.gsfilter.filter.FilterCatalog
 import com.gsfilter.filter.FilterOption
 import java.io.IOException
+import kotlin.math.roundToInt
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -18,6 +19,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import androidx.core.graphics.scale
 
 class FilterViewModel(application: Application) : AndroidViewModel(application) {
 
@@ -62,15 +64,20 @@ class FilterViewModel(application: Application) : AndroidViewModel(application) 
         viewModelScope.launch {
             _state.update { it.copy(isLoading = true, error = null) }
             try {
-                val bitmap = withContext(Dispatchers.IO) { decodeSampleBitmap() }
+                val (bitmap, thumbnail) = withContext(Dispatchers.IO) {
+                    val bitmap = decodeSampleBitmap()
+                    bitmap to bitmap.scaledToMaxEdge(FILTER_THUMBNAIL_MAX_EDGE)
+                }
                 _state.update {
                     it.copy(
                         sourceBitmap = bitmap,
+                        filterThumbnailBitmap = thumbnail,
+                        filterThumbnailKey = SAMPLE_ASSET,
                         isLoading = false,
                         error = null,
                     )
                 }
-            } catch (error: IOException) {
+            } catch (_: IOException) {
                 _state.update {
                     it.copy(isLoading = false, error = FilterError.AssetLoadFailed)
                 }
@@ -92,7 +99,20 @@ class FilterViewModel(application: Application) : AndroidViewModel(application) 
         }
     }
 
+    private fun Bitmap.scaledToMaxEdge(maxEdge: Int): Bitmap {
+        val longestEdge = maxOf(width, height)
+        if (longestEdge <= maxEdge) {
+            return this
+        }
+
+        val scale = maxEdge.toFloat() / longestEdge
+        val targetWidth = (width * scale).roundToInt().coerceAtLeast(1)
+        val targetHeight = (height * scale).roundToInt().coerceAtLeast(1)
+        return this.scale(targetWidth, targetHeight)
+    }
+
     private companion object {
         const val SAMPLE_ASSET = "sample.jpg"
+        const val FILTER_THUMBNAIL_MAX_EDGE = 256
     }
 }

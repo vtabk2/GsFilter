@@ -1,6 +1,7 @@
 package com.gsfilter
 
 import android.graphics.Bitmap
+import android.graphics.drawable.BitmapDrawable
 import android.os.Bundle
 import android.text.TextUtils
 import android.view.Gravity
@@ -16,10 +17,14 @@ import androidx.core.view.isVisible
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
+import com.bumptech.glide.Glide
+import com.bumptech.glide.load.engine.DiskCacheStrategy
 import com.gsfilter.databinding.ActivityMainBinding
 import com.gsfilter.filter.Adjustments
 import com.gsfilter.filter.AdjustControl
 import com.gsfilter.filter.FilterCatalog
+import com.gsfilter.filter.FilterOption
+import com.gsfilter.filter.glide.FilterThumbnailModel
 import kotlinx.coroutines.launch
 
 class MainActivity : ComponentActivity() {
@@ -33,6 +38,7 @@ class MainActivity : ComponentActivity() {
     private val adjustDots = mutableMapOf<AdjustControl, View>()
     private var renderedCategoryId: String? = null
     private var renderedFilterThumbnailBitmap: Bitmap? = null
+    private var renderedFilterThumbnailKey: String? = null
     private var scrolledSelectedCategoryId: String? = null
     private var scrolledSelectedFilterId: String? = null
     private var selectedAdjustControl = AdjustControl.Brightness
@@ -105,24 +111,30 @@ class MainActivity : ComponentActivity() {
         }
     }
 
-    private fun renderFilterControls(categoryId: String, sourceBitmap: Bitmap?) {
-        if (renderedCategoryId == categoryId && renderedFilterThumbnailBitmap === sourceBitmap) {
+    private fun renderFilterControls(categoryId: String, thumbnailBitmap: Bitmap?, thumbnailKey: String?) {
+        if (
+            renderedCategoryId == categoryId &&
+            renderedFilterThumbnailBitmap === thumbnailBitmap &&
+            renderedFilterThumbnailKey == thumbnailKey
+        ) {
             return
         }
 
         renderedCategoryId = categoryId
-        renderedFilterThumbnailBitmap = sourceBitmap
+        renderedFilterThumbnailBitmap = thumbnailBitmap
+        renderedFilterThumbnailKey = thumbnailKey
         filterCards.clear()
         binding.filterContainer.removeAllViews()
         FilterCatalog.filtersForCategory(categoryId).forEachIndexed { index, filter ->
             val card = createFilterCard(
                 index = index,
                 text = getString(filter.nameRes),
-                thumbnail = sourceBitmap,
+                thumbnail = thumbnailBitmap,
                 onClick = { viewModel.selectFilter(filter) },
             )
-            filterCards[filter.id] = card
-            binding.filterContainer.addView(card)
+            filterCards[filter.id] = card.root
+            binding.filterContainer.addView(card.root)
+            loadFilterThumbnail(card.image, thumbnailBitmap, thumbnailKey, filter)
         }
     }
 
@@ -163,14 +175,25 @@ class MainActivity : ComponentActivity() {
         text: String,
         thumbnail: Bitmap?,
         onClick: () -> Unit,
-    ): View {
+    ): FilterCard {
         val spacing = resources.getDimensionPixelSize(R.dimen.item_spacing)
         val width = resources.getDimensionPixelSize(R.dimen.filter_thumbnail_width)
         val height = resources.getDimensionPixelSize(R.dimen.filter_thumbnail_height)
         val inset = resources.getDimensionPixelSize(R.dimen.filter_thumbnail_inset)
         val labelHeight = resources.getDimensionPixelSize(R.dimen.filter_thumbnail_label_height)
         val labelPadding = resources.getDimensionPixelSize(R.dimen.filter_thumbnail_label_padding)
-        return FrameLayout(this).apply {
+        val image = ImageView(this).apply {
+            setImageBitmap(thumbnail)
+            scaleType = ImageView.ScaleType.CENTER_CROP
+            importantForAccessibility = View.IMPORTANT_FOR_ACCESSIBILITY_NO
+            layoutParams = FrameLayout.LayoutParams(
+                FrameLayout.LayoutParams.MATCH_PARENT,
+                FrameLayout.LayoutParams.MATCH_PARENT,
+            ).apply {
+                setMargins(inset, inset, inset, inset)
+            }
+        }
+        val root = FrameLayout(this).apply {
             setBackgroundResource(R.drawable.bg_filter_card)
             isClickable = true
             isFocusable = true
@@ -180,17 +203,7 @@ class MainActivity : ComponentActivity() {
                     marginStart = spacing
                 }
             }
-            addView(ImageView(this@MainActivity).apply {
-                setImageBitmap(thumbnail)
-                scaleType = ImageView.ScaleType.CENTER_CROP
-                importantForAccessibility = View.IMPORTANT_FOR_ACCESSIBILITY_NO
-                layoutParams = FrameLayout.LayoutParams(
-                    FrameLayout.LayoutParams.MATCH_PARENT,
-                    FrameLayout.LayoutParams.MATCH_PARENT,
-                ).apply {
-                    setMargins(inset, inset, inset, inset)
-                }
-            })
+            addView(image)
             addView(TextView(this@MainActivity).apply {
                 this.text = text
                 ellipsize = TextUtils.TruncateAt.END
@@ -210,6 +223,27 @@ class MainActivity : ComponentActivity() {
                 }
             })
         }
+        return FilterCard(root, image)
+    }
+
+    private fun loadFilterThumbnail(
+        image: ImageView,
+        source: Bitmap?,
+        sourceKey: String?,
+        filter: FilterOption,
+    ) {
+        if (source == null || sourceKey == null) {
+            Glide.with(image).clear(image)
+            image.setImageBitmap(source)
+            return
+        }
+
+        Glide.with(image)
+            .load(FilterThumbnailModel(sourceKey, source, filter))
+            .placeholder(BitmapDrawable(resources, source))
+            .diskCacheStrategy(DiskCacheStrategy.RESOURCE)
+            .dontAnimate()
+            .into(image)
     }
 
     private fun bindAdjustControls() {
@@ -322,7 +356,7 @@ class MainActivity : ComponentActivity() {
             recipe = state.selectedFilter.recipe,
             adjustments = state.adjustments,
         )
-        renderFilterControls(state.selectedCategory.id, state.sourceBitmap)
+        renderFilterControls(state.selectedCategory.id, state.filterThumbnailBitmap, state.filterThumbnailKey)
         renderOriginalAction(state)
         categoryChips.forEach { (id, chip) ->
             val isSelected = id == state.selectedCategory.id
@@ -400,5 +434,10 @@ class MainActivity : ComponentActivity() {
         Filters,
         Adjust,
     }
+
+    private data class FilterCard(
+        val root: View,
+        val image: ImageView,
+    )
 
 }
