@@ -726,3 +726,61 @@ Status: DONE
 - The view owns filter/category UI rendering; the host app owns close behavior and ViewModel updates through callbacks.
 - Added `FilterControlsView` in `:filter` with callbacks for close, filter/adjust tab selection, category selection, and filter selection.
 - `:filter:testDebugUnitTest :app:testDebugUnitTest :app:assembleDebug` passed after wiring the reusable view.
+
+## Task: Make filter controls styling reusable
+
+Status: DONE
+
+### Requirements
+
+- Allow host apps to customize `FilterControlsView` colors and drawables from XML.
+- Support tab indicator styling without changing library Kotlin code.
+- Let `FilterControlsView` render from a reusable filter pack instead of only the built-in catalog.
+- Allow loading a filter pack JSON file from host app assets.
+- Cancel pending view-owned JSON loads when the view detaches.
+- Keep existing sample appearance by default.
+
+### Approach
+
+- Add `FilterControlsView` custom attributes in `:filter`.
+- Read style values once during view construction.
+- Replace hardcoded colors/drawables with resolved style values.
+- Add a small `FilterPack` model plus JSON parser in `:filter`.
+- Keep built-in filters as the default pack and let hosts override it.
+
+### Checklist
+
+- [x] Add custom style attributes.
+- [x] Apply attrs in `FilterControlsView`.
+- [x] Expose tab indicator configuration.
+- [x] Add reusable filter pack and JSON parsing.
+- [x] Make `FilterControlsView` render from the active pack.
+- [x] Cancel pending JSON loads on detach.
+- [x] Run unit tests and assemble debug.
+
+### Notes
+
+- Keep this minimal: style attrs only for the existing UI surface, no custom layout provider yet.
+- Added a test-only `org.json` dependency because Android's local unit test jar does not implement `JSONObject`.
+- `:filter:testDebugUnitTest :app:testDebugUnitTest :app:assembleDebug` passed after the reusable catalog update.
+
+## Task: Document reusable filter library usage
+
+Status: DONE
+
+### Requirements
+
+- Add practical README details for the reusable `:filter` module.
+- Cover setup, preview, controls, JSON filter packs, styling, and thumbnail caching.
+- Keep the documentation concise enough to maintain.
+
+### Checklist
+
+- [x] Document module setup and Glide registration.
+- [x] Document `FilterPreviewView` and `FilterControlsView` usage.
+- [x] Document JSON catalog schema and style attributes.
+- [x] Run a lightweight verification.
+
+### Notes
+
+- README now documents reusable module setup, JSON filter packs, style attrs, callbacks, lifecycle ownership, and thumbnail cache keys.

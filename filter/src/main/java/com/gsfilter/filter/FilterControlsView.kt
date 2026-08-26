@@ -4,6 +4,10 @@ import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.Color
 import android.graphics.drawable.BitmapDrawable
+import android.graphics.drawable.ColorDrawable
+import android.graphics.drawable.Drawable
+import android.os.Handler
+import android.os.Looper
 import android.text.TextUtils
 import android.util.AttributeSet
 import android.view.Gravity
@@ -22,26 +26,39 @@ import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.engine.DiskCacheStrategy
 import com.gsfilter.filter.glide.FilterThumbnailModel
+import java.io.IOException
+import java.util.concurrent.Executors
 
 class FilterControlsView @JvmOverloads constructor(
     context: Context,
     attrs: AttributeSet? = null,
 ) : LinearLayout(context, attrs) {
 
+    private val style = FilterControlsStyle(context, attrs)
+    private val mainHandler = Handler(Looper.getMainLooper())
+    private var catalogLoadVersion = 0
+    private var catalog = FilterCatalog.pack
+    private var selectedCategory = catalog.defaultCategory
+    private var selectedFilter = catalog.defaultFilter
+    private var thumbnailBitmap: Bitmap? = null
+    private var thumbnailKey: String? = null
+
     var onCloseClick: (() -> Unit)? = null
     var onControlTabSelected: ((ControlTab) -> Unit)? = null
     var onCategorySelected: ((FilterCategory) -> Unit)? = null
     var onFilterSelected: ((FilterOption) -> Unit)? = null
+    var onCatalogLoaded: ((FilterPack) -> Unit)? = null
+    var onCatalogLoadFailed: ((Throwable) -> Unit)? = null
 
     private val categoryChips = mutableMapOf<String, TextView>()
-    private val tabFilter = createTab(R.string.gs_section_filter, true)
-    private val tabAdjust = createTab(R.string.gs_section_adjust, false)
+    private val tabFilter = createTab(R.string.gs_section_filter, ControlTab.Filter, true)
+    private val tabAdjust = createTab(R.string.gs_section_adjust, ControlTab.Adjust, false)
     private val buttonOriginalFilter = createOriginalButton()
     private val categoryContainer = LinearLayout(context).apply {
         isBaselineAligned = false
         orientation = HORIZONTAL
     }
-    private val filterAdapter = FilterAdapter { onFilterSelected?.invoke(it) }
+    private val filterAdapter = FilterAdapter(::selectFilter)
     private val filterRecyclerView = RecyclerView(context).apply {
         layoutManager = LinearLayoutManager(context, RecyclerView.HORIZONTAL, false)
         adapter = filterAdapter
@@ -55,8 +72,10 @@ class FilterControlsView @JvmOverloads constructor(
         orientation = VERTICAL
         addView(createHeader())
         addView(filterContent)
-        bindCategories()
+        bindFilterContent()
+        setCatalog(catalog)
         setSelectedTab(ControlTab.Filter)
+        style.catalogAssetPath?.let(::loadCatalogFromAssets)
     }
 
     fun setSelectedTab(tab: ControlTab) {
@@ -66,25 +85,72 @@ class FilterControlsView @JvmOverloads constructor(
         filterContent.visibility = if (isFilterSelected) VISIBLE else GONE
     }
 
+    fun setCatalog(catalog: FilterPack) {
+        this.catalog = catalog
+        selectedCategory = catalog.categoryById(selectedCategory.id) ?: catalog.defaultCategory
+        selectedFilter = catalog.filterById(selectedFilter.id) ?: catalog.defaultFilter
+        renderCategoryChips()
+        renderState()
+    }
+
+    fun loadCatalogFromAssets(assetPath: String) {
+        val loadVersion = ++catalogLoadVersion
+        CATALOG_EXECUTOR.execute {
+            val result = runCatching {
+                context.applicationContext.assets.open(assetPath).use { input ->
+                    FilterPackJson.parse(input.bufferedReader().readText())
+                }
+            }.recoverCatching { error ->
+                throw IOException("Cannot load filter catalog asset: $assetPath", error)
+            }
+
+            mainHandler.post {
+                if (loadVersion != catalogLoadVersion) {
+                    return@post
+                }
+                result
+                    .onSuccess { loadedCatalog ->
+                        setCatalog(loadedCatalog)
+                        onCatalogLoaded?.invoke(loadedCatalog)
+                    }
+                    .onFailure { error -> onCatalogLoadFailed?.invoke(error) }
+            }
+        }
+    }
+
     fun setState(
         selectedCategory: FilterCategory,
         selectedFilter: FilterOption,
         thumbnailBitmap: Bitmap?,
         thumbnailKey: String?,
     ) {
+        this.selectedCategory = catalog.categoryById(selectedCategory.id) ?: catalog.defaultCategory
+        this.selectedFilter = catalog.filterById(selectedFilter.id) ?: selectedFilter
+        this.thumbnailBitmap = thumbnailBitmap
+        this.thumbnailKey = thumbnailKey
+        renderState()
+    }
+
+    override fun onDetachedFromWindow() {
+        catalogLoadVersion++
+        super.onDetachedFromWindow()
+    }
+
+    private fun renderState() {
         renderOriginalAction(selectedFilter)
         renderCategories(selectedCategory)
-        val items = FilterCatalog.filtersForCategory(selectedCategory.id).map { filter ->
+        val items = catalog.filtersForCategory(selectedCategory.id).map { filter ->
             FilterItem(
                 filter = filter,
-                isSelected = filter.id == selectedFilter.id,
+                isSelected = filter.id == this.selectedFilter.id,
                 thumbnailBitmap = thumbnailBitmap,
                 thumbnailKey = thumbnailKey,
                 thumbnailGenerationId = thumbnailBitmap?.generationId ?: 0,
+                style = style,
             )
         }
         filterAdapter.submitList(items) {
-            val selectedIndex = items.indexOfFirst { it.filter.id == selectedFilter.id }
+            val selectedIndex = items.indexOfFirst { it.filter.id == this.selectedFilter.id }
             if (selectedIndex >= 0) {
                 filterRecyclerView.scrollToPosition(selectedIndex)
             }
@@ -104,24 +170,15 @@ class FilterControlsView @JvmOverloads constructor(
             addView(ImageButton(context).apply {
                 background = null
                 contentDescription = context.getString(R.string.gs_action_close)
-                setImageResource(R.drawable.ic_gs_close)
+                setImageDrawable(style.closeIcon.constantState?.newDrawable() ?: style.closeIcon)
+                setColorFilter(style.textColor)
                 setOnClickListener { onCloseClick?.invoke() }
                 layoutParams = LayoutParams(chipMinHeight(), chipMinHeight())
             })
         }
 
-    private fun bindCategories() {
-        buttonOriginalFilter.setOnClickListener { onFilterSelected?.invoke(FilterCatalog.default) }
-        FilterCatalog.categories.forEachIndexed { index, category ->
-            val chip = createCategoryChip(
-                index = index,
-                text = context.getString(category.nameRes),
-                onClick = { onCategorySelected?.invoke(category) },
-            )
-            categoryChips[category.id] = chip
-            categoryContainer.addView(chip)
-        }
-
+    private fun bindFilterContent() {
+        buttonOriginalFilter.setOnClickListener { selectFilter(catalog.defaultFilter) }
         filterContent.addView(
             LinearLayout(context).apply {
                 isBaselineAligned = false
@@ -147,18 +204,61 @@ class FilterControlsView @JvmOverloads constructor(
         )
     }
 
-    private fun createTab(textRes: Int, isSelected: Boolean): TextView =
-        TextView(context).apply {
+    private fun renderCategoryChips() {
+        categoryChips.clear()
+        categoryContainer.removeAllViews()
+        catalog.categories.forEachIndexed { index, category ->
+            val chip = createCategoryChip(
+                index = index,
+                text = category.displayName(context).toString(),
+                onClick = { selectCategory(category) },
+            )
+            categoryChips[category.id] = chip
+            categoryContainer.addView(chip)
+        }
+    }
+
+    private fun selectCategory(category: FilterCategory) {
+        val selectedFilterCategory = catalog.categoryForFilter(selectedFilter)
+        selectedCategory =
+            if (
+                selectedCategory.id == category.id &&
+                category.id !in selectedFilter.categoryIds &&
+                selectedFilterCategory != null
+            ) {
+                selectedFilterCategory
+            } else {
+                category
+            }
+        renderState()
+        onCategorySelected?.invoke(selectedCategory)
+    }
+
+    private fun selectFilter(filter: FilterOption) {
+        selectedFilter = filter
+        renderState()
+        onFilterSelected?.invoke(filter)
+    }
+
+    private fun createTab(textRes: Int, tab: ControlTab, isSelected: Boolean): LinearLayout {
+        val label = TextView(context).apply {
             gravity = Gravity.CENTER
             includeFontPadding = false
             minHeight = chipMinHeight()
             setPadding(chipHorizontalPadding(), chipVerticalPadding(), chipHorizontalPadding(), chipVerticalPadding())
             setText(textRes)
             textSize = 14f
+        }
+        val indicator = View(context).apply {
+            background = ColorDrawable(style.tabIndicatorColor)
+            visibility = if (style.showTabIndicator && isSelected) VISIBLE else INVISIBLE
+            layoutParams = LayoutParams(LayoutParams.MATCH_PARENT, style.tabIndicatorHeight)
+        }
+        return LinearLayout(context).apply {
+            orientation = VERTICAL
             isClickable = true
             isFocusable = true
             setOnClickListener {
-                val tab = if (textRes == R.string.gs_section_filter) ControlTab.Filter else ControlTab.Adjust
                 setSelectedTab(tab)
                 onControlTabSelected?.invoke(tab)
             }
@@ -167,20 +267,27 @@ class FilterControlsView @JvmOverloads constructor(
                     marginStart = itemSpacing()
                 }
             }
+            addView(label)
+            addView(indicator)
+            tag = TabParts(label, indicator)
             renderTab(this, isSelected)
         }
+    }
 
-    private fun renderTab(tab: TextView, isSelected: Boolean) {
+    private fun renderTab(tab: LinearLayout, isSelected: Boolean) {
         tab.isSelected = isSelected
-        tab.setBackgroundResource(if (isSelected) R.drawable.gs_bg_filter_chip_selected else R.drawable.gs_bg_filter_chip)
-        tab.setTextColor(context.getColor(if (isSelected) android.R.color.white else R.color.gs_text_secondary))
+        tab.setBackgroundResource(if (isSelected) style.selectedChipBackgroundRes else style.chipBackgroundRes)
+        val parts = tab.tag as TabParts
+        parts.label.setTextColor(if (isSelected) style.selectedTextColor else style.textColor)
+        parts.indicator.visibility = if (style.showTabIndicator && isSelected) VISIBLE else INVISIBLE
     }
 
     private fun createOriginalButton(): ImageButton =
         ImageButton(context).apply {
             contentDescription = context.getString(R.string.gs_action_original)
-            setBackgroundResource(R.drawable.gs_bg_filter_chip)
-            setImageResource(R.drawable.ic_gs_filter_none)
+            setBackgroundResource(style.chipBackgroundRes)
+            setImageDrawable(style.noneIcon.constantState?.newDrawable() ?: style.noneIcon)
+            setColorFilter(style.textColor)
             setPadding(iconPadding(), iconPadding(), iconPadding(), iconPadding())
             scaleType = ImageView.ScaleType.CENTER
             layoutParams = LayoutParams(chipMinHeight(), chipMinHeight())
@@ -193,9 +300,9 @@ class FilterControlsView @JvmOverloads constructor(
             includeFontPadding = false
             maxLines = 1
             minHeight = chipMinHeight()
-            setBackgroundResource(R.drawable.gs_bg_filter_chip)
+            setBackgroundResource(style.chipBackgroundRes)
             setPadding(chipHorizontalPadding(), chipVerticalPadding(), chipHorizontalPadding(), chipVerticalPadding())
-            setTextColor(context.getColor(R.color.gs_text_secondary))
+            setTextColor(style.textColor)
             textSize = 14f
             isClickable = true
             isFocusable = true
@@ -208,20 +315,20 @@ class FilterControlsView @JvmOverloads constructor(
         }
 
     private fun renderOriginalAction(selectedFilter: FilterOption) {
-        val isSelected = selectedFilter.id == FilterCatalog.default.id
+        val isSelected = selectedFilter.id == catalog.defaultFilter.id
         buttonOriginalFilter.setBackgroundResource(
-            if (isSelected) R.drawable.gs_bg_filter_chip_selected else R.drawable.gs_bg_filter_chip,
+            if (isSelected) style.selectedChipBackgroundRes else style.chipBackgroundRes,
         )
         buttonOriginalFilter.setColorFilter(
-            context.getColor(if (isSelected) android.R.color.white else R.color.gs_text_secondary),
+            if (isSelected) style.selectedTextColor else style.textColor,
         )
     }
 
     private fun renderCategories(selectedCategory: FilterCategory) {
         categoryChips.forEach { (id, chip) ->
             val isSelected = id == selectedCategory.id
-            chip.setBackgroundResource(if (isSelected) R.drawable.gs_bg_filter_chip_selected else R.drawable.gs_bg_filter_chip)
-            chip.setTextColor(context.getColor(if (isSelected) android.R.color.white else R.color.gs_text_secondary))
+            chip.setBackgroundResource(if (isSelected) style.selectedChipBackgroundRes else style.chipBackgroundRes)
+            chip.setTextColor(if (isSelected) style.selectedTextColor else style.textColor)
         }
     }
 
@@ -237,9 +344,94 @@ class FilterControlsView @JvmOverloads constructor(
 
     private fun iconPadding(): Int = resources.getDimensionPixelSize(R.dimen.gs_filter_none_icon_padding)
 
+    private companion object {
+        val CATALOG_EXECUTOR = Executors.newSingleThreadExecutor()
+    }
+
     enum class ControlTab {
         Filter,
         Adjust,
+    }
+
+    private data class TabParts(
+        val label: TextView,
+        val indicator: View,
+    )
+
+    private data class FilterControlsStyle(
+        val textColor: Int,
+        val selectedTextColor: Int,
+        val chipBackgroundRes: Int,
+        val selectedChipBackgroundRes: Int,
+        val cardBackgroundRes: Int,
+        val selectedCardBackgroundRes: Int,
+        val labelBackgroundRes: Int,
+        val labelTextColor: Int,
+        val closeIcon: Drawable,
+        val noneIcon: Drawable,
+        val showTabIndicator: Boolean,
+        val tabIndicatorColor: Int,
+        val tabIndicatorHeight: Int,
+        val catalogAssetPath: String?,
+    ) {
+        constructor(context: Context, attrs: AttributeSet?) : this(
+            context = context,
+            array = context.obtainStyledAttributes(attrs, R.styleable.FilterControlsView),
+        )
+
+        private constructor(context: Context, array: android.content.res.TypedArray) : this(
+            textColor = array.getColor(
+                R.styleable.FilterControlsView_gsFilterTextColor,
+                context.getColor(R.color.gs_text_secondary),
+            ),
+            selectedTextColor = array.getColor(
+                R.styleable.FilterControlsView_gsFilterSelectedTextColor,
+                Color.WHITE,
+            ),
+            chipBackgroundRes = array.getResourceId(
+                R.styleable.FilterControlsView_gsFilterChipBackground,
+                R.drawable.gs_bg_filter_chip,
+            ),
+            selectedChipBackgroundRes = array.getResourceId(
+                R.styleable.FilterControlsView_gsFilterSelectedChipBackground,
+                R.drawable.gs_bg_filter_chip_selected,
+            ),
+            cardBackgroundRes = array.getResourceId(
+                R.styleable.FilterControlsView_gsFilterCardBackground,
+                R.drawable.gs_bg_filter_card,
+            ),
+            selectedCardBackgroundRes = array.getResourceId(
+                R.styleable.FilterControlsView_gsFilterSelectedCardBackground,
+                R.drawable.gs_bg_filter_card_selected,
+            ),
+            labelBackgroundRes = array.getResourceId(
+                R.styleable.FilterControlsView_gsFilterLabelBackground,
+                R.drawable.gs_bg_filter_label,
+            ),
+            labelTextColor = array.getColor(
+                R.styleable.FilterControlsView_gsFilterLabelTextColor,
+                Color.WHITE,
+            ),
+            closeIcon = array.getDrawable(R.styleable.FilterControlsView_gsFilterCloseIcon)
+                ?: context.getDrawable(R.drawable.ic_gs_close) ?: ColorDrawable(Color.TRANSPARENT),
+            noneIcon = array.getDrawable(R.styleable.FilterControlsView_gsFilterNoneIcon)
+                ?: context.getDrawable(R.drawable.ic_gs_filter_none) ?: ColorDrawable(Color.TRANSPARENT),
+            showTabIndicator = array.getBoolean(R.styleable.FilterControlsView_gsFilterShowTabIndicator, false),
+            tabIndicatorColor = array.getColor(
+                R.styleable.FilterControlsView_gsFilterTabIndicatorColor,
+                array.getColor(
+                    R.styleable.FilterControlsView_gsFilterSelectedColor,
+                    context.getColor(R.color.gs_filter_selected),
+                ),
+            ),
+            tabIndicatorHeight = array.getDimensionPixelSize(
+                R.styleable.FilterControlsView_gsFilterTabIndicatorHeight,
+                context.resources.getDimensionPixelSize(R.dimen.gs_filter_tab_indicator_height),
+            ),
+            catalogAssetPath = array.getString(R.styleable.FilterControlsView_gsFilterCatalogAsset),
+        ) {
+            array.recycle()
+        }
     }
 
     private data class FilterItem(
@@ -248,6 +440,7 @@ class FilterControlsView @JvmOverloads constructor(
         val thumbnailBitmap: Bitmap?,
         val thumbnailKey: String?,
         val thumbnailGenerationId: Int,
+        val style: FilterControlsStyle,
     )
 
     private class FilterAdapter(
@@ -278,6 +471,7 @@ class FilterControlsView @JvmOverloads constructor(
 
             private val image = ImageView(parent.context)
             private val label = TextView(parent.context)
+            private lateinit var style: FilterControlsStyle
 
             init {
                 val context = parent.context
@@ -312,9 +506,7 @@ class FilterControlsView @JvmOverloads constructor(
                         gravity = Gravity.CENTER
                         includeFontPadding = false
                         maxLines = 1
-                        setBackgroundResource(R.drawable.gs_bg_filter_label)
                         setPadding(labelPadding, 0, labelPadding, 0)
-                        setTextColor(Color.WHITE)
                         textSize = 12f
                     },
                     FrameLayout.LayoutParams(
@@ -328,11 +520,14 @@ class FilterControlsView @JvmOverloads constructor(
             }
 
             fun bind(item: FilterItem) {
+                style = item.style
                 itemView.setBackgroundResource(
-                    if (item.isSelected) R.drawable.gs_bg_filter_card_selected else R.drawable.gs_bg_filter_card,
+                    if (item.isSelected) style.selectedCardBackgroundRes else style.cardBackgroundRes,
                 )
                 itemView.setOnClickListener { onFilterSelected(item.filter) }
-                label.setText(item.filter.nameRes)
+                label.setBackgroundResource(style.labelBackgroundRes)
+                label.setTextColor(style.labelTextColor)
+                label.text = item.filter.displayName(itemView.context)
 
                 val source = item.thumbnailBitmap
                 val sourceKey = item.thumbnailKey

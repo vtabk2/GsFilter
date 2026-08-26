@@ -1,8 +1,11 @@
 package com.gsfilter.filter
 
+import androidx.annotation.StringRes
+
 data class FilterOption(
     val id: String,
     val categoryIds: Set<String>,
-    val nameRes: Int,
+    @StringRes val nameRes: Int = 0,
     val recipe: FilterRecipe,
+    val name: String? = null,
 )

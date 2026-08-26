@@ -4,6 +4,7 @@
     <dimen name="gs_filter_chip_horizontal_padding">18dp</dimen>
     <dimen name="gs_filter_chip_vertical_padding">8dp</dimen>
     <dimen name="gs_filter_none_icon_padding">10dp</dimen>
+    <dimen name="gs_filter_tab_indicator_height">2dp</dimen>
     <dimen name="gs_filter_thumbnail_width">76dp</dimen>
     <dimen name="gs_filter_thumbnail_height">88dp</dimen>
     <dimen name="gs_filter_thumbnail_inset">2dp</dimen>

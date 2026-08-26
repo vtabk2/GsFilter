@@ -1,6 +1,9 @@
 package com.gsfilter.filter
 
+import androidx.annotation.StringRes
+
 data class FilterCategory(
     val id: String,
-    val nameRes: Int,
+    @StringRes val nameRes: Int = 0,
+    val name: String? = null,
 )

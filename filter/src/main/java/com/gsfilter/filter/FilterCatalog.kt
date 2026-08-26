@@ -609,12 +609,18 @@ object FilterCatalog {
 
     val defaultCategory: FilterCategory = categories.first()
     val default: FilterOption = options.first { it.id == ORIGINAL }
+    val pack: FilterPack = FilterPack(
+        categories = categories,
+        options = options,
+        defaultCategory = defaultCategory,
+        defaultFilter = default,
+    )
 
     fun filtersForCategory(categoryId: String): List<FilterOption> =
-        options.filter { categoryId in it.categoryIds }
+        pack.filtersForCategory(categoryId)
 
     fun categoryForFilter(filter: FilterOption): FilterCategory? =
-        categories.firstOrNull { it.id in filter.categoryIds }
+        pack.categoryForFilter(filter)
 
     private const val ORIGINAL = "original"
     private const val POPULAR = "popular"
