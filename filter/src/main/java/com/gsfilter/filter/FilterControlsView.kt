@@ -98,6 +98,7 @@ class FilterControlsView @JvmOverloads constructor(
     }
 
     fun setCatalog(catalog: FilterPack) {
+        catalogLoadVersion++
         this.catalog = catalog
         selectedCategory = catalog.categoryById(selectedCategory.id) ?: catalog.defaultCategory
         selectedFilter = catalog.filterById(selectedFilter.id) ?: catalog.defaultFilter

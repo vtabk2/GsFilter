@@ -2,6 +2,7 @@ package com.gsfilter
 
 import android.graphics.Bitmap
 import android.os.Bundle
+import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.viewModels
 import androidx.core.view.isVisible
@@ -10,6 +11,7 @@ import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import com.gsfilter.databinding.ActivityMainBinding
 import com.gsfilter.filter.FilterControlsView
+import com.gsfilter.filter.FilterCatalog
 import kotlinx.coroutines.launch
 
 class MainActivity : ComponentActivity() {
@@ -27,6 +29,7 @@ class MainActivity : ComponentActivity() {
 
         bindFilterControls()
         bindAdjustControls()
+        bindFilterPackToggle()
         collectState()
     }
 
@@ -45,6 +48,11 @@ class MainActivity : ComponentActivity() {
         binding.filterControls.onControlTabSelected = ::selectControlTab
         binding.filterControls.onCategorySelected = viewModel::selectCategory
         binding.filterControls.onFilterSelected = viewModel::selectFilter
+        binding.filterControls.onCatalogLoaded = viewModel::setCatalog
+        binding.filterControls.onCatalogLoadFailed = {
+            Toast.makeText(this, R.string.filter_pack_load_failed, Toast.LENGTH_SHORT).show()
+            binding.filterPackSwitch.isChecked = false
+        }
         renderControlTabs()
     }
 
@@ -60,6 +68,20 @@ class MainActivity : ComponentActivity() {
     private fun bindAdjustControls() {
         binding.filterControls.onAdjustmentChanged = viewModel::setAdjustment
         binding.filterControls.onResetAllAdjustClick = viewModel::resetAdjustments
+    }
+
+    private fun bindFilterPackToggle() {
+        binding.filterPackSwitch.setOnCheckedChangeListener { _, isChecked ->
+            if (isChecked) {
+                binding.filterControls.loadCatalogFromAssets(TEST_FILTER_PACK_ASSET)
+            } else {
+                binding.filterControls.setCatalog(FilterCatalog.pack)
+                viewModel.setCatalog(FilterCatalog.pack)
+            }
+        }
+        if (binding.filterPackSwitch.isChecked) {
+            binding.filterControls.loadCatalogFromAssets(TEST_FILTER_PACK_ASSET)
+        }
     }
 
     private fun collectState() {
@@ -96,4 +118,8 @@ class MainActivity : ComponentActivity() {
         when (this) {
             FilterError.AssetLoadFailed -> getString(R.string.asset_load_failed)
         }
+
+    private companion object {
+        const val TEST_FILTER_PACK_ASSET = "filter_pack.json"
+    }
 }

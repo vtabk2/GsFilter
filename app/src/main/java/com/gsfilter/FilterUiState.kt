@@ -5,11 +5,13 @@ import com.gsfilter.filter.Adjustments
 import com.gsfilter.filter.FilterCategory
 import com.gsfilter.filter.FilterCatalog
 import com.gsfilter.filter.FilterOption
+import com.gsfilter.filter.FilterPack
 
 data class FilterUiState(
     val sourceBitmap: Bitmap? = null,
     val filterThumbnailBitmap: Bitmap? = null,
     val filterThumbnailKey: String? = null,
+    val catalog: FilterPack = FilterCatalog.pack,
     val selectedCategory: FilterCategory = FilterCatalog.defaultCategory,
     val selectedFilter: FilterOption = FilterCatalog.default,
     val adjustments: Adjustments = Adjustments(),

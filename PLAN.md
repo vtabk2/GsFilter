@@ -1033,3 +1033,59 @@ Status: DONE
 
 - Added `gs_filter_category_top_spacing` and applied it only to the category row.
 - `:filter:testDebugUnitTest :app:testDebugUnitTest :app:assembleDebug` passed after the spacing update.
+- Documented `gs_filter_category_top_spacing` as an overridable library dimen in README.
+- Expanded README overridable dimensions table to include all filter module dimen resources.
+- Updated README defaults to match the current `filter/src/main/res/values/dimens.xml` values.
+
+## Task: Translate README to Vietnamese
+
+Status: DONE
+
+### Requirements
+
+- Convert README prose to Vietnamese.
+- Keep API names, resource names, and code snippets unchanged.
+- Preserve the existing documented library usage.
+
+### Checklist
+
+- [x] Translate README content.
+- [x] Run lightweight documentation verification.
+
+### Notes
+
+- This is documentation-only; no source behavior should change.
+- Paused because the latest request switched to wiring a test JSON filter pack in `MainActivity`.
+- Resumed after the JSON pack toggle implementation was verified.
+- README prose is now Vietnamese while API names, resource names, and code snippets stay copy-pasteable.
+- README now documents the sample app `JSON pack` switch and `filter_pack.json` test flow.
+- `git diff --check` passed after the README update.
+
+## Task: Wire MainActivity to test filter_pack.json
+
+Status: DONE
+
+### Requirements
+
+- Add a test `filter_pack.json` asset.
+- Configure `MainActivity` to load that pack through `FilterControlsView`.
+- Keep ViewModel category/filter state aligned with the loaded pack.
+- Add a top-right toggle to switch between the JSON test pack and the built-in catalog.
+
+### Checklist
+
+- [x] Add the sample JSON pack asset.
+- [x] Wire `MainActivity` catalog load callbacks.
+- [x] Update `FilterViewModel` to use the active pack for category refocus.
+- [x] Add a top-right JSON pack toggle.
+- [x] Run relevant verification.
+
+### Notes
+
+- Use the existing `FilterControlsView.loadCatalogFromAssets()` path instead of adding a new loader.
+- `MainActivity` now loads `app/src/main/assets/filter_pack.json` when the top-right `JSON pack` switch is on.
+- Turning the switch off restores `FilterCatalog.pack`.
+- `FilterControlsView.setCatalog()` now invalidates pending asset loads so toggling off cannot be overwritten by a late JSON callback.
+- `Get-Content app/src/main/assets/filter_pack.json | ConvertFrom-Json | Out-Null` passed.
+- `git diff --check` passed.
+- `gradle :filter:testDebugUnitTest :app:testDebugUnitTest :app:assembleDebug` passed using the cached Gradle wrapper and Android Studio JBR after the sandboxed run was blocked by network permissions.

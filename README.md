@@ -1,34 +1,35 @@
 # GsFilter
 
-GsFilter is a small Android image filter demo that is being shaped into a reusable filter library.
+GsFilter là demo filter ảnh Android nhỏ, đang được tách dần thành thư viện filter có thể tái sử dụng.
 
-The project is split into:
+Dự án gồm:
 
-- `:filter`: reusable filter models, OpenGL preview, filter controls, JSON filter pack parsing, and Glide thumbnail loading.
-- `:app`: sample host app using MVVM, an image from `assets`, and the reusable `:filter` module.
+- `:filter`: module tái sử dụng cho model filter, preview OpenGL, control Filter/Adjust, parse JSON filter pack, và load thumbnail qua Glide.
+- `:app`: app mẫu dùng MVVM, ảnh từ `assets`, và module `:filter`.
 
-Current scope:
+Phạm vi hiện tại:
 
 - Min SDK 24.
 - Kotlin + XML views.
-- No camera flow.
-- GPU preview through `FilterPreviewView`.
-- Filter presets are data recipes.
-- Adjust controls are fixed.
-- Filter rail thumbnails are loaded through Glide with stable cache keys.
+- Không có camera flow.
+- Preview GPU qua `FilterPreviewView`.
+- Filter preset là data recipe.
+- Adjust controls là bộ cố định.
+- Thumbnail rail của filter được load bằng Glide với cache key ổn định.
 
-## Add the library module
+## Thêm module thư viện
 
-For this local project, the sample app uses:
+Với project local này, app mẫu dùng:
 
 ```kotlin
 dependencies {
     implementation(project(":filter"))
-    annotationProcessor("com.github.bumptech.glide:compiler:4.16.0")
+    implementation("com.github.bumptech.glide:glide:5.0.7")
+    annotationProcessor("com.github.bumptech.glide:compiler:5.0.7")
 }
 ```
 
-The filter rail needs the host app to register the library thumbnail loader in an `AppGlideModule`:
+Filter rail cần host app đăng ký thumbnail loader của thư viện trong `AppGlideModule`:
 
 ```java
 @GlideModule
@@ -53,9 +54,9 @@ public final class GsFilterGlideModule extends AppGlideModule {
 }
 ```
 
-## Preview usage
+## Cách dùng preview
 
-Add the preview view in XML:
+Thêm preview view trong XML:
 
 ```xml
 <com.gsfilter.filter.FilterPreviewView
@@ -64,18 +65,18 @@ Add the preview view in XML:
     android:layout_height="match_parent" />
 ```
 
-Then bind the bitmap and active filter state:
+Sau đó bind bitmap và trạng thái filter hiện tại:
 
 ```kotlin
 binding.filterPreview.setSourceBitmap(sourceBitmap)
 binding.filterPreview.setFilterState(selectedFilter.recipe, adjustments)
 ```
 
-`setFilterState()` skips duplicate params and coalesces fast adjust changes to the next animation frame.
+`setFilterState()` bỏ qua params trùng nhau và gom các thay đổi adjust nhanh vào frame kế tiếp.
 
-## Controls usage
+## Cách dùng controls
 
-`FilterControlsView` owns the filter/category UI rendering. The host still owns app state, preview rendering, save/export, and navigation.
+`FilterControlsView` tự render UI category/filter và tab Adjust. Host vẫn giữ app state, preview rendering, save/export, và navigation.
 
 ```xml
 <com.gsfilter.filter.FilterControlsView
@@ -87,7 +88,7 @@ binding.filterPreview.setFilterState(selectedFilter.recipe, adjustments)
     app:gsFilterCatalogAsset="filters/filter_pack.json" />
 ```
 
-Wire callbacks from the host:
+Wire callback từ host:
 
 ```kotlin
 binding.filterControls.onCloseClick = { finish() }
@@ -100,15 +101,15 @@ binding.filterControls.onFilterSelected = { filter -> viewModel.selectFilter(fil
 binding.filterControls.onAdjustmentChanged = { control, value -> viewModel.setAdjustment(control, value) }
 binding.filterControls.onResetAllAdjustClick = { viewModel.resetAdjustments() }
 binding.filterControls.onCatalogLoaded = { pack ->
-    // If the host keeps MVVM state, store this same pack there too.
-    // The current selected category/filter should usually be reset to pack.defaultCategory/defaultFilter.
+    // Nếu host giữ state theo MVVM, lưu cùng FilterPack này vào ViewModel.
+    // Thường nên reset category/filter hiện tại về pack.defaultCategory/defaultFilter.
 }
 binding.filterControls.onCatalogLoadFailed = { error ->
-    // Show a host-owned error state or keep the built-in filter pack.
+    // Hiển thị lỗi do host quản lý hoặc giữ built-in filter pack.
 }
 ```
 
-Render current state back into the view:
+Render state hiện tại ngược lại vào view:
 
 ```kotlin
 binding.filterControls.setState(
@@ -120,19 +121,30 @@ binding.filterControls.setState(
 binding.filterControls.setAdjustments(state.adjustments)
 ```
 
-Notes:
+Ghi chú:
 
-- `Original` is a fixed leading none-icon action.
-- Changing category only changes the visible filter list.
-- A filter is applied only after tapping a filter item.
-- Re-tapping the visible category can refocus the category containing the active filter.
-- The Adjust tab is rendered by the same `FilterControlsView`; the host receives adjust callbacks and sends current `Adjustments` back with `setAdjustments()`.
+- `Original` là action cố định ở đầu, dùng none icon.
+- Đổi category chỉ đổi danh sách filter đang hiển thị.
+- Filter chỉ được áp dụng sau khi người dùng bấm vào từng filter item.
+- Bấm lại category đang hiển thị có thể đưa UI về category chứa filter đang chọn.
+- Tab Adjust được render trong cùng `FilterControlsView`; host nhận callback adjust và gửi `Adjustments` hiện tại lại bằng `setAdjustments()`.
 
-## Stable thumbnail cache keys
+## Test JSON pack trong app mẫu
 
-The filter rail uses Glide to render and cache filtered thumbnails from `FilterThumbnailModel`.
+App mẫu có `app/src/main/assets/filter_pack.json` để test flow mở rộng filter bằng JSON.
 
-Pass a small thumbnail bitmap and a stable source key to `setState()`:
+Switch `JSON pack` ở góc phải trên cùng đang bật mặc định:
+
+- Bật: `MainActivity` gọi `binding.filterControls.loadCatalogFromAssets("filter_pack.json")`.
+- Tắt: app quay lại built-in `FilterCatalog.pack`.
+
+`MainActivity` cũng gửi `FilterPack` đã load vào `FilterViewModel`, vì ViewModel cần dùng đúng catalog hiện tại khi xử lý category/filter state.
+
+## Khóa cache thumbnail ổn định
+
+Filter rail dùng Glide để render và cache thumbnail đã apply filter từ `FilterThumbnailModel`.
+
+Truyền thumbnail bitmap nhỏ và source key ổn định vào `setState()`:
 
 ```kotlin
 FilterSourceKey.asset("sample.jpg")
@@ -140,26 +152,26 @@ FilterSourceKey.file(path, length, lastModifiedMillis)
 FilterSourceKey.uri(uri, width, height, lastModifiedMillis)
 ```
 
-Use the same key when the same source image is selected again. That lets Glide reuse cached filter thumbnails instead of recomputing the rail.
+Dùng lại đúng key khi cùng một ảnh source được chọn lại. Glide có thể lấy lại thumbnail filter từ cache thay vì render lại toàn bộ rail.
 
 ## JSON filter packs
 
-`FilterControlsView` can load a JSON pack from host app assets:
+`FilterControlsView` có thể load JSON pack từ assets của host app:
 
 ```xml
 app:gsFilterCatalogAsset="filters/filter_pack.json"
 ```
 
-Or load/set it from code:
+Hoặc load/set bằng code:
 
 ```kotlin
 val pack = FilterPackJson.parse(json)
 binding.filterControls.setCatalog(pack)
 ```
 
-If the host keeps category/filter state in a `ViewModel`, keep the same `FilterPack` there too. The view can render a JSON pack by itself, but the preview and selected filter state still belong to the host.
+Nếu host giữ category/filter state trong `ViewModel`, hãy lưu cùng `FilterPack` đó ở ViewModel. View có thể tự render JSON pack, nhưng preview và selected filter state vẫn thuộc host.
 
-Example JSON:
+Ví dụ JSON:
 
 ```json
 {
@@ -194,70 +206,100 @@ Example JSON:
 }
 ```
 
-Supported recipe fields:
+Các field recipe đang hỗ trợ:
 
 - `isMonochrome`: boolean.
-- `redShift`, `greenShift`, `blueShift`: clamped to `-100..100`.
+- `redShift`, `greenShift`, `blueShift`: được clamp trong `-100..100`.
 - `adjustments`: `brightness`, `exposure`, `contrast`, `highlights`, `shadows`, `saturation`, `vibrance`, `temperature`, `tint`, `sharpness`, `clarity`, `fade`, `vignette`, `grain`.
 
-Adjust ranges:
+Range của adjust:
 
-- Signed controls: `-100..100`.
-- Intensity controls: `sharpness`, `fade`, `vignette`, `grain` use `0..100`.
+- Control dạng signed: `-100..100`.
+- Control dạng intensity: `sharpness`, `fade`, `vignette`, `grain` dùng `0..100`.
 
-JSON packs should not include `Original`; the view already renders it as the fixed none action.
+JSON pack không nên khai báo `Original`; view đã tự render nó thành none action cố định.
 
 ## Styling `FilterControlsView`
 
-Available XML attributes:
+Các XML attributes hiện có:
 
-| Attribute | Purpose |
+| Attribute | Mục đích |
 | --- | --- |
-| `gsFilterTextColor` | Normal category/icon color and tab text fallback |
-| `gsFilterSelectedTextColor` | Selected category/icon color and selected tab fallback when tab backgrounds are enabled |
-| `gsFilterTabTextColor` | Normal Filter/Adjust tab text color; defaults to `gsFilterTextColor` |
-| `gsFilterSelectedTabTextColor` | Selected Filter/Adjust tab text color; defaults to `gsFilterSelectedTextColor`, or `gsFilterSelectedColor` when tab backgrounds are disabled |
-| `gsFilterSelectedColor` | Default selected accent fallback |
-| `gsFilterChipBackground` | Normal category chip background |
-| `gsFilterSelectedChipBackground` | Selected category chip background |
-| `gsFilterTabBackground` | Normal Filter/Adjust tab background; defaults to `gsFilterChipBackground` |
-| `gsFilterSelectedTabBackground` | Selected Filter/Adjust tab background; defaults to `gsFilterSelectedChipBackground` |
-| `gsFilterUseTabBackground` | Set `false` to render Filter/Adjust tabs without a background |
-| `gsFilterCardBackground` | Normal filter thumbnail card background |
-| `gsFilterSelectedCardBackground` | Selected filter thumbnail card background |
-| `gsFilterLabelBackground` | Thumbnail label background |
-| `gsFilterLabelTextColor` | Thumbnail label text color |
-| `gsFilterCloseIcon` | Close icon drawable |
-| `gsFilterNoneIcon` | Original/none icon drawable |
-| `gsFilterIconPadding` | Optional close/original icon padding override; omitted uses `RippleImageView` default |
-| `gsFilterShowTabIndicator` | Show indicator below selected Filter/Adjust tab |
-| `gsFilterTabIndicatorColor` | Tab indicator color |
-| `gsFilterTabIndicatorHeight` | Tab indicator height |
-| `gsFilterCatalogAsset` | Optional asset path for a JSON filter pack |
-| `gsAdjustTextColor` | Adjust value text, reset icon thumb fallback |
-| `gsAdjustSecondaryTextColor` | Unselected adjust item icon/label color |
-| `gsAdjustSelectedColor` | Selected adjust item, seekbar progress, and changed-dot accent |
-| `gsAdjustTrackColor` | Adjust seekbar track color |
-| `gsAdjustResetIcon` | Adjust current-control reset icon drawable |
-| `gsAdjustResetIconPadding` | Optional reset icon padding override; omitted uses `RippleImageView` default |
-| `gsAdjustResetAllText` | Reset-all button text |
+| `gsFilterTextColor` | Màu category/icon thường và fallback cho text tab |
+| `gsFilterSelectedTextColor` | Màu category/icon đang chọn và fallback cho selected tab khi tab background bật |
+| `gsFilterTabTextColor` | Màu text tab Filter/Adjust bình thường; mặc định theo `gsFilterTextColor` |
+| `gsFilterSelectedTabTextColor` | Màu text tab Filter/Adjust đang chọn; mặc định theo `gsFilterSelectedTextColor`, hoặc `gsFilterSelectedColor` khi tab background tắt |
+| `gsFilterSelectedColor` | Accent fallback cho trạng thái selected |
+| `gsFilterChipBackground` | Background category chip bình thường |
+| `gsFilterSelectedChipBackground` | Background category chip đang chọn |
+| `gsFilterTabBackground` | Background tab Filter/Adjust bình thường; mặc định theo `gsFilterChipBackground` |
+| `gsFilterSelectedTabBackground` | Background tab Filter/Adjust đang chọn; mặc định theo `gsFilterSelectedChipBackground` |
+| `gsFilterUseTabBackground` | Set `false` để render tab Filter/Adjust không có background |
+| `gsFilterCardBackground` | Background filter thumbnail card bình thường |
+| `gsFilterSelectedCardBackground` | Background filter thumbnail card đang chọn |
+| `gsFilterLabelBackground` | Background nhãn thumbnail |
+| `gsFilterLabelTextColor` | Màu text nhãn thumbnail |
+| `gsFilterCloseIcon` | Drawable icon đóng |
+| `gsFilterNoneIcon` | Drawable icon Original/none |
+| `gsFilterIconPadding` | Override padding icon close/original nếu cần; bỏ trống thì dùng default của `RippleImageView` |
+| `gsFilterShowTabIndicator` | Hiển thị indicator dưới tab Filter/Adjust đang chọn |
+| `gsFilterTabIndicatorColor` | Màu tab indicator |
+| `gsFilterTabIndicatorHeight` | Chiều cao tab indicator |
+| `gsFilterCatalogAsset` | Asset path tùy chọn cho JSON filter pack |
+| `gsAdjustTextColor` | Màu text giá trị adjust và fallback thumb icon reset |
+| `gsAdjustSecondaryTextColor` | Màu icon/label adjust item chưa chọn |
+| `gsAdjustSelectedColor` | Màu adjust item đang chọn, seekbar progress, và changed-dot |
+| `gsAdjustTrackColor` | Màu track của adjust seekbar |
+| `gsAdjustResetIcon` | Drawable icon reset control adjust hiện tại |
+| `gsAdjustResetIconPadding` | Override padding icon reset nếu cần; bỏ trống thì dùng default của `RippleImageView` |
+| `gsAdjustResetAllText` | Text nút reset tất cả |
 
-For bigger visual changes, prefer replacing drawable resources through these attrs before adding a new custom layout API.
+Các dimension có thể override:
 
-## Extending filters
+| Dimension | Default | Mục đích |
+| --- | --- | --- |
+| `gs_filter_item_spacing` | `8dp` | Khoảng cách mặc định giữa các filter control |
+| `gs_filter_chip_min_height` | `36dp` | Chiều cao tối thiểu của tab và category chip |
+| `gs_filter_chip_horizontal_padding` | `18dp` | Padding ngang của tab và category chip |
+| `gs_filter_chip_vertical_padding` | `8dp` | Padding dọc của tab và category chip |
+| `gs_filter_category_top_spacing` | `20dp` | Khoảng cách trên giữa tab row Filter/Adjust và category row |
+| `gs_filter_tab_indicator_height` | `2dp` | Chiều cao indicator của tab Filter/Adjust |
+| `gs_filter_thumbnail_width` | `76dp` | Chiều rộng item thumbnail filter |
+| `gs_filter_thumbnail_height` | `88dp` | Chiều cao item thumbnail filter |
+| `gs_filter_thumbnail_inset` | `2dp` | Inset của image/card thumbnail filter |
+| `gs_filter_thumbnail_label_height` | `26dp` | Chiều cao dải label thumbnail filter |
+| `gs_filter_thumbnail_label_padding` | `4dp` | Padding ngang label thumbnail filter |
+| `gs_adjust_panel_padding` | `8dp` | Padding bên trong panel adjust |
+| `gs_adjust_button_min_height` | `48dp` | Chiều cao tối thiểu nút reset tất cả |
+| `gs_adjust_icon_size` | `24dp` | Kích thước icon adjust control |
+| `gs_adjust_dot_size` | `5dp` | Kích thước dot báo value đã đổi |
+| `gs_adjust_item_gap` | `2dp` | Khoảng cách giữa dot, icon, và label của adjust item |
+| `gs_adjust_item_width` | `78dp` | Chiều rộng adjust item trong horizontal rail |
+| `gs_adjust_item_min_height` | `54dp` | Chiều cao tối thiểu của adjust item |
+| `gs_adjust_value_width` | `36dp` | Chiều rộng text giá trị adjust hiện tại |
 
-The intended extension path is data first:
+Host app có thể override dimension của thư viện bằng cách khai báo cùng resource name trong `values/dimens.xml` của app:
 
-1. Add or load more `FilterOption` recipes.
-2. Group them with `FilterCategory`.
-3. Keep user `Adjustments` separate; recipe adjustments and user adjustments are combined for rendering.
-4. Add shader/LUT support later only when recipe fields cannot express the desired look.
+```xml
+<dimen name="gs_filter_category_top_spacing">20dp</dimen>
+```
 
-This keeps the filter library easier to expand than one class per filter or a hard dependency on GPUImage internals.
+Với thay đổi visual lớn hơn, ưu tiên thay drawable qua các attr ở trên trước khi thêm custom layout API mới.
+
+## Mở rộng filter
+
+Hướng mở rộng nên đi theo data trước:
+
+1. Thêm hoặc load thêm `FilterOption` recipes.
+2. Group chúng bằng `FilterCategory`.
+3. Giữ user `Adjustments` tách riêng; recipe adjustments và user adjustments được cộng lại khi render.
+4. Chỉ thêm shader/LUT support sau này khi recipe fields không diễn tả được look mong muốn.
+
+Cách này giúp thư viện filter dễ mở rộng hơn so với mỗi filter một class riêng hoặc phụ thuộc cứng vào GPUImage internals.
 
 ## Verification
 
-Current project check:
+Lệnh check hiện tại của project:
 
 ```powershell
 gradle :filter:testDebugUnitTest :app:testDebugUnitTest :app:assembleDebug

@@ -1,0 +1,123 @@
+{
+  "defaultCategoryId": "json_cinematic",
+  "categories": [
+    { "id": "json_popular", "name": "JSON Popular" },
+    { "id": "json_cinematic", "name": "JSON Cinematic" },
+    { "id": "json_soft", "name": "JSON Soft" }
+  ],
+  "filters": [
+    {
+      "id": "json_fresh_air",
+      "name": "Fresh Air",
+      "categoryIds": ["json_popular", "json_soft"],
+      "recipe": {
+        "redShift": 4,
+        "greenShift": 6,
+        "blueShift": 8,
+        "adjustments": {
+          "exposure": 6,
+          "contrast": -4,
+          "highlights": -10,
+          "saturation": 4,
+          "vibrance": 10,
+          "clarity": 4
+        }
+      }
+    },
+    {
+      "id": "json_teal_orange",
+      "name": "Teal Orange",
+      "categoryIds": ["json_popular", "json_cinematic"],
+      "recipe": {
+        "redShift": 12,
+        "greenShift": 4,
+        "blueShift": 10,
+        "adjustments": {
+          "exposure": -4,
+          "contrast": 22,
+          "highlights": -16,
+          "shadows": -10,
+          "saturation": -6,
+          "temperature": 8,
+          "tint": -8,
+          "clarity": 12,
+          "vignette": 20
+        }
+      }
+    },
+    {
+      "id": "json_matte_noir",
+      "name": "Matte Noir",
+      "categoryIds": ["json_cinematic"],
+      "recipe": {
+        "isMonochrome": true,
+        "adjustments": {
+          "exposure": -6,
+          "contrast": 20,
+          "highlights": -18,
+          "shadows": 8,
+          "clarity": 12,
+          "fade": 10,
+          "grain": 12
+        }
+      }
+    },
+    {
+      "id": "json_warm_film",
+      "name": "Warm Film",
+      "categoryIds": ["json_popular", "json_cinematic"],
+      "recipe": {
+        "redShift": 16,
+        "greenShift": 6,
+        "blueShift": -8,
+        "adjustments": {
+          "contrast": 10,
+          "highlights": -12,
+          "saturation": 8,
+          "temperature": 14,
+          "fade": 8,
+          "grain": 8
+        }
+      }
+    },
+    {
+      "id": "json_cream",
+      "name": "Cream",
+      "categoryIds": ["json_soft"],
+      "recipe": {
+        "redShift": 10,
+        "greenShift": 4,
+        "blueShift": -4,
+        "adjustments": {
+          "brightness": 6,
+          "contrast": -12,
+          "highlights": -8,
+          "shadows": 8,
+          "saturation": -6,
+          "temperature": 8,
+          "tint": 4,
+          "fade": 6
+        }
+      }
+    },
+    {
+      "id": "json_glow",
+      "name": "Glow",
+      "categoryIds": ["json_popular", "json_soft"],
+      "recipe": {
+        "redShift": 8,
+        "greenShift": 6,
+        "blueShift": 2,
+        "adjustments": {
+          "brightness": 8,
+          "exposure": 6,
+          "contrast": -8,
+          "highlights": -12,
+          "shadows": 6,
+          "vibrance": 10,
+          "clarity": -6
+        }
+      }
+    }
+  ]
+}

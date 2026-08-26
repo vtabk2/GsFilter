@@ -3,13 +3,14 @@ package com.gsfilter
 import android.app.Application
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
+import androidx.core.graphics.scale
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.gsfilter.filter.Adjustments
 import com.gsfilter.filter.AdjustControl
 import com.gsfilter.filter.FilterCategory
-import com.gsfilter.filter.FilterCatalog
 import com.gsfilter.filter.FilterOption
+import com.gsfilter.filter.FilterPack
 import com.gsfilter.filter.FilterSourceKey
 import java.io.IOException
 import kotlin.math.roundToInt
@@ -20,7 +21,6 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import androidx.core.graphics.scale
 
 class FilterViewModel(application: Application) : AndroidViewModel(application) {
 
@@ -31,13 +31,23 @@ class FilterViewModel(application: Application) : AndroidViewModel(application) 
         loadSample()
     }
 
+    fun setCatalog(catalog: FilterPack) {
+        _state.update { state ->
+            state.copy(
+                catalog = catalog,
+                selectedCategory = catalog.categoryById(state.selectedCategory.id) ?: catalog.defaultCategory,
+                selectedFilter = catalog.filterById(state.selectedFilter.id) ?: catalog.defaultFilter,
+            )
+        }
+    }
+
     fun selectFilter(filter: FilterOption) {
         _state.update { it.copy(selectedFilter = filter) }
     }
 
     fun selectCategory(category: FilterCategory) {
         _state.update { state ->
-            val selectedFilterCategory = FilterCatalog.categoryForFilter(state.selectedFilter)
+            val selectedFilterCategory = state.catalog.categoryForFilter(state.selectedFilter)
             val nextCategory =
                 if (
                     state.selectedCategory.id == category.id &&

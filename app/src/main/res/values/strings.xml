@@ -6,8 +6,10 @@
     <string name="section_adjust">Adjust</string>
     <string name="source_preview">Original</string>
     <string name="result_preview">Result</string>
+    <string name="test_filter_pack_toggle">JSON pack</string>
     <string name="loading_image">Loading image</string>
     <string name="asset_load_failed">Could not load the sample image</string>
+    <string name="filter_pack_load_failed">Could not load filter pack</string>
     <string name="image_original_content">Original asset image</string>
     <string name="image_result_content">Filtered image preview</string>
 </resources>
