@@ -1215,3 +1215,46 @@ Status: DONE
 - Updated README usage for CPU scaled output and GPU offscreen output.
 - `git diff --check` passed.
 - `:filter:testDebugUnitTest :app:assembleDebug` passed after rerunning Gradle outside the sandbox due network/cache restrictions.
+
+## Task: Optimize filtered thumbnails cache and size
+
+Status: DONE
+
+### Requirements
+
+- Make Glide thumbnail cache keys include the full filter recipe, including Art effect tuning params.
+- Render thumbnail cache bitmaps at a small fixed max size.
+- Preserve existing filter rail behavior.
+
+### Checklist
+
+- [x] Add a stable thumbnail cache key.
+- [x] Cap thumbnail rendering size.
+- [x] Add focused tests.
+- [x] Run relevant verification.
+
+### Notes
+
+- Glide thumbnail cache now uses a stable recipe-based string key instead of relying on model object hashing.
+- Cache keys include full `FilterRecipe`, including Art effect fields.
+- Thumbnail rendering is capped to `128px` through `FilterThumbnailRenderer`.
+- `git diff --check` passed.
+- `:filter:testDebugUnitTest :app:testDebugUnitTest :app:assembleDebug` passed after rerunning Gradle outside the sandbox due network/cache restrictions.
+
+## Task: Preload category thumbnails and prefer GPU export
+
+Status: IN PROGRESS
+
+### Requirements
+
+- Preload filtered thumbnails for the selected category.
+- Prefer GPU rendering for full bitmap export.
+- Fall back to CPU rendering if GPU export fails.
+- Preserve existing UI and callback behavior.
+
+### Checklist
+
+- [ ] Add category thumbnail preloading.
+- [ ] Change bitmap export default to GPU-first.
+- [ ] Add focused tests where practical.
+- [ ] Run relevant verification.

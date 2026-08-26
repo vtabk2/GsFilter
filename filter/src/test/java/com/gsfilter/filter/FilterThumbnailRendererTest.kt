@@ -1,5 +1,6 @@
 package com.gsfilter.filter
 
+import com.gsfilter.filter.renderer.FilterBitmapRenderer
 import com.gsfilter.filter.renderer.FilterThumbnailRenderer
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotEquals
@@ -54,6 +55,19 @@ class FilterThumbnailRendererTest {
         )
 
         assertNotEquals(color, output)
+    }
+
+    @Test
+    fun `thumbnail render size is capped`() {
+        assertEquals(
+            FilterBitmapRenderer.RenderSize(width = 128, height = 64),
+            FilterBitmapRenderer.targetSize(
+                width = 4000,
+                height = 2000,
+                maxWidth = FilterThumbnailRenderer.THUMBNAIL_MAX_SIZE,
+                maxHeight = FilterThumbnailRenderer.THUMBNAIL_MAX_SIZE,
+            ),
+        )
     }
 
     private fun channel(color: Int, shift: Int): Int = (color shr shift) and CHANNEL_MASK

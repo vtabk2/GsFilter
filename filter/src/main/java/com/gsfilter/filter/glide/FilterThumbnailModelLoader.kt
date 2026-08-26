@@ -19,7 +19,7 @@ class FilterThumbnailModelLoader : ModelLoader<FilterThumbnailModel, Bitmap> {
         height: Int,
         options: Options,
     ): ModelLoader.LoadData<Bitmap> =
-        ModelLoader.LoadData(ObjectKey(model), FilterThumbnailDataFetcher(model))
+        ModelLoader.LoadData(ObjectKey(model.cacheKey), FilterThumbnailDataFetcher(model))
 
     override fun handles(model: FilterThumbnailModel): Boolean = true
 

@@ -8,7 +8,12 @@ import com.gsfilter.filter.ShaderFilterParams
 object FilterThumbnailRenderer {
 
     fun render(source: Bitmap, recipe: FilterRecipe): Bitmap =
-        FilterBitmapRenderer.getBitmap(source, recipe)
+        FilterBitmapRenderer.getBitmap(
+            source = source,
+            recipe = recipe,
+            maxWidth = THUMBNAIL_MAX_SIZE,
+            maxHeight = THUMBNAIL_MAX_SIZE,
+        )
 
     internal fun filterPixel(
         pixels: IntArray,
@@ -18,4 +23,6 @@ object FilterThumbnailRenderer {
         height: Int,
         params: ShaderFilterParams,
     ): Int = FilterBitmapRenderer.filterPixel(pixels, x, y, width, height, params)
+
+    internal const val THUMBNAIL_MAX_SIZE = 128
 }

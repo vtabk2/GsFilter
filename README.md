@@ -200,6 +200,8 @@ FilterSourceKey.uri(uri, width, height, lastModifiedMillis)
 
 Dùng lại đúng key khi cùng một ảnh source được chọn lại. Glide có thể lấy lại thumbnail filter từ cache thay vì render lại toàn bộ rail.
 
+Thumbnail đã filter được render tối đa `128px` trước khi đưa vào Glide cache, nên các filter Art không phải xử lý lại bitmap source lớn cho từng card.
+
 ## JSON filter packs
 
 `FilterControlsView` có thể load JSON pack từ assets của host app:
