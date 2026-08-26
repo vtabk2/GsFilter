@@ -296,6 +296,10 @@ Các XML attributes hiện có:
 | `gsFilterShowTabIndicator` | Hiển thị indicator dưới tab Filter/Adjust đang chọn |
 | `gsFilterTabIndicatorColor` | Màu tab indicator |
 | `gsFilterTabIndicatorHeight` | Chiều cao tab indicator |
+| `gsFilterShowIntensity` | Bật/tắt slider Intensity cho filter có recipe |
+| `gsFilterIntensityTextColor` | Màu label và value của slider Intensity |
+| `gsFilterIntensityProgressColor` | Màu progress của slider Intensity |
+| `gsFilterIntensityTrackColor` | Màu track của slider Intensity |
 | `gsFilterCatalogAsset` | Asset path tùy chọn cho JSON filter pack |
 | `gsAdjustTextColor` | Màu text giá trị adjust và fallback thumb icon reset |
 | `gsAdjustSecondaryTextColor` | Màu icon/label adjust item chưa chọn |

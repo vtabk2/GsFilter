@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/gs_adjust_root"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:padding="@dimen/gs_adjust_panel_padding">
+
+    <LinearLayout
+        android:id="@+id/gs_adjust_seek_row"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:baselineAligned="false"
+        android:gravity="center_vertical"
+        android:orientation="horizontal">
+
+        <com.core.gscore.view.RippleImageView
+            android:id="@+id/gs_adjust_reset_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:contentDescription="@string/gs_action_reset_adjust"/>
+
+        <SeekBar
+            android:id="@+id/gs_adjust_seek_bar"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="@dimen/gs_filter_item_spacing"
+            android:layout_marginEnd="@dimen/gs_filter_item_spacing"
+            android:layout_weight="1"/>
+
+        <TextView
+            android:id="@+id/gs_adjust_value"
+            android:layout_width="@dimen/gs_adjust_value_width"
+            android:layout_height="wrap_content"
+            android:gravity="end"
+            android:textSize="12sp"/>
+    </LinearLayout>
+
+    <HorizontalScrollView
+        android:id="@+id/gs_adjust_controls_scroll"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/gs_filter_item_spacing"
+        android:scrollbars="none">
+
+        <LinearLayout
+            android:id="@+id/gs_adjust_controls_container"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"/>
+    </HorizontalScrollView>
+
+    <Button
+        android:id="@+id/gs_adjust_reset_all_button"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/gs_filter_item_spacing"
+        android:minHeight="@dimen/gs_adjust_button_min_height"/>
+</LinearLayout>

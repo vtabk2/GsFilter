@@ -20,6 +20,10 @@
         <attr name="gsFilterShowTabIndicator" format="boolean"/>
         <attr name="gsFilterTabIndicatorColor" format="color|reference"/>
         <attr name="gsFilterTabIndicatorHeight" format="dimension"/>
+        <attr name="gsFilterShowIntensity" format="boolean"/>
+        <attr name="gsFilterIntensityTextColor" format="color|reference"/>
+        <attr name="gsFilterIntensityProgressColor" format="color|reference"/>
+        <attr name="gsFilterIntensityTrackColor" format="color|reference"/>
         <attr name="gsFilterCatalogAsset" format="string"/>
     </declare-styleable>
 

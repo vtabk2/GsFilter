@@ -3,12 +3,10 @@ package com.gsfilter.filter.view
 import android.content.Context
 import android.content.res.ColorStateList
 import android.content.res.TypedArray
-import android.text.TextUtils
 import android.util.AttributeSet
-import android.view.Gravity
+import android.view.LayoutInflater
 import android.view.View
 import android.widget.Button
-import android.widget.HorizontalScrollView
 import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.SeekBar
@@ -24,11 +22,11 @@ internal class AdjustControlsView @JvmOverloads constructor(
 ) : LinearLayout(context, attrs) {
 
     private val style = AdjustControlsStyle(context, attrs)
-    private val resetButton = RippleImageView(context)
-    private val seekBar = SeekBar(context)
-    private val valueText = TextView(context)
-    private val controlsContainer = LinearLayout(context)
-    private val resetAllButton = Button(context)
+    private val resetButton: RippleImageView?
+    private val seekBar: SeekBar?
+    private val valueText: TextView?
+    private val controlsContainer: LinearLayout?
+    private val resetAllButton: Button?
     private val labels = mutableMapOf<AdjustControl, TextView>()
     private val icons = mutableMapOf<AdjustControl, ImageView>()
     private val dots = mutableMapOf<AdjustControl, View>()
@@ -41,11 +39,15 @@ internal class AdjustControlsView @JvmOverloads constructor(
 
     init {
         orientation = VERTICAL
-        val padding = resources.getDimensionPixelSize(R.dimen.gs_adjust_panel_padding)
-        setPadding(padding, padding, padding, padding)
-        addView(createSeekRow())
-        addView(createControlsScroll())
-        addView(createResetAllButton())
+        LayoutInflater.from(context).inflate(R.layout.gs_view_adjust_controls, this, true)
+        resetButton = findViewById(R.id.gs_adjust_reset_button)
+        seekBar = findViewById(R.id.gs_adjust_seek_bar)
+        valueText = findViewById(R.id.gs_adjust_value)
+        controlsContainer = findViewById(R.id.gs_adjust_controls_container)
+        resetAllButton = findViewById(R.id.gs_adjust_reset_all_button)
+        bindSeekRow()
+        bindControls()
+        bindResetAllButton()
         renderAdjustments()
     }
 
@@ -57,145 +59,75 @@ internal class AdjustControlsView @JvmOverloads constructor(
         renderAdjustments()
     }
 
-    private fun createSeekRow(): View =
-        LinearLayout(context).apply {
-            isBaselineAligned = false
-            gravity = Gravity.CENTER_VERTICAL
-            orientation = HORIZONTAL
-            layoutParams = LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT)
-
-            addView(resetButton.apply {
-                contentDescription = context.getString(R.string.gs_action_reset_adjust)
-                iconRippleRes = style.resetIconRes
-                style.resetIconPadding?.let { paddingRipple = it }
-                setOnClickListener {
-                    onAdjustmentChanged?.invoke(selectedControl, selectedControl.valueIn(Adjustments()))
-                }
-                layoutParams = LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT)
-            })
-            addView(seekBar.apply {
-                progressBackgroundTintList = ColorStateList.valueOf(style.trackColor)
-                progressTintList = ColorStateList.valueOf(style.selectedColor)
-                thumbTintList = ColorStateList.valueOf(style.textColor)
-                setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
-                    override fun onProgressChanged(view: SeekBar, progress: Int, fromUser: Boolean) {
-                        if (fromUser && !isRendering) {
-                            onAdjustmentChanged?.invoke(selectedControl, selectedControl.valueFrom(progress))
-                        }
-                    }
-
-                    override fun onStartTrackingTouch(view: SeekBar) = Unit
-
-                    override fun onStopTrackingTouch(view: SeekBar) = Unit
-                })
-                layoutParams = LayoutParams(0, LayoutParams.WRAP_CONTENT, 1f).apply {
-                    marginStart = itemSpacing()
-                    marginEnd = itemSpacing()
-                }
-            })
-            addView(valueText.apply {
-                gravity = Gravity.END
-                setTextColor(style.textColor)
-                textSize = 12f
-                layoutParams = LayoutParams(
-                    resources.getDimensionPixelSize(R.dimen.gs_adjust_value_width),
-                    LayoutParams.WRAP_CONTENT,
-                )
-            })
+    private fun bindSeekRow() {
+        resetButton?.iconRippleRes = style.resetIconRes
+        style.resetIconPadding?.let { resetButton?.paddingRipple = it }
+        resetButton?.setOnClickListener {
+            onAdjustmentChanged?.invoke(selectedControl, selectedControl.valueIn(Adjustments()))
         }
-
-    private fun createControlsScroll(): View =
-        HorizontalScrollView(context).apply {
-            isHorizontalScrollBarEnabled = false
-            layoutParams = LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT).apply {
-                topMargin = itemSpacing()
+        seekBar?.progressBackgroundTintList = ColorStateList.valueOf(style.trackColor)
+        seekBar?.progressTintList = ColorStateList.valueOf(style.selectedColor)
+        seekBar?.thumbTintList = ColorStateList.valueOf(style.textColor)
+        seekBar?.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
+            override fun onProgressChanged(view: SeekBar, progress: Int, fromUser: Boolean) {
+                if (fromUser && !isRendering) {
+                    onAdjustmentChanged?.invoke(selectedControl, selectedControl.valueFrom(progress))
+                }
             }
-            addView(controlsContainer.apply {
-                orientation = HORIZONTAL
-                layoutParams = LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT)
-                AdjustControl.entries.forEachIndexed { index, control ->
-                    addView(createAdjustControlItem(index, control))
-                }
-            })
+
+            override fun onStartTrackingTouch(view: SeekBar) = Unit
+
+            override fun onStopTrackingTouch(view: SeekBar) = Unit
+        })
+        valueText?.setTextColor(style.textColor)
+    }
+
+    private fun bindControls() {
+        val container = controlsContainer ?: return
+        AdjustControl.entries.forEachIndexed { index, control ->
+            container.addView(createAdjustControlItem(index, control, container))
         }
+    }
 
-    private fun createResetAllButton(): View =
-        resetAllButton.apply {
-            minHeight = resources.getDimensionPixelSize(R.dimen.gs_adjust_button_min_height)
-            text = style.resetAllText
-            setOnClickListener { onResetAllClick?.invoke() }
-            layoutParams = LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT).apply {
-                topMargin = itemSpacing()
-            }
-        }
+    private fun bindResetAllButton() {
+        resetAllButton?.text = style.resetAllText
+        resetAllButton?.setOnClickListener { onResetAllClick?.invoke() }
+    }
 
-    private fun createAdjustControlItem(index: Int, control: AdjustControl): View {
-        val itemGap = resources.getDimensionPixelSize(R.dimen.gs_adjust_item_gap)
-        val label = TextView(context)
-        val icon = ImageView(context)
-        val dot = View(context)
+    private fun createAdjustControlItem(index: Int, control: AdjustControl, parent: LinearLayout): View {
+        val item = LayoutInflater.from(context).inflate(
+            R.layout.gs_item_adjust_control,
+            parent,
+            false,
+        )
+        val label: TextView? = item.findViewById(R.id.gs_adjust_item_label)
+        val icon: ImageView? = item.findViewById(R.id.gs_adjust_item_icon)
+        val dot: View? = item.findViewById(R.id.gs_adjust_changed_dot)
 
-        labels[control] = label
-        icons[control] = icon
-        dots[control] = dot
+        label?.let { labels[control] = it }
+        icon?.let { icons[control] = it }
+        dot?.let { dots[control] = it }
 
-        return LinearLayout(context).apply {
-            gravity = Gravity.CENTER
-            isClickable = true
-            isFocusable = true
-            minimumHeight = resources.getDimensionPixelSize(R.dimen.gs_adjust_item_min_height)
-            orientation = VERTICAL
+        return item.apply {
             setOnClickListener {
                 selectedControl = control
                 renderAdjustments()
             }
-            layoutParams = LayoutParams(
-                resources.getDimensionPixelSize(R.dimen.gs_adjust_item_width),
-                LayoutParams.WRAP_CONTENT,
-            ).apply {
-                if (index > 0) {
-                    marginStart = itemSpacing()
-                }
+            if (index > 0) {
+                (layoutParams as? LayoutParams)?.marginStart = itemSpacing()
             }
-
-            addView(dot.apply {
-                setBackgroundResource(R.drawable.gs_bg_adjust_changed_dot)
-                visibility = INVISIBLE
-                layoutParams = LayoutParams(
-                    resources.getDimensionPixelSize(R.dimen.gs_adjust_dot_size),
-                    resources.getDimensionPixelSize(R.dimen.gs_adjust_dot_size),
-                )
-            })
-            addView(icon.apply {
-                importantForAccessibility = IMPORTANT_FOR_ACCESSIBILITY_NO
-                setImageResource(control.iconRes)
-                layoutParams = LayoutParams(
-                    resources.getDimensionPixelSize(R.dimen.gs_adjust_icon_size),
-                    resources.getDimensionPixelSize(R.dimen.gs_adjust_icon_size),
-                ).apply {
-                    topMargin = itemGap
-                }
-            })
-            addView(label.apply {
-                ellipsize = TextUtils.TruncateAt.END
-                gravity = Gravity.CENTER
-                includeFontPadding = false
-                maxLines = 1
-                setText(control.labelRes)
-                textSize = 10f
-                layoutParams = LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT).apply {
-                    topMargin = itemGap
-                }
-            })
+            dot?.backgroundTintList = ColorStateList.valueOf(style.selectedColor)
+            icon?.setImageResource(control.iconRes)
+            label?.setText(control.labelRes)
         }
     }
 
     private fun renderAdjustments() {
         isRendering = true
         val activeValue = selectedControl.valueIn(adjustments)
-        seekBar.max = selectedControl.progressMax
-        seekBar.progress = selectedControl.progressFrom(activeValue)
-        valueText.text = activeValue.toString()
+        seekBar?.max = selectedControl.progressMax
+        seekBar?.progress = selectedControl.progressFrom(activeValue)
+        valueText?.text = activeValue.toString()
 
         val defaults = Adjustments()
         AdjustControl.entries.forEach { control ->

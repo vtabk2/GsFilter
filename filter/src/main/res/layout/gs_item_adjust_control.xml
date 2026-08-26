@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="@dimen/gs_adjust_item_width"
+    android:layout_height="wrap_content"
+    android:clickable="true"
+    android:focusable="true"
+    android:gravity="center"
+    android:minHeight="@dimen/gs_adjust_item_min_height"
+    android:orientation="vertical">
+
+    <View
+        android:id="@+id/gs_adjust_changed_dot"
+        android:layout_width="@dimen/gs_adjust_dot_size"
+        android:layout_height="@dimen/gs_adjust_dot_size"
+        android:background="@drawable/gs_bg_adjust_changed_dot"
+        android:visibility="invisible"/>
+
+    <ImageView
+        android:id="@+id/gs_adjust_item_icon"
+        android:layout_width="@dimen/gs_adjust_icon_size"
+        android:layout_height="@dimen/gs_adjust_icon_size"
+        android:layout_marginTop="@dimen/gs_adjust_item_gap"
+        android:importantForAccessibility="no"/>
+
+    <TextView
+        android:id="@+id/gs_adjust_item_label"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/gs_adjust_item_gap"
+        android:ellipsize="end"
+        android:gravity="center"
+        android:includeFontPadding="false"
+        android:maxLines="1"
+        android:textSize="10sp"/>
+</LinearLayout>

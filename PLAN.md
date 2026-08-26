@@ -1382,3 +1382,39 @@ Status: DONE
 - `git diff --check` passed.
 - `:filter:compileDebugKotlin :app:compileDebugKotlin` passed.
 - Unit tests were not run by request.
+
+## Task: Move Filter and Adjust view structure to XML
+
+Status: DONE
+
+### Requirements
+
+- Move the static UI structure of Filter and Adjust controls into XML layout resources.
+- Keep dynamic catalog/filter/adjust item binding in Kotlin.
+- Keep existing XML styling attributes working from the host layout.
+- Add XML attributes for the new filter Intensity row where useful.
+- Keep behavior unchanged.
+
+### Checklist
+
+- [x] Add XML layout resources for Filter controls.
+- [x] Add XML layout resources for Adjust controls and repeated items.
+- [x] Update custom views to inflate and bind XML views.
+- [x] Keep/apply Filter and Adjust styling attributes.
+- [x] Make XML-bound child view lookups fail-soft.
+- [x] Run lightweight verification.
+
+### Notes
+
+- `AdjustControlsView` already supports XML attributes; the sample layout just did not set them.
+- User clarified that separate XML layout files are preferred for easier UI tuning.
+- Added `gs_view_filter_controls.xml`, `gs_item_filter_category.xml`, `gs_item_filter_option.xml`, `gs_view_adjust_controls.xml`, and `gs_item_adjust_control.xml`.
+- `FilterControlsView` and `AdjustControlsView` now inflate XML and bind state/listeners by id.
+- Added XML attrs for filter Intensity tint/show behavior and configured Filter/Adjust colors in the sample `activity_main.xml`.
+- The Adjust placeholder container is hidden with the Adjust tab so it does not keep empty spacing in Filter mode.
+- README styling attrs now include the new Intensity XML attributes.
+- Reopened to make XML-bound child view references nullable so missing customized ids do not crash the host app.
+- `AdjustControlsView` and `FilterControlsView` now use nullable `findViewById` references and safe binding for XML child views.
+- `git diff --check` passed.
+- `:filter:compileDebugKotlin :app:compileDebugKotlin` passed.
+- Unit tests were not run.

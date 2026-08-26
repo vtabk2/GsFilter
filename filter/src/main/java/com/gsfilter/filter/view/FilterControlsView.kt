@@ -1,18 +1,17 @@
 package com.gsfilter.filter.view
 
 import android.content.Context
+import android.content.res.ColorStateList
 import android.content.res.TypedArray
 import android.graphics.Bitmap
 import android.graphics.Color
 import android.os.Handler
 import android.os.Looper
-import android.text.TextUtils
 import android.util.AttributeSet
-import android.view.Gravity
+import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.FrameLayout
-import android.widget.HorizontalScrollView
 import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.SeekBar
@@ -68,38 +67,44 @@ class FilterControlsView @JvmOverloads constructor(
     var onCatalogLoadFailed: ((Throwable) -> Unit)? = null
 
     private val categoryChips = mutableMapOf<String, TextView>()
-    private val tabFilter = createTab(R.string.gs_section_filter, ControlTab.Filter, true)
-    private val tabAdjust = createTab(R.string.gs_section_adjust, ControlTab.Adjust, false)
-    private val buttonOriginalFilter = createOriginalButton()
-    private val categoryContainer = LinearLayout(context).apply {
-        isBaselineAligned = false
-        orientation = HORIZONTAL
-    }
     private val filterAdapter = FilterAdapter(::selectFilter)
-    private val filterRecyclerView = RecyclerView(context).apply {
-        layoutManager = LinearLayoutManager(context, RecyclerView.HORIZONTAL, false)
-        adapter = filterAdapter
-        itemAnimator = null
-        overScrollMode = OVER_SCROLL_NEVER
-    }
-    private val filterIntensitySeekBar = SeekBar(context)
-    private val filterIntensityValue = TextView(context)
-    private val filterIntensityRow = createFilterIntensityRow()
-    private val filterContent = LinearLayout(context).apply {
-        orientation = VERTICAL
-    }
-    private val adjustContent = AdjustControlsView(context, attrs)
+    private val tabFilter: LinearLayout?
+    private val tabAdjust: LinearLayout?
+    private val buttonClose: RippleImageView?
+    private val buttonOriginalFilter: RippleImageView?
+    private val categoryContainer: LinearLayout?
+    private val filterRecyclerView: RecyclerView?
+    private val filterIntensityLabel: TextView?
+    private val filterIntensitySeekBar: SeekBar?
+    private val filterIntensityValue: TextView?
+    private val filterIntensityRow: View?
+    private val filterContent: LinearLayout?
+    private val adjustContainer: FrameLayout?
+    private val adjustContent: AdjustControlsView
 
     init {
         orientation = VERTICAL
-        addView(createHeader())
-        addView(filterContent)
-        addView(
+        LayoutInflater.from(context).inflate(R.layout.gs_view_filter_controls, this, true)
+
+        tabFilter = findViewById(R.id.gs_filter_tab_filter)
+        tabAdjust = findViewById(R.id.gs_filter_tab_adjust)
+        buttonClose = findViewById(R.id.gs_filter_close_button)
+        buttonOriginalFilter = findViewById(R.id.gs_filter_original_button)
+        categoryContainer = findViewById(R.id.gs_filter_category_container)
+        filterRecyclerView = findViewById(R.id.gs_filter_recycler)
+        filterIntensityLabel = findViewById(R.id.gs_filter_intensity_label)
+        filterIntensitySeekBar = findViewById(R.id.gs_filter_intensity_seek_bar)
+        filterIntensityValue = findViewById(R.id.gs_filter_intensity_value)
+        filterIntensityRow = findViewById(R.id.gs_filter_intensity_row)
+        filterContent = findViewById(R.id.gs_filter_content)
+        adjustContainer = findViewById(R.id.gs_adjust_container)
+        adjustContent = AdjustControlsView(context, attrs)
+        adjustContainer?.addView(
             adjustContent,
-            LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT).apply {
-                topMargin = itemSpacing()
-            },
+            FrameLayout.LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT),
         )
+
+        bindHeader()
         bindFilterContent()
         bindAdjustContent()
         setCatalog(catalog)
@@ -111,8 +116,8 @@ class FilterControlsView @JvmOverloads constructor(
         val isFilterSelected = tab == ControlTab.Filter
         renderTab(tabFilter, isFilterSelected)
         renderTab(tabAdjust, !isFilterSelected)
-        filterContent.visibility = if (isFilterSelected) VISIBLE else GONE
-        adjustContent.visibility = if (isFilterSelected) GONE else VISIBLE
+        filterContent?.visibility = if (isFilterSelected) VISIBLE else GONE
+        adjustContainer?.visibility = if (isFilterSelected) GONE else VISIBLE
     }
 
     fun setCatalog(catalog: FilterPack) {
@@ -229,7 +234,7 @@ class FilterControlsView @JvmOverloads constructor(
         filterAdapter.submitList(items) {
             val selectedIndex = items.indexOfFirst { it.filter.id == this.selectedFilter.id }
             if (selectedIndex >= 0) {
-                filterRecyclerView.scrollToPosition(selectedIndex)
+                filterRecyclerView?.scrollToPosition(selectedIndex)
             }
         }
         preloadFilterThumbnails(items)
@@ -263,65 +268,65 @@ class FilterControlsView @JvmOverloads constructor(
         }
     }
 
-    private fun createHeader(): View =
-        LinearLayout(context).apply {
-            isBaselineAligned = false
-            gravity = Gravity.CENTER_VERTICAL
-            orientation = HORIZONTAL
-            layoutParams = LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT)
-
-            addView(tabFilter, LayoutParams(0, LayoutParams.WRAP_CONTENT, 1f))
-            addView(
-                tabAdjust,
-                LayoutParams(0, LayoutParams.WRAP_CONTENT, 1f).apply {
-                    marginStart = itemSpacing()
-                    marginEnd = itemSpacing()
-                },
-            )
-            addView(RippleImageView(context).apply {
-                contentDescription = context.getString(R.string.gs_action_close)
-                iconRippleRes = style.closeIconRes
-                style.iconPadding?.let { paddingRipple = it }
-                setOnClickListener { onCloseClick?.invoke() }
-                layoutParams = LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT).apply {
-                    gravity = Gravity.CENTER_VERTICAL
-                }
-            })
+    private fun bindHeader() {
+        val filterLabel: TextView? = findViewById(R.id.gs_filter_tab_filter_label)
+        val filterIndicator: View? = findViewById(R.id.gs_filter_tab_filter_indicator)
+        val adjustLabel: TextView? = findViewById(R.id.gs_filter_tab_adjust_label)
+        val adjustIndicator: View? = findViewById(R.id.gs_filter_tab_adjust_indicator)
+        val filterParts = TabParts(
+            label = filterLabel,
+            indicator = filterIndicator,
+        )
+        val adjustParts = TabParts(
+            label = adjustLabel,
+            indicator = adjustIndicator,
+        )
+        tabFilter?.tag = filterParts
+        tabAdjust?.tag = adjustParts
+        listOfNotNull(filterParts.indicator, adjustParts.indicator).forEach { indicator ->
+            indicator.background = style.tabIndicatorColor.toDrawable()
+            indicator.layoutParams?.let { params ->
+                params.height = style.tabIndicatorHeight
+                indicator.layoutParams = params
+            }
         }
+        tabFilter?.setOnClickListener {
+            setSelectedTab(ControlTab.Filter)
+            onControlTabSelected?.invoke(ControlTab.Filter)
+        }
+        tabAdjust?.setOnClickListener {
+            setSelectedTab(ControlTab.Adjust)
+            onControlTabSelected?.invoke(ControlTab.Adjust)
+        }
+        buttonClose?.iconRippleRes = style.closeIconRes
+        style.iconPadding?.let { buttonClose?.paddingRipple = it }
+        buttonClose?.setOnClickListener { onCloseClick?.invoke() }
+    }
 
     private fun bindFilterContent() {
-        buttonOriginalFilter.setOnClickListener { selectFilter(catalog.defaultFilter) }
-        filterContent.addView(
-            LinearLayout(context).apply {
-                isBaselineAligned = false
-                gravity = Gravity.CENTER_VERTICAL
-                orientation = HORIZONTAL
-                layoutParams = LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT).apply {
-                    topMargin = categoryTopSpacing()
+        buttonOriginalFilter?.iconRippleRes = style.noneIconRes
+        style.iconPadding?.let { buttonOriginalFilter?.paddingRipple = it }
+        buttonOriginalFilter?.setOnClickListener { selectFilter(catalog.defaultFilter) }
+        filterRecyclerView?.layoutManager = LinearLayoutManager(context, RecyclerView.HORIZONTAL, false)
+        filterRecyclerView?.adapter = filterAdapter
+        filterRecyclerView?.itemAnimator = null
+        filterIntensityLabel?.setTextColor(style.intensityTextColor)
+        filterIntensityValue?.setTextColor(style.intensityTextColor)
+        filterIntensitySeekBar?.progressBackgroundTintList = ColorStateList.valueOf(style.intensityTrackColor)
+        filterIntensitySeekBar?.progressTintList = ColorStateList.valueOf(style.intensityProgressColor)
+        filterIntensitySeekBar?.thumbTintList = ColorStateList.valueOf(style.intensityTextColor)
+        filterIntensitySeekBar?.max = FILTER_INTENSITY_MAX
+        filterIntensitySeekBar?.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
+            override fun onProgressChanged(view: SeekBar, progress: Int, fromUser: Boolean) {
+                if (fromUser && !isRenderingFilterIntensity) {
+                    onFilterIntensityChanged?.invoke(progress)
                 }
-                addView(buttonOriginalFilter)
-                addView(HorizontalScrollView(context).apply {
-                    isHorizontalScrollBarEnabled = false
-                    layoutParams = LayoutParams(0, LayoutParams.WRAP_CONTENT, 1f).apply {
-                        gravity = Gravity.CENTER_VERTICAL
-                        marginStart = itemSpacing()
-                    }
-                    addView(categoryContainer)
-                })
-            },
-        )
-        filterContent.addView(
-            filterRecyclerView,
-            LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT).apply {
-                topMargin = itemSpacing()
-            },
-        )
-        filterContent.addView(
-            filterIntensityRow,
-            LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT).apply {
-                topMargin = itemSpacing()
-            },
-        )
+            }
+
+            override fun onStartTrackingTouch(view: SeekBar) = Unit
+
+            override fun onStopTrackingTouch(view: SeekBar) = Unit
+        })
     }
 
     private fun bindAdjustContent() {
@@ -334,16 +339,17 @@ class FilterControlsView @JvmOverloads constructor(
     }
 
     private fun renderCategoryChips() {
+        val container = categoryContainer ?: return
         categoryChips.clear()
-        categoryContainer.removeAllViews()
+        container.removeAllViews()
         catalog.categories.forEachIndexed { index, category ->
             val chip = createCategoryChip(
                 index = index,
                 text = category.displayName(context).toString(),
                 onClick = { selectCategory(category) },
-            )
+            ) ?: return@forEachIndexed
             categoryChips[category.id] = chip
-            categoryContainer.addView(chip)
+            container.addView(chip)
         }
     }
 
@@ -375,148 +381,52 @@ class FilterControlsView @JvmOverloads constructor(
         onFilterSelected?.invoke(filter)
     }
 
-    private fun createFilterIntensityRow(): View =
-        LinearLayout(context).apply {
-            isBaselineAligned = false
-            gravity = Gravity.CENTER_VERTICAL
-            orientation = HORIZONTAL
-            visibility = GONE
-
-            addView(TextView(context).apply {
-                ellipsize = TextUtils.TruncateAt.END
-                maxLines = 1
-                setText(R.string.gs_filter_intensity)
-                setTextColor(style.textColor)
-                textSize = 12f
-            })
-            addView(
-                filterIntensitySeekBar.apply {
-                    max = FILTER_INTENSITY_MAX
-                    setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
-                        override fun onProgressChanged(view: SeekBar, progress: Int, fromUser: Boolean) {
-                            if (fromUser && !isRenderingFilterIntensity) {
-                                onFilterIntensityChanged?.invoke(progress)
-                            }
-                        }
-
-                        override fun onStartTrackingTouch(view: SeekBar) = Unit
-
-                        override fun onStopTrackingTouch(view: SeekBar) = Unit
-                    })
-                },
-                LayoutParams(0, LayoutParams.WRAP_CONTENT, 1f).apply {
-                    marginStart = itemSpacing()
-                    marginEnd = itemSpacing()
-                },
-            )
-            addView(
-                filterIntensityValue.apply {
-                    gravity = Gravity.END
-                    setTextColor(style.textColor)
-                    textSize = 12f
-                },
-                LayoutParams(
-                    resources.getDimensionPixelSize(R.dimen.gs_adjust_value_width),
-                    LayoutParams.WRAP_CONTENT,
-                ),
-            )
-        }
-
     private fun renderFilterIntensity() {
-        val canAdjustIntensity = selectedFilter.recipe != FilterRecipe()
-        filterIntensityRow.visibility = if (canAdjustIntensity) VISIBLE else GONE
+        val canAdjustIntensity = style.showIntensity && selectedFilter.recipe != FilterRecipe()
+        filterIntensityRow?.visibility = if (canAdjustIntensity) VISIBLE else GONE
         if (!canAdjustIntensity) {
             return
         }
 
         val intensity = selectedRecipe.intensity.coerceIn(0, FILTER_INTENSITY_MAX)
         isRenderingFilterIntensity = true
-        filterIntensitySeekBar.progress = intensity
-        filterIntensityValue.text = intensity.toString()
+        filterIntensitySeekBar?.progress = intensity
+        filterIntensityValue?.text = intensity.toString()
         isRenderingFilterIntensity = false
     }
 
-    private fun createTab(textRes: Int, tab: ControlTab, isSelected: Boolean): LinearLayout {
-        val label = TextView(context).apply {
-            gravity = Gravity.CENTER
-            includeFontPadding = false
-            maxLines = 1
-            ellipsize = TextUtils.TruncateAt.END
-            minHeight = chipMinHeight()
-            setPadding(chipHorizontalPadding(), chipVerticalPadding(), chipHorizontalPadding(), chipVerticalPadding())
-            setText(textRes)
-            textSize = 14f
-        }
-        val indicator = View(context).apply {
-            background = style.tabIndicatorColor.toDrawable()
-            visibility = if (style.showTabIndicator && isSelected) VISIBLE else INVISIBLE
-            layoutParams = LayoutParams(LayoutParams.MATCH_PARENT, style.tabIndicatorHeight)
-        }
-        return LinearLayout(context).apply {
-            orientation = VERTICAL
-            isClickable = true
-            isFocusable = true
-            setOnClickListener {
-                setSelectedTab(tab)
-                onControlTabSelected?.invoke(tab)
-            }
-            layoutParams = LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT).apply {
-                if (!isSelected) {
-                    marginStart = itemSpacing()
-                }
-            }
-            addView(label)
-            addView(indicator)
-            tag = TabParts(label, indicator)
-            renderTab(this, isSelected)
-        }
-    }
-
-    private fun renderTab(tab: LinearLayout, isSelected: Boolean) {
-        tab.isSelected = isSelected
+    private fun renderTab(tab: LinearLayout?, isSelected: Boolean) {
+        tab?.isSelected = isSelected
         if (style.useTabBackground) {
-            tab.setBackgroundResource(if (isSelected) style.selectedTabBackgroundRes else style.tabBackgroundRes)
+            tab?.setBackgroundResource(if (isSelected) style.selectedTabBackgroundRes else style.tabBackgroundRes)
         } else {
-            tab.background = null
+            tab?.background = null
         }
-        val parts = tab.tag as TabParts
-        parts.label.setTextColor(if (isSelected) style.selectedTabTextColor else style.tabTextColor)
-        parts.indicator.visibility = if (style.showTabIndicator && isSelected) VISIBLE else INVISIBLE
+        val parts = tab?.tag as? TabParts
+        parts?.label?.setTextColor(if (isSelected) style.selectedTabTextColor else style.tabTextColor)
+        parts?.indicator?.visibility = if (style.showTabIndicator && isSelected) VISIBLE else INVISIBLE
     }
 
-    private fun createOriginalButton(): RippleImageView =
-        RippleImageView(context).apply {
-            contentDescription = context.getString(R.string.gs_action_original)
-            iconRippleRes = style.noneIconRes
-            style.iconPadding?.let { paddingRipple = it }
-            layoutParams = LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT).apply {
-                gravity = Gravity.CENTER_VERTICAL
-            }
-        }
-
-    private fun createCategoryChip(index: Int, text: String, onClick: () -> Unit): TextView =
-        TextView(context).apply {
+    private fun createCategoryChip(index: Int, text: String, onClick: () -> Unit): TextView? {
+        val container = categoryContainer ?: return null
+        val chip = LayoutInflater.from(context).inflate(
+            R.layout.gs_item_filter_category,
+            container,
+            false,
+        ) as? TextView ?: return null
+        return chip.apply {
             this.text = text
-            gravity = Gravity.CENTER
-            includeFontPadding = false
-            maxLines = 1
-            minHeight = chipMinHeight()
             setBackgroundResource(style.chipBackgroundRes)
-            setPadding(chipHorizontalPadding(), chipVerticalPadding(), chipHorizontalPadding(), chipVerticalPadding())
             setTextColor(style.textColor)
-            textSize = 14f
-            isClickable = true
-            isFocusable = true
             setOnClickListener { onClick() }
-            layoutParams = LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT).apply {
-                if (index > 0) {
-                    marginStart = itemSpacing()
-                }
+            if (index > 0) {
+                (layoutParams as? LayoutParams)?.marginStart = itemSpacing()
             }
         }
+    }
 
     private fun renderOriginalAction() {
-        buttonOriginalFilter.isSelected = false
+        buttonOriginalFilter?.isSelected = false
     }
 
     private fun renderCategories(selectedCategory: FilterCategory) {
@@ -529,17 +439,6 @@ class FilterControlsView @JvmOverloads constructor(
 
     private fun itemSpacing(): Int = resources.getDimensionPixelSize(R.dimen.gs_filter_item_spacing)
 
-    private fun categoryTopSpacing(): Int =
-        resources.getDimensionPixelSize(R.dimen.gs_filter_category_top_spacing)
-
-    private fun chipMinHeight(): Int = resources.getDimensionPixelSize(R.dimen.gs_filter_chip_min_height)
-
-    private fun chipHorizontalPadding(): Int =
-        resources.getDimensionPixelSize(R.dimen.gs_filter_chip_horizontal_padding)
-
-    private fun chipVerticalPadding(): Int =
-        resources.getDimensionPixelSize(R.dimen.gs_filter_chip_vertical_padding)
-
     private companion object {
         val CATALOG_EXECUTOR = Executors.newSingleThreadExecutor()
         const val FILTER_INTENSITY_MAX = 100
@@ -551,8 +450,8 @@ class FilterControlsView @JvmOverloads constructor(
     }
 
     private data class TabParts(
-        val label: TextView,
-        val indicator: View,
+        val label: TextView?,
+        val indicator: View?,
     )
 
     private data class FilterControlsStyle(
@@ -575,6 +474,10 @@ class FilterControlsView @JvmOverloads constructor(
         val showTabIndicator: Boolean,
         val tabIndicatorColor: Int,
         val tabIndicatorHeight: Int,
+        val showIntensity: Boolean,
+        val intensityTextColor: Int,
+        val intensityProgressColor: Int,
+        val intensityTrackColor: Int,
         val catalogAssetPath: String?,
     ) {
         constructor(context: Context, attrs: AttributeSet?) : this(
@@ -673,6 +576,25 @@ class FilterControlsView @JvmOverloads constructor(
                 R.styleable.FilterControlsView_gsFilterTabIndicatorHeight,
                 context.resources.getDimensionPixelSize(R.dimen.gs_filter_tab_indicator_height),
             ),
+            showIntensity = array.getBoolean(R.styleable.FilterControlsView_gsFilterShowIntensity, true),
+            intensityTextColor = array.getColor(
+                R.styleable.FilterControlsView_gsFilterIntensityTextColor,
+                array.getColor(
+                    R.styleable.FilterControlsView_gsFilterTextColor,
+                    context.getColor(R.color.gs_text_secondary),
+                ),
+            ),
+            intensityProgressColor = array.getColor(
+                R.styleable.FilterControlsView_gsFilterIntensityProgressColor,
+                array.getColor(
+                    R.styleable.FilterControlsView_gsFilterSelectedColor,
+                    context.getColor(R.color.gs_filter_selected),
+                ),
+            ),
+            intensityTrackColor = array.getColor(
+                R.styleable.FilterControlsView_gsFilterIntensityTrackColor,
+                context.getColor(R.color.gs_adjust_track_background),
+            ),
             catalogAssetPath = array.getString(R.styleable.FilterControlsView_gsFilterCatalogAsset),
         ) {
             array.recycle()
@@ -699,7 +621,14 @@ class FilterControlsView @JvmOverloads constructor(
         override fun getItemId(position: Int): Long = getItem(position).filter.id.hashCode().toLong()
 
         override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): FilterHolder =
-            FilterHolder(parent, onFilterSelected)
+            FilterHolder(
+                itemView = LayoutInflater.from(parent.context).inflate(
+                    R.layout.gs_item_filter_option,
+                    parent,
+                    false,
+                ),
+                onFilterSelected = onFilterSelected,
+            )
 
         override fun onBindViewHolder(holder: FilterHolder, position: Int) {
             holder.bind(getItem(position))
@@ -710,88 +639,42 @@ class FilterControlsView @JvmOverloads constructor(
         }
 
         class FilterHolder(
-            parent: ViewGroup,
+            itemView: View,
             private val onFilterSelected: (FilterOption) -> Unit,
-        ) : RecyclerView.ViewHolder(FrameLayout(parent.context)) {
+        ) : RecyclerView.ViewHolder(itemView) {
 
-            private val image = ImageView(parent.context)
-            private val label = TextView(parent.context)
-            private lateinit var style: FilterControlsStyle
-
-            init {
-                val context = parent.context
-                val width = context.resources.getDimensionPixelSize(R.dimen.gs_filter_thumbnail_width)
-                val height = context.resources.getDimensionPixelSize(R.dimen.gs_filter_thumbnail_height)
-                val inset = context.resources.getDimensionPixelSize(R.dimen.gs_filter_thumbnail_inset)
-                val labelHeight = context.resources.getDimensionPixelSize(R.dimen.gs_filter_thumbnail_label_height)
-                val labelPadding = context.resources.getDimensionPixelSize(R.dimen.gs_filter_thumbnail_label_padding)
-                val spacing = context.resources.getDimensionPixelSize(R.dimen.gs_filter_item_spacing)
-
-                itemView.layoutParams = RecyclerView.LayoutParams(width, height).apply {
-                    marginEnd = spacing
-                }
-                itemView.isClickable = true
-                itemView.isFocusable = true
-
-                val root = itemView as FrameLayout
-                image.importantForAccessibility = IMPORTANT_FOR_ACCESSIBILITY_NO
-                image.scaleType = ImageView.ScaleType.CENTER_CROP
-                root.addView(
-                    image,
-                    FrameLayout.LayoutParams(
-                        FrameLayout.LayoutParams.MATCH_PARENT,
-                        FrameLayout.LayoutParams.MATCH_PARENT,
-                    ).apply {
-                        setMargins(inset, inset, inset, inset)
-                    },
-                )
-                root.addView(
-                    label.apply {
-                        ellipsize = TextUtils.TruncateAt.END
-                        gravity = Gravity.CENTER
-                        includeFontPadding = false
-                        maxLines = 1
-                        setPadding(labelPadding, 0, labelPadding, 0)
-                        textSize = 12f
-                    },
-                    FrameLayout.LayoutParams(
-                        FrameLayout.LayoutParams.MATCH_PARENT,
-                        labelHeight,
-                        Gravity.BOTTOM,
-                    ).apply {
-                        setMargins(inset, 0, inset, inset)
-                    },
-                )
-            }
+            private val image: ImageView? = itemView.findViewById(R.id.gs_filter_option_image)
+            private val label: TextView? = itemView.findViewById(R.id.gs_filter_option_label)
 
             fun bind(item: FilterItem) {
-                style = item.style
+                val style = item.style
                 itemView.setBackgroundResource(
                     if (item.isSelected) style.selectedCardBackgroundRes else style.cardBackgroundRes,
                 )
                 itemView.setOnClickListener { onFilterSelected(item.filter) }
-                label.setBackgroundResource(style.labelBackgroundRes)
-                label.setTextColor(style.labelTextColor)
-                label.text = item.filter.displayName(itemView.context)
+                label?.setBackgroundResource(style.labelBackgroundRes)
+                label?.setTextColor(style.labelTextColor)
+                label?.text = item.filter.displayName(itemView.context)
 
                 val source = item.thumbnailBitmap
                 val sourceKey = item.thumbnailKey
+                val imageView = image ?: return
                 if (source == null || sourceKey == null) {
-                    Glide.with(image).clear(image)
-                    image.setImageBitmap(source)
+                    Glide.with(imageView).clear(imageView)
+                    imageView.setImageBitmap(source)
                     return
                 }
 
-                Glide.with(image)
+                Glide.with(imageView)
                     .load(FilterThumbnailModel(sourceKey, source, item.filter))
                     .placeholder(source.toDrawable(itemView.resources))
                     .diskCacheStrategy(DiskCacheStrategy.RESOURCE)
                     .dontAnimate()
-                    .into(image)
+                    .into(imageView)
             }
 
             fun clear() {
-                Glide.with(image).clear(image)
+                image?.let { Glide.with(it).clear(it) }
             }
         }
 
