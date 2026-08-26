@@ -40,7 +40,7 @@ class FilterPreviewView @JvmOverloads constructor(
     }
 
     fun setFilterState(recipe: FilterRecipe, adjustments: Adjustments) {
-        val params = ShaderFilterParams.Companion.from(recipe, adjustments)
+        val params = ShaderFilterParams.from(recipe, adjustments)
         if (params == lastFilterParams) {
             return
         }
@@ -78,7 +78,7 @@ class FilterPreviewView @JvmOverloads constructor(
         private var imageHeight = 0
         private var surfaceWidth = 0
         private var surfaceHeight = 0
-        private var params = ShaderFilterParams.Companion.from(FilterRecipe(), Adjustments())
+        private var params = ShaderFilterParams.from(FilterRecipe(), Adjustments())
 
         override fun onSurfaceCreated(gl: GL10?, config: EGLConfig?) {
             program = buildProgram(VERTEX_SHADER, FRAGMENT_SHADER)

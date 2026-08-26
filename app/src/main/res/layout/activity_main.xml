@@ -89,7 +89,7 @@
                     android:layout_marginTop="@dimen/item_spacing"
                     android:background="@color/preview_background">
 
-                    <com.gsfilter.filter.FilterPreviewView
+                    <com.gsfilter.filter.view.FilterPreviewView
                         android:id="@+id/filterPreview"
                         android:layout_width="match_parent"
                         android:layout_height="match_parent"/>
@@ -111,7 +111,7 @@
             android:textColor="@android:color/holo_red_dark"
             android:visibility="gone"/>
 
-        <com.gsfilter.filter.FilterControlsView
+        <com.gsfilter.filter.view.FilterControlsView
             android:id="@+id/filterControls"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"

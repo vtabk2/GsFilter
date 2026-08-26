@@ -59,7 +59,7 @@ public final class GsFilterGlideModule extends AppGlideModule {
 Thêm preview view trong XML:
 
 ```xml
-<com.gsfilter.filter.FilterPreviewView
+<com.gsfilter.filter.view.FilterPreviewView
     android:id="@+id/filterPreview"
     android:layout_width="match_parent"
     android:layout_height="match_parent" />
@@ -74,12 +74,36 @@ binding.filterPreview.setFilterState(selectedFilter.recipe, adjustments)
 
 `setFilterState()` bỏ qua params trùng nhau và gom các thay đổi adjust nhanh vào frame kế tiếp.
 
+## Render bitmap không cần view
+
+Nếu host không dùng `FilterPreviewView`, có thể render bitmap kết quả trực tiếp bằng API trong module `:filter`:
+
+```kotlin
+val resultBitmap = FilterBitmapRenderer.getBitmap(
+    source = sourceBitmap,
+    recipe = selectedFilter.recipe,
+    adjustments = adjustments,
+)
+```
+
+API này không phụ thuộc UI view hay `GLSurfaceView`. Với ảnh lớn, gọi nó ngoài main thread:
+
+```kotlin
+val resultBitmap = withContext(Dispatchers.Default) {
+    FilterBitmapRenderer.getBitmap(
+        source = sourceBitmap,
+        recipe = selectedFilter.recipe,
+        adjustments = adjustments,
+    )
+}
+```
+
 ## Cách dùng controls
 
 `FilterControlsView` tự render UI category/filter và tab Adjust. Host vẫn giữ app state, preview rendering, save/export, và navigation.
 
 ```xml
-<com.gsfilter.filter.FilterControlsView
+<com.gsfilter.filter.view.FilterControlsView
     android:id="@+id/filterControls"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"

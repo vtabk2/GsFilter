@@ -1089,3 +1089,30 @@ Status: DONE
 - `Get-Content app/src/main/assets/filter_pack.json | ConvertFrom-Json | Out-Null` passed.
 - `git diff --check` passed.
 - `gradle :filter:testDebugUnitTest :app:testDebugUnitTest :app:assembleDebug` passed using the cached Gradle wrapper and Android Studio JBR after the sandboxed run was blocked by network permissions.
+
+## Task: Add view-free filtered bitmap rendering
+
+Status: DONE
+
+### Requirements
+
+- Provide logic to get a filtered `Bitmap` without using `FilterPreviewView` or any UI view.
+- Keep filter recipe and user adjust values applied together.
+- Reuse existing filter math where possible.
+
+### Checklist
+
+- [x] Add a public bitmap renderer API in `:filter`.
+- [x] Keep thumbnail rendering on the same math path.
+- [x] Add focused unit coverage.
+- [x] Run relevant verification.
+
+### Notes
+
+- `FilterPreviewView` only renders to `GLSurfaceView`; it does not expose a bitmap output API.
+- `FilterThumbnailRenderer` already has CPU pixel math, but currently only takes `FilterRecipe`.
+- Added `FilterBitmapRenderer.getBitmap(source, recipe, adjustments)` for view-free bitmap output.
+- `FilterThumbnailRenderer` now delegates to `FilterBitmapRenderer` so thumbnail and exported bitmap rendering share one math path.
+- Added `FilterBitmapRendererTest` for default output, user adjustments, and invalid dimensions.
+- `git diff --check` passed.
+- `:filter:testDebugUnitTest :app:assembleDebug` passed after rerunning Gradle outside the sandbox due network/cache restrictions.
