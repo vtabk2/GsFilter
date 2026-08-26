@@ -97,6 +97,8 @@ binding.filterControls.onControlTabSelected = { tab ->
 }
 binding.filterControls.onCategorySelected = { category -> viewModel.selectCategory(category) }
 binding.filterControls.onFilterSelected = { filter -> viewModel.selectFilter(filter) }
+binding.filterControls.onAdjustmentChanged = { control, value -> viewModel.setAdjustment(control, value) }
+binding.filterControls.onResetAllAdjustClick = { viewModel.resetAdjustments() }
 binding.filterControls.onCatalogLoaded = { pack ->
     // If the host keeps MVVM state, store this same pack there too.
     // The current selected category/filter should usually be reset to pack.defaultCategory/defaultFilter.
@@ -115,6 +117,7 @@ binding.filterControls.setState(
     thumbnailBitmap = state.filterThumbnailBitmap,
     thumbnailKey = FilterSourceKey.asset("sample.jpg"),
 )
+binding.filterControls.setAdjustments(state.adjustments)
 ```
 
 Notes:
@@ -123,6 +126,7 @@ Notes:
 - Changing category only changes the visible filter list.
 - A filter is applied only after tapping a filter item.
 - Re-tapping the visible category can refocus the category containing the active filter.
+- The Adjust tab is rendered by the same `FilterControlsView`; the host receives adjust callbacks and sends current `Adjustments` back with `setAdjustments()`.
 
 ## Stable thumbnail cache keys
 
@@ -230,6 +234,13 @@ Available XML attributes:
 | `gsFilterTabIndicatorColor` | Tab indicator color |
 | `gsFilterTabIndicatorHeight` | Tab indicator height |
 | `gsFilterCatalogAsset` | Optional asset path for a JSON filter pack |
+| `gsAdjustTextColor` | Adjust value text, reset icon thumb fallback |
+| `gsAdjustSecondaryTextColor` | Unselected adjust item icon/label color |
+| `gsAdjustSelectedColor` | Selected adjust item, seekbar progress, and changed-dot accent |
+| `gsAdjustTrackColor` | Adjust seekbar track color |
+| `gsAdjustResetIcon` | Adjust current-control reset icon drawable |
+| `gsAdjustResetIconPadding` | Optional reset icon padding override; omitted uses `RippleImageView` default |
+| `gsAdjustResetAllText` | Reset-all button text |
 
 For bigger visual changes, prefer replacing drawable resources through these attrs before adding a new custom layout API.
 

@@ -987,3 +987,29 @@ Status: DONE
 - The reset adjust `RippleImageView` was large because it was forced to `36dp x 36dp`.
 - It now uses `wrap_content` so `RippleImageView` default sizing/padding controls its measured size.
 - `:filter:testDebugUnitTest :app:testDebugUnitTest :app:assembleDebug` passed after the reset icon size update.
+
+## Task: Move adjust controls logic into filter module
+
+Status: DONE
+
+### Requirements
+
+- Move adjust UI/control logic out of the sample app and into reusable `:filter` module code.
+- Keep the app module as a host that only forwards adjust callbacks to the ViewModel and renders state back.
+- Preserve the current adjust behavior: selected control, seekbar ranges, current reset, reset all, changed dots, and icon/text selection colors.
+- Keep Filter and Adjust under the existing shared `FilterControlsView` tab header.
+
+### Checklist
+
+- [x] Add internal adjust controls implementation in `:filter`.
+- [x] Move adjust panel resources needed by the reusable view into `:filter`.
+- [x] Replace app-side adjust panel layout and Activity logic with `FilterControlsView` callbacks.
+- [x] Document the reusable adjust callbacks and styling attrs.
+- [x] Run unit tests and assemble debug.
+
+### Notes
+
+- Adjust rendering now lives inside `FilterControlsView`, not as a separate app layout, so it shares the existing Filter/Adjust tab row.
+- The app now only wires `onAdjustmentChanged`, `onResetAllAdjustClick`, and `setAdjustments()`.
+- Removed app-owned adjust reset icon, changed-dot drawable, strings, colors, and dimens that moved into `:filter`.
+- `:filter:testDebugUnitTest :app:testDebugUnitTest :app:assembleDebug` passed after moving adjust controls into the filter module.

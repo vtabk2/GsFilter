@@ -47,6 +47,8 @@ class FilterControlsView @JvmOverloads constructor(
     var onControlTabSelected: ((ControlTab) -> Unit)? = null
     var onCategorySelected: ((FilterCategory) -> Unit)? = null
     var onFilterSelected: ((FilterOption) -> Unit)? = null
+    var onAdjustmentChanged: ((AdjustControl, Int) -> Unit)? = null
+    var onResetAllAdjustClick: (() -> Unit)? = null
     var onCatalogLoaded: ((FilterPack) -> Unit)? = null
     var onCatalogLoadFailed: ((Throwable) -> Unit)? = null
 
@@ -68,12 +70,20 @@ class FilterControlsView @JvmOverloads constructor(
     private val filterContent = LinearLayout(context).apply {
         orientation = VERTICAL
     }
+    private val adjustContent = AdjustControlsView(context, attrs)
 
     init {
         orientation = VERTICAL
         addView(createHeader())
         addView(filterContent)
+        addView(
+            adjustContent,
+            LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT).apply {
+                topMargin = itemSpacing()
+            },
+        )
         bindFilterContent()
+        bindAdjustContent()
         setCatalog(catalog)
         setSelectedTab(ControlTab.Filter)
         style.catalogAssetPath?.let(::loadCatalogFromAssets)
@@ -84,6 +94,7 @@ class FilterControlsView @JvmOverloads constructor(
         renderTab(tabFilter, isFilterSelected)
         renderTab(tabAdjust, !isFilterSelected)
         filterContent.visibility = if (isFilterSelected) VISIBLE else GONE
+        adjustContent.visibility = if (isFilterSelected) GONE else VISIBLE
     }
 
     fun setCatalog(catalog: FilterPack) {
@@ -144,6 +155,10 @@ class FilterControlsView @JvmOverloads constructor(
         this.thumbnailKey = thumbnailKey
         this.thumbnailGenerationId = nextThumbnailGenerationId
         renderState()
+    }
+
+    fun setAdjustments(adjustments: Adjustments) {
+        adjustContent.setAdjustments(adjustments)
     }
 
     override fun onDetachedFromWindow() {
@@ -225,6 +240,15 @@ class FilterControlsView @JvmOverloads constructor(
                 topMargin = itemSpacing()
             },
         )
+    }
+
+    private fun bindAdjustContent() {
+        adjustContent.onAdjustmentChanged = { control, value ->
+            onAdjustmentChanged?.invoke(control, value)
+        }
+        adjustContent.onResetAllClick = {
+            onResetAllAdjustClick?.invoke()
+        }
     }
 
     private fun renderCategoryChips() {

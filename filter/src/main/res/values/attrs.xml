@@ -22,4 +22,14 @@
         <attr name="gsFilterTabIndicatorHeight" format="dimension"/>
         <attr name="gsFilterCatalogAsset" format="string"/>
     </declare-styleable>
+
+    <declare-styleable name="AdjustControlsView">
+        <attr name="gsAdjustTextColor" format="color|reference"/>
+        <attr name="gsAdjustSecondaryTextColor" format="color|reference"/>
+        <attr name="gsAdjustSelectedColor" format="color|reference"/>
+        <attr name="gsAdjustTrackColor" format="color|reference"/>
+        <attr name="gsAdjustResetIcon" format="reference"/>
+        <attr name="gsAdjustResetIconPadding" format="dimension"/>
+        <attr name="gsAdjustResetAllText" format="string|reference"/>
+    </declare-styleable>
 </resources>

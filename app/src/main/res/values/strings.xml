@@ -4,8 +4,6 @@
     <string name="percent_suffix" translatable="false">%</string>
     <string name="section_filter">Filters</string>
     <string name="section_adjust">Adjust</string>
-    <string name="action_reset_adjust">Reset Selected Adjust</string>
-    <string name="action_reset_all_adjust">Reset All</string>
     <string name="source_preview">Original</string>
     <string name="result_preview">Result</string>
     <string name="loading_image">Loading image</string>

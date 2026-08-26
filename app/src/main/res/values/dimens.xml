@@ -3,20 +3,4 @@
     <dimen name="section_spacing">20dp</dimen>
     <dimen name="item_spacing">8dp</dimen>
     <dimen name="preview_height">220dp</dimen>
-    <dimen name="button_min_height">48dp</dimen>
-    <dimen name="filter_chip_min_height">36dp</dimen>
-    <dimen name="filter_chip_horizontal_padding">18dp</dimen>
-    <dimen name="filter_chip_vertical_padding">8dp</dimen>
-    <dimen name="filter_thumbnail_width">76dp</dimen>
-    <dimen name="filter_thumbnail_height">88dp</dimen>
-    <dimen name="filter_thumbnail_inset">2dp</dimen>
-    <dimen name="filter_thumbnail_label_height">26dp</dimen>
-    <dimen name="filter_thumbnail_label_padding">4dp</dimen>
-    <dimen name="adjust_panel_padding">8dp</dimen>
-    <dimen name="adjust_icon_size">24dp</dimen>
-    <dimen name="adjust_dot_size">5dp</dimen>
-    <dimen name="adjust_item_gap">2dp</dimen>
-    <dimen name="adjust_item_width">78dp</dimen>
-    <dimen name="adjust_item_min_height">54dp</dimen>
-    <dimen name="adjust_value_width">36dp</dimen>
 </resources>
