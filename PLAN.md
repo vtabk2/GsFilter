@@ -1143,6 +1143,33 @@ Status: DONE
 - `git diff --check` passed.
 - `:filter:testDebugUnitTest :app:testDebugUnitTest :app:assembleDebug` passed after rerunning Gradle outside the sandbox due network/cache restrictions.
 
+## Task: Add sketch-style non-LUT filters
+
+Status: DONE
+
+### Requirements
+
+- Add drawing-style filters that do not require LUT.
+- Start with lightweight Sketch and Ink effects.
+- Keep built-in catalog, JSON filter packs, preview, thumbnails, and bitmap export aligned.
+
+### Checklist
+
+- [x] Add a recipe effect type.
+- [x] Render Sketch and Ink in the shared GPU shader path.
+- [x] Render Sketch and Ink in the CPU bitmap path.
+- [x] Add built-in Sketch and Ink presets/resources.
+- [x] Add focused tests and run verification.
+
+### Notes
+
+- Added `FilterEffect.Color`, `FilterEffect.Sketch`, and `FilterEffect.Ink`.
+- JSON recipes can now use `effect: "sketch"` or `effect: "ink"`.
+- Built-in catalog includes `Sketch` and `Ink` under Creative.
+- `Get-Content app/src/main/assets/filter_pack.json | ConvertFrom-Json | Out-Null` passed.
+- `git diff --check` passed.
+- `:filter:testDebugUnitTest :app:testDebugUnitTest :app:assembleDebug` passed after rerunning Gradle outside the sandbox due network/cache restrictions.
+
 ## Task: Optimize bitmap export with scaling and offscreen GPU rendering
 
 Status: DONE

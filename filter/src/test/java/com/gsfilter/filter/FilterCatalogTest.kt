@@ -77,4 +77,10 @@ class FilterCatalogTest {
             },
         )
     }
+
+    @Test
+    fun `catalog includes sketch-style filters`() {
+        assertTrue(FilterCatalog.options.any { it.id == "sketch" && it.recipe.effect == FilterEffect.Sketch })
+        assertTrue(FilterCatalog.options.any { it.id == "ink" && it.recipe.effect == FilterEffect.Ink })
+    }
 }

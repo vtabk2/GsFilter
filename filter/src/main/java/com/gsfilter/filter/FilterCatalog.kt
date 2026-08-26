@@ -1583,6 +1583,33 @@ object FilterCatalog {
                 ),
             ),
         ),
+        FilterOption(
+            id = "sketch",
+            categoryIds = setOf(POPULAR, CREATIVE),
+            nameRes = R.string.gs_filter_sketch,
+            recipe = FilterRecipe(
+                effect = FilterEffect.Sketch,
+                adjustments = Adjustments(
+                    contrast = 10,
+                    highlights = 8,
+                    shadows = -6,
+                    grain = 4,
+                ),
+            ),
+        ),
+        FilterOption(
+            id = "ink",
+            categoryIds = setOf(CREATIVE, BLACK_WHITE),
+            nameRes = R.string.gs_filter_ink,
+            recipe = FilterRecipe(
+                effect = FilterEffect.Ink,
+                adjustments = Adjustments(
+                    contrast = 18,
+                    highlights = 10,
+                    shadows = -12,
+                ),
+            ),
+        ),
     )
 
     val defaultCategory: FilterCategory = categories.first()

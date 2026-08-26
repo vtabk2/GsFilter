@@ -55,6 +55,7 @@ internal object GlFilterProgram {
             position = GLES20.glGetAttribLocation(program, A_POSITION),
             textureCoordinate = GLES20.glGetAttribLocation(program, A_TEX_COORD),
             texture = GLES20.glGetUniformLocation(program, U_TEXTURE),
+            effect = GLES20.glGetUniformLocation(program, U_EFFECT),
             mono = GLES20.glGetUniformLocation(program, U_MONO),
             texelSize = GLES20.glGetUniformLocation(program, U_TEXEL_SIZE),
             rgbShift = GLES20.glGetUniformLocation(program, U_RGB_SHIFT),
@@ -102,6 +103,7 @@ internal object GlFilterProgram {
         GLES20.glActiveTexture(GLES20.GL_TEXTURE0)
         GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, textureId)
         GLES20.glUniform1i(handles.texture, 0)
+        GLES20.glUniform1f(handles.effect, params.effect.shaderValue)
         GLES20.glUniform1f(handles.mono, params.isMonochrome)
         GLES20.glUniform2f(
             handles.texelSize,
@@ -143,6 +145,7 @@ internal object GlFilterProgram {
         val position: Int,
         val textureCoordinate: Int,
         val texture: Int,
+        val effect: Int,
         val mono: Int,
         val texelSize: Int,
         val rgbShift: Int,
@@ -177,6 +180,7 @@ internal object GlFilterProgram {
     private const val A_POSITION = "aPosition"
     private const val A_TEX_COORD = "aTexCoord"
     private const val U_TEXTURE = "uTexture"
+    private const val U_EFFECT = "uEffect"
     private const val U_MONO = "uMono"
     private const val U_TEXEL_SIZE = "uTexelSize"
     private const val U_RGB_SHIFT = "uRgbShift"
@@ -211,6 +215,7 @@ internal object GlFilterProgram {
         """
         precision mediump float;
         uniform sampler2D uTexture;
+        uniform float uEffect;
         uniform float uMono;
         uniform vec2 uTexelSize;
         uniform vec3 uRgbShift;
@@ -232,6 +237,26 @@ internal object GlFilterProgram {
 
         float random(vec2 point) {
             return fract(sin(dot(point, vec2(12.9898, 78.233))) * 43758.5453);
+        }
+
+        float lumaAt(vec2 coord) {
+            vec3 rgb = texture2D(uTexture, clamp(coord, vec2(0.0), vec2(1.0))).rgb;
+            return dot(rgb, vec3(0.299, 0.587, 0.114));
+        }
+
+        float edgeAt(vec2 coord) {
+            vec2 texel = uTexelSize;
+            float topLeft = lumaAt(coord + texel * vec2(-1.0, -1.0));
+            float top = lumaAt(coord + texel * vec2(0.0, -1.0));
+            float topRight = lumaAt(coord + texel * vec2(1.0, -1.0));
+            float left = lumaAt(coord + texel * vec2(-1.0, 0.0));
+            float right = lumaAt(coord + texel * vec2(1.0, 0.0));
+            float bottomLeft = lumaAt(coord + texel * vec2(-1.0, 1.0));
+            float bottom = lumaAt(coord + texel * vec2(0.0, 1.0));
+            float bottomRight = lumaAt(coord + texel * vec2(1.0, 1.0));
+            float horizontal = -topLeft - (2.0 * left) - bottomLeft + topRight + (2.0 * right) + bottomRight;
+            float vertical = -topLeft - (2.0 * top) - topRight + bottomLeft + (2.0 * bottom) + bottomRight;
+            return clamp(length(vec2(horizontal, vertical)), 0.0, 1.0);
         }
 
         void main() {
@@ -266,6 +291,19 @@ internal object GlFilterProgram {
             float average = (rgb.r + rgb.g + rgb.b) / 3.0;
             float vibranceMask = 1.0 - clamp(maxChannel - average, 0.0, 1.0);
             rgb = mix(vec3(gray), rgb, 1.0 + (uVibrance * vibranceMask));
+
+            if (uEffect > 0.5) {
+                float sourceGray = dot(color.rgb, vec3(0.299, 0.587, 0.114));
+                float edge = edgeAt(vTexCoord);
+                if (uEffect > 1.5) {
+                    float line = smoothstep(0.10, 0.25, edge);
+                    rgb = vec3(1.0 - line);
+                } else {
+                    float line = smoothstep(0.06, 0.28, edge);
+                    float paper = mix(1.0, sourceGray, 0.18);
+                    rgb = vec3(clamp(paper - (line * 0.8), 0.0, 1.0));
+                }
+            }
 
             rgb = mix(rgb, vec3(0.5), clamp(uFade * 0.35, 0.0, 0.35));
 

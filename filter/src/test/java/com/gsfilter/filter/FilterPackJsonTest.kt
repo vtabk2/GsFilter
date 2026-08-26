@@ -21,6 +21,7 @@ class FilterPackJsonTest {
                   "name": "Teal",
                   "categoryIds": ["cinematic"],
                   "recipe": {
+                    "effect": "ink",
                     "redShift": 180,
                     "adjustments": {
                       "contrast": 180,
@@ -37,6 +38,7 @@ class FilterPackJsonTest {
 
         assertEquals("cinematic", pack.defaultCategory.id)
         assertEquals("Teal", filter.name)
+        assertEquals(FilterEffect.Ink, filter.recipe.effect)
         assertEquals(100, filter.recipe.redShift)
         assertEquals(100, filter.recipe.adjustments.contrast)
         assertEquals(0, filter.recipe.adjustments.sharpness)

@@ -9,6 +9,7 @@ class ShaderFilterParamsTest {
     fun `maps recipe and adjustments to shader values`() {
         val params = ShaderFilterParams.from(
             recipe = FilterRecipe(
+                effect = FilterEffect.Ink,
                 isMonochrome = true,
                 redShift = 10,
                 greenShift = -5,
@@ -32,6 +33,7 @@ class ShaderFilterParamsTest {
             ),
         )
 
+        assertEquals(FilterEffect.Ink, params.effect)
         assertEquals(1f, params.isMonochrome, DELTA)
         assertEquals(10f / 255f, params.redShift, DELTA)
         assertEquals(-5f / 255f, params.greenShift, DELTA)

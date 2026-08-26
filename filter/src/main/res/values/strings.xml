@@ -88,6 +88,8 @@
     <string name="gs_filter_purple">Purple</string>
     <string name="gs_filter_dream">Dream</string>
     <string name="gs_filter_fantasy">Fantasy</string>
+    <string name="gs_filter_sketch">Sketch</string>
+    <string name="gs_filter_ink">Ink</string>
     <string name="gs_category_popular">Popular</string>
     <string name="gs_category_natural">Natural</string>
     <string name="gs_category_film">Film</string>

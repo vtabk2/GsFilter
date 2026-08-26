@@ -44,6 +44,7 @@ object FilterPackJson {
 
     private fun JSONObject.recipe(): FilterRecipe =
         FilterRecipe(
+            effect = FilterEffect.fromJsonName(optString("effect")),
             isMonochrome = optBoolean("isMonochrome", false),
             redShift = optInt("redShift", 0).coerceIn(COLOR_SHIFT_MIN, COLOR_SHIFT_MAX),
             greenShift = optInt("greenShift", 0).coerceIn(COLOR_SHIFT_MIN, COLOR_SHIFT_MAX),

@@ -118,6 +118,20 @@
           "clarity": -6
         }
       }
+    },
+    {
+      "id": "json_sketch",
+      "name": "Sketch",
+      "categoryIds": ["json_popular", "json_cinematic"],
+      "recipe": {
+        "effect": "sketch",
+        "adjustments": {
+          "contrast": 10,
+          "highlights": 8,
+          "shadows": -6,
+          "grain": 4
+        }
+      }
     }
   ]
 }

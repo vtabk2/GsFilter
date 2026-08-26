@@ -232,6 +232,7 @@ Ví dụ JSON:
       "name": "Teal Orange",
       "categoryIds": ["cinematic"],
       "recipe": {
+        "effect": "color",
         "redShift": 12,
         "greenShift": 4,
         "blueShift": 8,
@@ -254,6 +255,7 @@ Ví dụ JSON:
 
 Các field recipe đang hỗ trợ:
 
+- `effect`: `color`, `sketch`, hoặc `ink`; mặc định là `color`.
 - `isMonochrome`: boolean.
 - `redShift`, `greenShift`, `blueShift`: được clamp trong `-100..100`.
 - `adjustments`: `brightness`, `exposure`, `contrast`, `highlights`, `shadows`, `saturation`, `vibrance`, `temperature`, `tint`, `sharpness`, `clarity`, `fade`, `vignette`, `grain`.

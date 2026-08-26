@@ -3,6 +3,7 @@ package com.gsfilter.filter.renderer
 import android.graphics.Bitmap
 import androidx.core.graphics.scale
 import com.gsfilter.filter.Adjustments
+import com.gsfilter.filter.FilterEffect
 import com.gsfilter.filter.FilterRecipe
 import com.gsfilter.filter.ShaderFilterParams
 import kotlin.math.floor
@@ -109,6 +110,7 @@ object FilterBitmapRenderer {
         var red = red(color)
         var green = green(color)
         var blue = blue(color)
+        val sourceGray = gray(red, green, blue)
         val sharpAmount = (params.sharpness * 0.65f) + (params.clarity * 0.35f)
 
         red += (red - average(red(left), red(right), red(up), red(down))) * sharpAmount
@@ -163,6 +165,25 @@ object FilterBitmapRenderer {
         green = mix(gray, green, 1f + (params.vibrance * vibranceMask))
         blue = mix(gray, blue, 1f + (params.vibrance * vibranceMask))
 
+        when (params.effect) {
+            FilterEffect.Color -> Unit
+            FilterEffect.Sketch -> {
+                val line = smoothstep(0.06f, 0.28f, edgeAt(pixels, x, y, width, height))
+                val sketch = clamp(mix(1f, sourceGray, 0.18f) - (line * 0.8f), 0f, 1f)
+                red = sketch
+                green = sketch
+                blue = sketch
+            }
+
+            FilterEffect.Ink -> {
+                val line = smoothstep(0.10f, 0.25f, edgeAt(pixels, x, y, width, height))
+                val ink = 1f - line
+                red = ink
+                green = ink
+                blue = ink
+            }
+        }
+
         val fade = clamp(params.fade * 0.35f, 0f, 0.35f)
         red = mix(red, 0.5f, fade)
         green = mix(green, 0.5f, fade)
@@ -196,6 +217,25 @@ object FilterBitmapRenderer {
     private fun average(a: Float, b: Float, c: Float, d: Float): Float = (a + b + c + d) * 0.25f
 
     private fun gray(red: Float, green: Float, blue: Float): Float = (red * 0.299f) + (green * 0.587f) + (blue * 0.114f)
+
+    private fun edgeAt(pixels: IntArray, x: Int, y: Int, width: Int, height: Int): Float {
+        val topLeft = lumaAt(pixels, x - 1, y - 1, width, height)
+        val top = lumaAt(pixels, x, y - 1, width, height)
+        val topRight = lumaAt(pixels, x + 1, y - 1, width, height)
+        val left = lumaAt(pixels, x - 1, y, width, height)
+        val right = lumaAt(pixels, x + 1, y, width, height)
+        val bottomLeft = lumaAt(pixels, x - 1, y + 1, width, height)
+        val bottom = lumaAt(pixels, x, y + 1, width, height)
+        val bottomRight = lumaAt(pixels, x + 1, y + 1, width, height)
+        val horizontal = -topLeft - (2f * left) - bottomLeft + topRight + (2f * right) + bottomRight
+        val vertical = -topLeft - (2f * top) - topRight + bottomLeft + (2f * bottom) + bottomRight
+        return clamp(sqrt((horizontal * horizontal) + (vertical * vertical)), 0f, 1f)
+    }
+
+    private fun lumaAt(pixels: IntArray, x: Int, y: Int, width: Int, height: Int): Float {
+        val color = pixels[y.coerceIn(0, height - 1) * width + x.coerceIn(0, width - 1)]
+        return gray(red(color), green(color), blue(color))
+    }
 
     private fun mix(start: Float, end: Float, amount: Float): Float = start * (1f - amount) + end * amount
 

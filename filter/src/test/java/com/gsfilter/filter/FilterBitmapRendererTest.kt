@@ -38,6 +38,33 @@ class FilterBitmapRendererTest {
     }
 
     @Test
+    fun `sketch effect draws dark edge lines`() {
+        val white = 0xffffffff.toInt()
+        val black = 0xff000000.toInt()
+        val output = FilterBitmapRenderer.renderPixels(
+            pixels = intArrayOf(
+                white,
+                white,
+                black,
+                white,
+                white,
+                black,
+                white,
+                white,
+                black,
+            ),
+            width = 3,
+            height = 3,
+            params = ShaderFilterParams.from(
+                recipe = FilterRecipe(effect = FilterEffect.Sketch),
+                adjustments = Adjustments(),
+            ),
+        )
+
+        assertTrue((output[4] and 0xff) < 128)
+    }
+
+    @Test
     fun `render pixels rejects mismatched dimensions`() {
         val result = runCatching {
             FilterBitmapRenderer.renderPixels(

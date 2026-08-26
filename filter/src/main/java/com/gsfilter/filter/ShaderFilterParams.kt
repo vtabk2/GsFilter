@@ -1,6 +1,7 @@
 package com.gsfilter.filter
 
 data class ShaderFilterParams(
+    val effect: FilterEffect,
     val isMonochrome: Float,
     val redShift: Float,
     val greenShift: Float,
@@ -24,6 +25,7 @@ data class ShaderFilterParams(
         fun from(recipe: FilterRecipe, adjustments: Adjustments): ShaderFilterParams =
             combineAdjustments(recipe.adjustments, adjustments).let { combined ->
                 ShaderFilterParams(
+                    effect = recipe.effect,
                     isMonochrome = if (recipe.isMonochrome) 1f else 0f,
                     redShift = recipe.redShift / COLOR_CHANNEL_MAX,
                     greenShift = recipe.greenShift / COLOR_CHANNEL_MAX,
