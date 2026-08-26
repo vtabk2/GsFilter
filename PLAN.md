@@ -581,3 +581,30 @@ Status: DONE
 - Renamed `:filter` adjust drawables from `ic_adjust_*` to `ic_gs_adjust_*`.
 - Updated `AdjustControl` to reference the prefixed drawable names.
 - `:filter:testDebugUnitTest :app:testDebugUnitTest :app:assembleDebug` passed after the rename.
+
+## Task: Prefix filter library string resources
+
+Status: DONE
+
+### Requirements
+
+- Prefix string resources owned by the `:filter` module to avoid host app collisions.
+- Keep displayed English text unchanged.
+- Preserve current app behavior.
+
+### Approach
+
+- Rename `:filter` string resource names to `gs_*`.
+- Update `FilterCatalog`, `AdjustControl`, and sample layout references.
+
+### Checklist
+
+- [x] Prefix filter module string names.
+- [x] Update Kotlin and XML resource references.
+- [x] Run unit tests and assemble debug.
+
+### Notes
+
+- Renamed filter module strings from generic names to `gs_*`.
+- Updated `FilterCatalog`, `AdjustControl`, and the sample layout content description to use the prefixed strings.
+- `:filter:testDebugUnitTest :app:testDebugUnitTest :app:assembleDebug` passed after the string prefix update.

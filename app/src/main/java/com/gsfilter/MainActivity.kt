@@ -172,7 +172,6 @@ class MainActivity : ComponentActivity() {
         val labelPadding = resources.getDimensionPixelSize(R.dimen.filter_thumbnail_label_padding)
         return FrameLayout(this).apply {
             setBackgroundResource(R.drawable.bg_filter_card)
-            contentDescription = text
             isClickable = true
             isFocusable = true
             setOnClickListener { onClick() }
@@ -254,7 +253,6 @@ class MainActivity : ComponentActivity() {
         adjustDots[control] = dot
 
         return LinearLayout(this).apply {
-            contentDescription = getString(control.labelRes)
             gravity = Gravity.CENTER
             isClickable = true
             isFocusable = true

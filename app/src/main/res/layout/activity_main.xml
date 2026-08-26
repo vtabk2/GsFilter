@@ -46,7 +46,6 @@
                     android:layout_marginTop="@dimen/item_spacing"
                     android:adjustViewBounds="true"
                     android:background="@color/preview_background"
-                    android:contentDescription="@string/image_original_content"
                     android:scaleType="fitCenter"/>
             </LinearLayout>
 
@@ -73,8 +72,7 @@
                     <com.gsfilter.filter.FilterPreviewView
                         android:id="@+id/filterPreview"
                         android:layout_width="match_parent"
-                        android:layout_height="match_parent"
-                        android:contentDescription="@string/image_result_content"/>
+                        android:layout_height="match_parent"/>
 
                     <ProgressBar
                         android:id="@+id/progressBar"
@@ -152,7 +150,6 @@
                     android:layout_width="@dimen/filter_chip_min_height"
                     android:layout_height="@dimen/filter_chip_min_height"
                     android:background="@drawable/bg_filter_chip"
-                    android:contentDescription="@string/action_original"
                     android:padding="@dimen/filter_none_icon_padding"
                     android:scaleType="center"
                     android:src="@drawable/ic_filter_none"/>
@@ -208,7 +205,6 @@
                     android:layout_width="@dimen/adjust_reset_size"
                     android:layout_height="@dimen/adjust_reset_size"
                     android:background="@android:color/transparent"
-                    android:contentDescription="@string/action_reset_adjust"
                     android:padding="@dimen/filter_none_icon_padding"
                     android:scaleType="center"
                     android:src="@drawable/ic_adjust_reset"
