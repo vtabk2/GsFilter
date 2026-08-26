@@ -1,4 +1,4 @@
-package com.gsfilter.filter
+package com.gsfilter.filter.view
 
 import android.content.Context
 import android.graphics.Bitmap
@@ -6,6 +6,9 @@ import android.opengl.GLES20
 import android.opengl.GLSurfaceView
 import android.opengl.GLUtils
 import android.util.AttributeSet
+import com.gsfilter.filter.Adjustments
+import com.gsfilter.filter.FilterRecipe
+import com.gsfilter.filter.ShaderFilterParams
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
 import java.nio.FloatBuffer
@@ -37,7 +40,7 @@ class FilterPreviewView @JvmOverloads constructor(
     }
 
     fun setFilterState(recipe: FilterRecipe, adjustments: Adjustments) {
-        val params = ShaderFilterParams.from(recipe, adjustments)
+        val params = ShaderFilterParams.Companion.from(recipe, adjustments)
         if (params == lastFilterParams) {
             return
         }
@@ -75,7 +78,7 @@ class FilterPreviewView @JvmOverloads constructor(
         private var imageHeight = 0
         private var surfaceWidth = 0
         private var surfaceHeight = 0
-        private var params = ShaderFilterParams.from(FilterRecipe(), Adjustments())
+        private var params = ShaderFilterParams.Companion.from(FilterRecipe(), Adjustments())
 
         override fun onSurfaceCreated(gl: GL10?, config: EGLConfig?) {
             program = buildProgram(VERTEX_SHADER, FRAGMENT_SHADER)

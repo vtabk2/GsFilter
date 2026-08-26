@@ -1,4 +1,4 @@
-package com.gsfilter.filter
+package com.gsfilter.filter.view
 
 import android.content.Context
 import android.content.res.ColorStateList
@@ -14,6 +14,9 @@ import android.widget.LinearLayout
 import android.widget.SeekBar
 import android.widget.TextView
 import com.core.gscore.view.RippleImageView
+import com.gsfilter.filter.AdjustControl
+import com.gsfilter.filter.Adjustments
+import com.gsfilter.filter.R
 
 internal class AdjustControlsView @JvmOverloads constructor(
     context: Context,

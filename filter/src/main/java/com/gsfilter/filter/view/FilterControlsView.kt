@@ -1,4 +1,4 @@
-package com.gsfilter.filter
+package com.gsfilter.filter.view
 
 import android.content.Context
 import android.content.res.TypedArray
@@ -24,6 +24,15 @@ import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.engine.DiskCacheStrategy
 import com.core.gscore.view.RippleImageView
+import com.gsfilter.filter.AdjustControl
+import com.gsfilter.filter.Adjustments
+import com.gsfilter.filter.FilterCatalog
+import com.gsfilter.filter.FilterCategory
+import com.gsfilter.filter.FilterOption
+import com.gsfilter.filter.FilterPack
+import com.gsfilter.filter.FilterPackJson
+import com.gsfilter.filter.R
+import com.gsfilter.filter.ext.displayName
 import com.gsfilter.filter.glide.FilterThumbnailModel
 import java.io.IOException
 import java.util.concurrent.Executors
@@ -590,7 +599,7 @@ class FilterControlsView @JvmOverloads constructor(
                 itemView.isFocusable = true
 
                 val root = itemView as FrameLayout
-                image.importantForAccessibility = View.IMPORTANT_FOR_ACCESSIBILITY_NO
+                image.importantForAccessibility = IMPORTANT_FOR_ACCESSIBILITY_NO
                 image.scaleType = ImageView.ScaleType.CENTER_CROP
                 root.addView(
                     image,

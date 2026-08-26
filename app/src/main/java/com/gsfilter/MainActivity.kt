@@ -10,7 +10,7 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import com.gsfilter.databinding.ActivityMainBinding
-import com.gsfilter.filter.FilterControlsView
+import com.gsfilter.filter.view.FilterControlsView
 import com.gsfilter.filter.FilterCatalog
 import kotlinx.coroutines.launch
 
