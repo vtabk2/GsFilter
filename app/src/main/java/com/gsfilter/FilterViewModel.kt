@@ -6,7 +6,9 @@ import android.graphics.BitmapFactory
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.gsfilter.filter.Adjustments
+import com.gsfilter.filter.AdjustControl
 import com.gsfilter.filter.FilterCategory
+import com.gsfilter.filter.FilterCatalog
 import com.gsfilter.filter.FilterOption
 import java.io.IOException
 import kotlinx.coroutines.Dispatchers

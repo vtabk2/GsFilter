@@ -1,9 +1,4 @@
-package com.gsfilter
-
-import com.gsfilter.filter.Adjustments
-import com.gsfilter.filter.FilterCategory
-import com.gsfilter.filter.FilterOption
-import com.gsfilter.filter.FilterRecipe
+package com.gsfilter.filter
 
 object FilterCatalog {
 

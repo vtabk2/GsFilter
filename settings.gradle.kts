@@ -15,4 +15,4 @@ dependencyResolutionManagement {
 }
 
 rootProject.name = "GsFilter"
-include(":app")
+include(":app", ":filter")

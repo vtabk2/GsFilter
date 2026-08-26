@@ -1,6 +1,4 @@
-package com.gsfilter
-
-import com.gsfilter.filter.Adjustments
+package com.gsfilter.filter
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNull

@@ -1,6 +1,4 @@
-package com.gsfilter
-
-import com.gsfilter.filter.Adjustments
+package com.gsfilter.filter
 
 enum class AdjustControl(
     val labelRes: Int,
@@ -8,20 +6,20 @@ enum class AdjustControl(
     val minValue: Int,
     val maxValue: Int,
 ) {
-    Brightness(R.string.brightness, R.drawable.ic_adjust_brightness, -100, 100),
-    Exposure(R.string.exposure, R.drawable.ic_adjust_exposure, -100, 100),
-    Contrast(R.string.contrast, R.drawable.ic_adjust_contrast, -100, 100),
-    Highlights(R.string.highlights, R.drawable.ic_adjust_highlights, -100, 100),
-    Shadows(R.string.shadows, R.drawable.ic_adjust_shadows, -100, 100),
-    Saturation(R.string.saturation, R.drawable.ic_adjust_saturation, -100, 100),
-    Vibrance(R.string.vibrance, R.drawable.ic_adjust_vibrance, -100, 100),
-    Temperature(R.string.temperature, R.drawable.ic_adjust_temperature, -100, 100),
-    Tint(R.string.tint, R.drawable.ic_adjust_tint, -100, 100),
-    Sharpness(R.string.sharpness, R.drawable.ic_adjust_sharpness, 0, 100),
-    Clarity(R.string.clarity, R.drawable.ic_adjust_clarity, -100, 100),
-    Fade(R.string.fade, R.drawable.ic_adjust_fade, 0, 100),
-    Vignette(R.string.vignette, R.drawable.ic_adjust_vignette, 0, 100),
-    Grain(R.string.grain, R.drawable.ic_adjust_grain, 0, 100);
+    Brightness(R.string.brightness, R.drawable.ic_gs_adjust_brightness, -100, 100),
+    Exposure(R.string.exposure, R.drawable.ic_gs_adjust_exposure, -100, 100),
+    Contrast(R.string.contrast, R.drawable.ic_gs_adjust_contrast, -100, 100),
+    Highlights(R.string.highlights, R.drawable.ic_gs_adjust_highlights, -100, 100),
+    Shadows(R.string.shadows, R.drawable.ic_gs_adjust_shadows, -100, 100),
+    Saturation(R.string.saturation, R.drawable.ic_gs_adjust_saturation, -100, 100),
+    Vibrance(R.string.vibrance, R.drawable.ic_gs_adjust_vibrance, -100, 100),
+    Temperature(R.string.temperature, R.drawable.ic_gs_adjust_temperature, -100, 100),
+    Tint(R.string.tint, R.drawable.ic_gs_adjust_tint, -100, 100),
+    Sharpness(R.string.sharpness, R.drawable.ic_gs_adjust_sharpness, 0, 100),
+    Clarity(R.string.clarity, R.drawable.ic_gs_adjust_clarity, -100, 100),
+    Fade(R.string.fade, R.drawable.ic_gs_adjust_fade, 0, 100),
+    Vignette(R.string.vignette, R.drawable.ic_gs_adjust_vignette, 0, 100),
+    Grain(R.string.grain, R.drawable.ic_gs_adjust_grain, 0, 100);
 
     val progressMax: Int = maxValue - minValue
 

@@ -18,6 +18,8 @@ import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import com.gsfilter.databinding.ActivityMainBinding
 import com.gsfilter.filter.Adjustments
+import com.gsfilter.filter.AdjustControl
+import com.gsfilter.filter.FilterCatalog
 import kotlinx.coroutines.launch
 
 class MainActivity : ComponentActivity() {

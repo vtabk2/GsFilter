@@ -30,6 +30,7 @@ android {
 }
 
 dependencies {
+    implementation(project(":filter"))
     implementation("androidx.activity:activity-ktx:1.10.0")
     implementation("androidx.core:core-ktx:1.13.0")
     implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.9.4")

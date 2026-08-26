@@ -492,3 +492,92 @@ Status: DONE
 - `FilterPreviewView` now resolves shader attribute/uniform locations once per GL program instead of every frame.
 - Duplicate filter params no longer enqueue another GL render request.
 - `:app:testDebugUnitTest :app:assembleDebug` passed after the rendering optimization.
+
+## Task: Optimize filter thumbnails and adjust dragging
+
+Status: SUPERSEDED
+
+### Requirements
+
+- Use a small bitmap for filter rail thumbnails instead of the full source bitmap.
+- Coalesce filter preview renders while adjust values are changing quickly.
+- Keep visible filter and adjust behavior unchanged.
+
+### Approach
+
+- Create a thumbnail bitmap alongside the loaded sample bitmap.
+- Pass the thumbnail bitmap to filter cards only.
+- Keep only the latest pending shader params per animation frame.
+
+### Checklist
+
+- [ ] Add thumbnail bitmap to filter UI state.
+- [ ] Generate a small thumbnail after sample decode.
+- [ ] Use the thumbnail for filter cards.
+- [ ] Coalesce pending filter preview params.
+- [ ] Run unit tests and assemble debug.
+
+### Notes
+
+- Superseded by the module extraction request before source changes were made.
+
+## Task: Extract filter code into library module
+
+Status: DONE
+
+### Requirements
+
+- Create a `:filter` Android library module.
+- Move reusable filter engine/model/view code into the library module.
+- Keep the app module as the sample host UI.
+- Preserve current app behavior.
+
+### Approach
+
+- Move `com.gsfilter.filter` sources into `:filter`.
+- Move filter catalog and adjust metadata into the library when their resources are moved with them.
+- Make `:app` depend on `:filter`.
+- Keep app-only state, assets, and Activity/ViewModel in `:app`.
+
+### Checklist
+
+- [x] Add `:filter` module Gradle config.
+- [x] Move filter sources into `:filter`.
+- [x] Move filter-facing strings/icons/resources into `:filter`.
+- [x] Update app imports/layout references for the library package.
+- [x] Move relevant unit tests to `:filter`.
+- [x] Run unit tests and assemble debug.
+
+### Notes
+
+- Added `:filter` as an Android library module.
+- Moved filter models, catalog, adjust metadata, shader preview view, adjust icons, filter strings, and relevant unit tests into `:filter`.
+- `:app` now depends on `:filter` and keeps only the sample Activity/ViewModel/state/assets/screen UI resources.
+- `:filter:testDebugUnitTest :app:testDebugUnitTest :app:assembleDebug` passed after the extraction.
+
+## Task: Prefix filter library icon resources
+
+Status: DONE
+
+### Requirements
+
+- Rename drawable icons owned by the `:filter` module to use the `ic_gs_` prefix.
+- Update filter library code references.
+- Preserve current app behavior.
+
+### Approach
+
+- Rename `ic_adjust_*` drawables in `:filter` to `ic_gs_adjust_*`.
+- Update `AdjustControl` icon resource references.
+
+### Checklist
+
+- [x] Rename filter module drawable files.
+- [x] Update `AdjustControl` drawable references.
+- [x] Run unit tests and assemble debug.
+
+### Notes
+
+- Renamed `:filter` adjust drawables from `ic_adjust_*` to `ic_gs_adjust_*`.
+- Updated `AdjustControl` to reference the prefixed drawable names.
+- `:filter:testDebugUnitTest :app:testDebugUnitTest :app:assembleDebug` passed after the rename.

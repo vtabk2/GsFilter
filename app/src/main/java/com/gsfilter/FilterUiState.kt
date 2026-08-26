@@ -3,6 +3,7 @@ package com.gsfilter
 import android.graphics.Bitmap
 import com.gsfilter.filter.Adjustments
 import com.gsfilter.filter.FilterCategory
+import com.gsfilter.filter.FilterCatalog
 import com.gsfilter.filter.FilterOption
 
 data class FilterUiState(
