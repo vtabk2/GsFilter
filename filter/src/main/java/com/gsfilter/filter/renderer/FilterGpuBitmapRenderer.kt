@@ -22,10 +22,18 @@ object FilterGpuBitmapRenderer {
         adjustments: Adjustments = Adjustments(),
         maxWidth: Int? = null,
         maxHeight: Int? = null,
+        scaleSource: Boolean = true,
+        texelScale: Float = 1f,
     ): Bitmap {
-        val renderSource = FilterBitmapRenderer.scaledSource(source, maxWidth, maxHeight)
-        val width = renderSource.width
-        val height = renderSource.height
+        val renderSize = FilterBitmapRenderer.targetSize(source.width, source.height, maxWidth, maxHeight)
+        val renderSource =
+            if (scaleSource) {
+                FilterBitmapRenderer.scaledSource(source, maxWidth, maxHeight)
+            } else {
+                source
+            }
+        val width = if (scaleSource) renderSource.width else renderSize.width
+        val height = if (scaleSource) renderSource.height else renderSize.height
         val egl = EglPbuffer(width, height)
         var program = 0
         var textureId = 0
@@ -46,9 +54,10 @@ object FilterGpuBitmapRenderer {
             GlFilterProgram.bindUniforms(
                 handles = handles,
                 textureId = textureId,
-                imageWidth = width,
-                imageHeight = height,
+                renderWidth = width,
+                renderHeight = height,
                 params = ShaderFilterParams.from(recipe, adjustments),
+                texelScale = texelScale,
             )
             GLES20.glDrawArrays(GLES20.GL_TRIANGLE_STRIP, 0, GlFilterProgram.VERTEX_COUNT)
             GlFilterProgram.disableAttributes(handles)

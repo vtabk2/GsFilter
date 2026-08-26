@@ -99,9 +99,10 @@ internal object GlFilterProgram {
     fun bindUniforms(
         handles: ProgramHandles,
         textureId: Int,
-        imageWidth: Int,
-        imageHeight: Int,
+        renderWidth: Int,
+        renderHeight: Int,
         params: ShaderFilterParams,
+        texelScale: Float = 1f,
     ) {
         GLES20.glActiveTexture(GLES20.GL_TEXTURE0)
         GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, textureId)
@@ -113,8 +114,8 @@ internal object GlFilterProgram {
         GLES20.glUniform1f(handles.mono, params.isMonochrome)
         GLES20.glUniform2f(
             handles.texelSize,
-            if (imageWidth > 0) 1f / imageWidth else 0f,
-            if (imageHeight > 0) 1f / imageHeight else 0f,
+            if (renderWidth > 0) texelScale / renderWidth else 0f,
+            if (renderHeight > 0) texelScale / renderHeight else 0f,
         )
         GLES20.glUniform3f(handles.rgbShift, params.redShift, params.greenShift, params.blueShift)
         GLES20.glUniform1f(handles.brightness, params.brightness)

@@ -108,7 +108,7 @@ class MainActivity : ComponentActivity() {
         binding.filterControls.setState(
             selectedCategory = state.selectedCategory,
             selectedFilter = state.selectedFilter,
-            thumbnailBitmap = state.filterThumbnailBitmap,
+            thumbnailBitmap = state.sourceBitmap,
             thumbnailKey = state.filterThumbnailKey,
         )
         binding.filterControls.setAdjustments(state.adjustments)

@@ -3,7 +3,6 @@ package com.gsfilter
 import android.app.Application
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
-import androidx.core.graphics.scale
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.gsfilter.filter.Adjustments
@@ -15,7 +14,7 @@ import com.gsfilter.filter.FilterOption
 import com.gsfilter.filter.FilterPack
 import com.gsfilter.filter.FilterSourceKey
 import java.io.IOException
-import kotlin.math.roundToInt
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -76,20 +75,12 @@ class FilterViewModel(application: Application) : AndroidViewModel(application) 
     suspend fun renderFilteredBitmap(
         maxWidth: Int? = null,
         maxHeight: Int? = null,
-        useGpu: Boolean = false,
+        useGpu: Boolean = true,
     ): Bitmap? {
         val state = _state.value
         val source = state.sourceBitmap ?: return null
         return withContext(Dispatchers.Default) {
-            if (useGpu) {
-                FilterGpuBitmapRenderer.getBitmap(
-                    source = source,
-                    recipe = state.selectedFilter.recipe,
-                    adjustments = state.adjustments,
-                    maxWidth = maxWidth,
-                    maxHeight = maxHeight,
-                )
-            } else {
+            fun renderCpu() =
                 FilterBitmapRenderer.getBitmap(
                     source = source,
                     recipe = state.selectedFilter.recipe,
@@ -97,6 +88,24 @@ class FilterViewModel(application: Application) : AndroidViewModel(application) 
                     maxWidth = maxWidth,
                     maxHeight = maxHeight,
                 )
+
+            if (!useGpu) {
+                return@withContext renderCpu()
+            }
+
+            try {
+                FilterGpuBitmapRenderer.getBitmap(
+                    source = source,
+                    recipe = state.selectedFilter.recipe,
+                    adjustments = state.adjustments,
+                    maxWidth = maxWidth,
+                    maxHeight = maxHeight,
+                )
+            } catch (error: RuntimeException) {
+                if (error is CancellationException) {
+                    throw error
+                }
+                renderCpu()
             }
         }
     }
@@ -105,14 +114,10 @@ class FilterViewModel(application: Application) : AndroidViewModel(application) 
         viewModelScope.launch {
             _state.update { it.copy(isLoading = true, error = null) }
             try {
-                val (bitmap, thumbnail) = withContext(Dispatchers.IO) {
-                    val bitmap = decodeSampleBitmap()
-                    bitmap to bitmap.scaledToMaxEdge(FILTER_THUMBNAIL_MAX_EDGE)
-                }
+                val bitmap = withContext(Dispatchers.IO) { decodeSampleBitmap() }
                 _state.update {
                     it.copy(
                         sourceBitmap = bitmap,
-                        filterThumbnailBitmap = thumbnail,
                         filterThumbnailKey = FilterSourceKey.asset(SAMPLE_ASSET),
                         isLoading = false,
                         error = null,
@@ -140,20 +145,7 @@ class FilterViewModel(application: Application) : AndroidViewModel(application) 
         }
     }
 
-    private fun Bitmap.scaledToMaxEdge(maxEdge: Int): Bitmap {
-        val longestEdge = maxOf(width, height)
-        if (longestEdge <= maxEdge) {
-            return this
-        }
-
-        val scale = maxEdge.toFloat() / longestEdge
-        val targetWidth = (width * scale).roundToInt().coerceAtLeast(1)
-        val targetHeight = (height * scale).roundToInt().coerceAtLeast(1)
-        return this.scale(targetWidth, targetHeight)
-    }
-
     private companion object {
         const val SAMPLE_ASSET = "sample.jpg"
-        const val FILTER_THUMBNAIL_MAX_EDGE = 256
     }
 }

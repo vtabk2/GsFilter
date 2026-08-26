@@ -76,6 +76,8 @@ class FilterPreviewView @JvmOverloads constructor(
         private var imageHeight = 0
         private var surfaceWidth = 0
         private var surfaceHeight = 0
+        private var renderWidth = 0
+        private var renderHeight = 0
         private var params = ShaderFilterParams.from(FilterRecipe(), Adjustments())
 
         override fun onSurfaceCreated(gl: GL10?, config: EGLConfig?) {
@@ -101,7 +103,7 @@ class FilterPreviewView @JvmOverloads constructor(
 
             GLES20.glUseProgram(program)
             GlFilterProgram.bindAttributes(currentHandles, vertexBuffer, textureBuffer)
-            GlFilterProgram.bindUniforms(currentHandles, textureId, imageWidth, imageHeight, params)
+            GlFilterProgram.bindUniforms(currentHandles, textureId, renderWidth, renderHeight, params)
             GLES20.glDrawArrays(GLES20.GL_TRIANGLE_STRIP, 0, GlFilterProgram.VERTEX_COUNT)
             GlFilterProgram.disableAttributes(currentHandles)
         }
@@ -153,6 +155,8 @@ class FilterPreviewView @JvmOverloads constructor(
 
         private fun updateVertexBuffer() {
             if (imageWidth == 0 || imageHeight == 0 || surfaceWidth == 0 || surfaceHeight == 0) {
+                renderWidth = 0
+                renderHeight = 0
                 vertexBuffer.clear()
                 vertexBuffer.put(GlFilterProgram.VERTICES).position(0)
                 return
@@ -169,6 +173,8 @@ class FilterPreviewView @JvmOverloads constructor(
                 scaleX = imageRatio / surfaceRatio
                 scaleY = 1f
             }
+            renderWidth = ((surfaceWidth * scaleX) + 0.5f).toInt().coerceAtLeast(1)
+            renderHeight = ((surfaceHeight * scaleY) + 0.5f).toInt().coerceAtLeast(1)
 
             vertexBuffer.clear()
             vertexBuffer.put(

@@ -48,9 +48,11 @@ class FilterControlsView @JvmOverloads constructor(
     private var catalog = FilterCatalog.pack
     private var selectedCategory = catalog.defaultCategory
     private var selectedFilter = catalog.defaultFilter
+    private var adjustments = Adjustments()
     private var thumbnailBitmap: Bitmap? = null
     private var thumbnailKey: String? = null
     private var thumbnailGenerationId = 0
+    private var lastPreloadKey: String? = null
 
     var onCloseClick: (() -> Unit)? = null
     var onControlTabSelected: ((ControlTab) -> Unit)? = null
@@ -168,7 +170,12 @@ class FilterControlsView @JvmOverloads constructor(
     }
 
     fun setAdjustments(adjustments: Adjustments) {
+        val shouldRenderFilters = this.adjustments != adjustments
+        this.adjustments = adjustments
         adjustContent.setAdjustments(adjustments)
+        if (shouldRenderFilters) {
+            renderState()
+        }
     }
 
     override fun onDetachedFromWindow() {
@@ -186,6 +193,7 @@ class FilterControlsView @JvmOverloads constructor(
                 thumbnailBitmap = thumbnailBitmap,
                 thumbnailKey = thumbnailKey,
                 thumbnailGenerationId = thumbnailGenerationId,
+                adjustments = adjustments,
                 style = style,
             )
         }
@@ -194,6 +202,35 @@ class FilterControlsView @JvmOverloads constructor(
             if (selectedIndex >= 0) {
                 filterRecyclerView.scrollToPosition(selectedIndex)
             }
+        }
+        preloadFilterThumbnails(items)
+    }
+
+    private fun preloadFilterThumbnails(items: List<FilterItem>) {
+        val models = items.mapNotNull { item ->
+            val source = item.thumbnailBitmap ?: return@mapNotNull null
+            val sourceKey = item.thumbnailKey ?: return@mapNotNull null
+            FilterThumbnailModel(sourceKey, source, item.filter, item.adjustments)
+        }
+        if (models.isEmpty()) {
+            lastPreloadKey = null
+            return
+        }
+
+        val preloadKey = models.joinToString(separator = "|") { it.cacheKey }
+        if (preloadKey == lastPreloadKey) {
+            return
+        }
+        lastPreloadKey = preloadKey
+
+        val width = resources.getDimensionPixelSize(R.dimen.gs_filter_thumbnail_width)
+        val height = resources.getDimensionPixelSize(R.dimen.gs_filter_thumbnail_height)
+        val requestManager = Glide.with(this)
+        models.forEach { model ->
+            requestManager
+                .load(model)
+                .diskCacheStrategy(DiskCacheStrategy.RESOURCE)
+                .preload(width, height)
         }
     }
 
@@ -550,6 +587,7 @@ class FilterControlsView @JvmOverloads constructor(
         val thumbnailBitmap: Bitmap?,
         val thumbnailKey: String?,
         val thumbnailGenerationId: Int,
+        val adjustments: Adjustments,
         val style: FilterControlsStyle,
     )
 
@@ -648,7 +686,7 @@ class FilterControlsView @JvmOverloads constructor(
                 }
 
                 Glide.with(image)
-                    .load(FilterThumbnailModel(sourceKey, source, item.filter))
+                    .load(FilterThumbnailModel(sourceKey, source, item.filter, item.adjustments))
                     .placeholder(source.toDrawable(itemView.resources))
                     .diskCacheStrategy(DiskCacheStrategy.RESOURCE)
                     .dontAnimate()

@@ -1243,7 +1243,7 @@ Status: DONE
 
 ## Task: Preload category thumbnails and prefer GPU export
 
-Status: IN PROGRESS
+Status: DONE
 
 ### Requirements
 
@@ -1254,7 +1254,94 @@ Status: IN PROGRESS
 
 ### Checklist
 
-- [ ] Add category thumbnail preloading.
-- [ ] Change bitmap export default to GPU-first.
-- [ ] Add focused tests where practical.
-- [ ] Run relevant verification.
+- [x] Add category thumbnail preloading.
+- [x] Change bitmap export default to GPU-first.
+- [x] Add focused tests where practical.
+- [x] Run relevant verification.
+
+### Notes
+
+- `FilterControlsView` now preloads the selected category's filtered thumbnails through Glide using the existing stable `FilterThumbnailModel.cacheKey`.
+- Preload requests are de-duped per visible category/source/filter recipe set.
+- `FilterViewModel.renderFilteredBitmap()` now defaults to GPU rendering and falls back to CPU on GPU runtime failure while preserving coroutine cancellation.
+- No new unit test was added because the new behavior is at the Android View/Glide/EGL boundary; existing JVM tests still cover the reusable renderer math and cache-key logic.
+- `git diff --check` passed.
+- `:filter:testDebugUnitTest :app:testDebugUnitTest :app:assembleDebug` passed after rerunning Gradle outside the sandbox due network/cache restrictions.
+
+## Task: Match filter thumbnails with main preview
+
+Status: DONE
+
+### Requirements
+
+- Make filter rail thumbnails match the main filtered preview.
+- Match the rendered filter state, not the thumbnail card layout/framing.
+- Preserve Glide thumbnail loading and cache behavior.
+- Keep the fix small and reusable inside the filter module.
+
+### Checklist
+
+- [x] Trace thumbnail render path versus preview render path.
+- [x] Fix the shared rendering mismatch.
+- [x] Add/update focused tests where practical.
+- [x] Run relevant verification.
+
+### Notes
+
+- Thumbnail rendering now tries `FilterGpuBitmapRenderer` first so filter cards use the same shader program as `FilterPreviewView`.
+- Thumbnail rendering still falls back to `FilterBitmapRenderer` if offscreen GPU rendering is unavailable.
+- `FilterThumbnailModel` cache keys now include a render version so old CPU-rendered Glide thumbnails are not reused.
+- Added a cache-key version unit test.
+- `git diff --check` passed.
+- `:filter:testDebugUnitTest :app:testDebugUnitTest :app:assembleDebug` passed after rerunning Gradle outside the sandbox due network/cache restrictions.
+- Reopened because thumbnail render still did not include active `Adjustments`, while the main preview does.
+- Thumbnail render models now include active `Adjustments`, and Glide cache keys change when adjustments change.
+- Thumbnail rendering now applies the filter before scaling down to thumbnail size so Sketch/Ink/Art effects stay closer to the main preview.
+- The thumbnail card layout/framing was left unchanged.
+- `git diff --check` passed.
+- `:filter:testDebugUnitTest :app:testDebugUnitTest :app:assembleDebug` passed after rerunning Gradle outside the sandbox due network/cache restrictions.
+- Reopened because Art thumbnails still used the app's pre-scaled thumbnail source, while the main preview uses the full source bitmap.
+- The sample app now passes the full source bitmap to `FilterControlsView`; the separate 256px thumbnail source was removed.
+- `FilterThumbnailRenderer` keeps the scaled-first fast path for normal color filters, but renders Art/effect filters full-size first and scales afterward.
+- Thumbnail cache version was bumped to `gpu-preview-v2`.
+- Added coverage for the Art full-size-first renderer decision.
+- `git diff --check` passed.
+- `:filter:testDebugUnitTest :app:testDebugUnitTest :app:assembleDebug` passed after rerunning Gradle outside the sandbox due network/cache restrictions.
+- Reopened because rendering Art at full output size is slow and still differs from preview, which renders to the view size from the full source texture.
+- Art/effect thumbnails now render directly at thumbnail output size while sampling from the full source texture.
+- Normal color filters keep the faster scaled-source thumbnail path.
+- Thumbnail cache version was bumped to `gpu-preview-v3`.
+- `git diff --check` passed.
+- `:filter:testDebugUnitTest :app:testDebugUnitTest :app:assembleDebug` passed after rerunning Gradle outside the sandbox due network/cache restrictions.
+- Reopened because Art thumbnails still needed render-size-based texel scaling instead of source-size sampling.
+- `uTexelSize` now uses the actual render target size: preview uses the drawn image area on the GL surface, and offscreen thumbnails use the output framebuffer size.
+- Glide thumbnail loading now passes the requested view size into the renderer, capped at `128px`, so thumbnails are not rendered larger and scaled again by the view.
+- Thumbnail cache version was bumped to `gpu-preview-v5`.
+- `git diff --check` passed.
+- `:filter:testDebugUnitTest :app:testDebugUnitTest :app:assembleDebug` passed after rerunning Gradle outside the sandbox due network/cache restrictions.
+- Reopened because thumbnail display still cropped portrait images, making Art filters feel different from the main preview.
+- The `FIT_CENTER` thumbnail display experiment was later reverted; thumbnail cards use center crop again.
+- Thumbnail cache version was bumped to `gpu-preview-v6`.
+- `git diff --check` passed.
+- `:filter:testDebugUnitTest :app:testDebugUnitTest :app:assembleDebug` passed after rerunning Gradle outside the sandbox due network/cache restrictions.
+- Reopened because the thumbnail label still covered part of the rendered bitmap, so Glide requested/rendered a larger area than the user could see.
+- The label-area layout experiment was later reverted; Glide load keys still include the bounded render size.
+- Thumbnail cache version was bumped to `gpu-preview-v7`.
+- `git diff --check` passed.
+- `:filter:testDebugUnitTest :app:testDebugUnitTest :app:assembleDebug` passed after rerunning Gradle outside the sandbox due network/cache restrictions.
+- Reopened because preserving portrait ratio in the old `88dp` card made thumbnails too small to judge.
+- The `132dp` height experiment was reverted; `gs_filter_thumbnail_height` remains `88dp` in resources and README.
+- Reopened because the thumbnail mismatch is not a UI size issue; Art thumbnails need their own softer render tuning.
+- `FilterThumbnailRenderer` now derives a thumbnail-only Art recipe that reduces weak/noisy edge detail while leaving preview/export recipes unchanged.
+- Color filters are left unchanged by thumbnail recipe tuning.
+- Thumbnail cache version was bumped to `gpu-preview-v8`.
+- Added coverage for color-preserving and Ink-softening thumbnail recipe behavior.
+- Art thumbnail render caps now use `256px` while color thumbnails stay at `128px`, so high-density screens do not upscale small Art bitmaps and inflate stroke width.
+- Thumbnail cache version was bumped to `gpu-preview-v9`.
+- Added coverage for separate color/Art thumbnail render caps.
+- Art thumbnails now pass a smaller `texelScale` into the shared GL shader so Sobel sampling produces thinner thumbnail strokes without changing preview/export rendering.
+- Thumbnail cache version was bumped to `gpu-preview-v10`.
+- Added coverage for color/Art texel scale selection.
+- Art thumbnail `texelScale` was tightened from `0.7` to `0.6`, and thumbnail cache version was bumped to `gpu-preview-v11`.
+- `git diff --check` passed.
+- `:filter:testDebugUnitTest :app:testDebugUnitTest :app:assembleDebug` passed after rerunning Gradle outside the sandbox due network/cache restrictions.

@@ -18,8 +18,15 @@ class FilterThumbnailModelLoader : ModelLoader<FilterThumbnailModel, Bitmap> {
         width: Int,
         height: Int,
         options: Options,
-    ): ModelLoader.LoadData<Bitmap> =
-        ModelLoader.LoadData(ObjectKey(model.cacheKey), FilterThumbnailDataFetcher(model))
+    ): ModelLoader.LoadData<Bitmap> {
+        val maxSize = FilterThumbnailRenderer.maxSizeFor(model.filter.recipe)
+        val maxWidth = thumbnailBound(width, maxSize)
+        val maxHeight = thumbnailBound(height, maxSize)
+        return ModelLoader.LoadData(
+            ObjectKey("${model.cacheKey}:${maxWidth}x$maxHeight"),
+            FilterThumbnailDataFetcher(model, maxWidth, maxHeight),
+        )
+    }
 
     override fun handles(model: FilterThumbnailModel): Boolean = true
 
@@ -33,11 +40,21 @@ class FilterThumbnailModelLoader : ModelLoader<FilterThumbnailModel, Bitmap> {
 
 private class FilterThumbnailDataFetcher(
     private val model: FilterThumbnailModel,
+    private val maxWidth: Int,
+    private val maxHeight: Int,
 ) : DataFetcher<Bitmap> {
 
     override fun loadData(priority: Priority, callback: DataFetcher.DataCallback<in Bitmap>) {
         try {
-            callback.onDataReady(FilterThumbnailRenderer.render(model.source, model.filter.recipe))
+            callback.onDataReady(
+                FilterThumbnailRenderer.render(
+                    source = model.source,
+                    recipe = model.filter.recipe,
+                    adjustments = model.adjustments,
+                    maxWidth = maxWidth,
+                    maxHeight = maxHeight,
+                ),
+            )
         } catch (error: RuntimeException) {
             callback.onLoadFailed(error)
         }
@@ -51,3 +68,10 @@ private class FilterThumbnailDataFetcher(
 
     override fun getDataSource(): DataSource = DataSource.LOCAL
 }
+
+private fun thumbnailBound(size: Int, maxSize: Int): Int =
+    if (size > 0) {
+        size.coerceAtMost(maxSize)
+    } else {
+        maxSize
+    }

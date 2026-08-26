@@ -9,7 +9,6 @@ import com.gsfilter.filter.FilterPack
 
 data class FilterUiState(
     val sourceBitmap: Bitmap? = null,
-    val filterThumbnailBitmap: Bitmap? = null,
     val filterThumbnailKey: String? = null,
     val catalog: FilterPack = FilterCatalog.pack,
     val selectedCategory: FilterCategory = FilterCatalog.defaultCategory,
