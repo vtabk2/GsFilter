@@ -696,3 +696,33 @@ Status: DONE
 
 - `AppGlideModule` stays in `:app`; reusable loader code moves to `:filter`.
 - `:filter:testDebugUnitTest :app:testDebugUnitTest :app:assembleDebug` passed after moving the loader.
+
+## Task: Create reusable filter controls view
+
+Status: DONE
+
+### Requirements
+
+- Move filter rail rendering to a reusable view in `:filter`.
+- Use RecyclerView for the filter rail.
+- Expose callbacks for close, filter tab, adjust tab, category selection, and filter selection.
+- Keep stable source keys for Glide thumbnail cache reuse.
+
+### Approach
+
+- Add `FilterControlsView` in `:filter`.
+- Keep app `AppGlideModule` as the Glide registration point.
+- Replace app-side dynamic filter card creation with the reusable view callbacks.
+
+### Checklist
+
+- [x] Add `FilterControlsView` with RecyclerView-backed filter rail.
+- [x] Add required filter module resources.
+- [x] Wire app layout and callbacks to the new view.
+- [x] Run unit tests and assemble debug.
+
+### Notes
+
+- The view owns filter/category UI rendering; the host app owns close behavior and ViewModel updates through callbacks.
+- Added `FilterControlsView` in `:filter` with callbacks for close, filter/adjust tab selection, category selection, and filter selection.
+- `:filter:testDebugUnitTest :app:testDebugUnitTest :app:assembleDebug` passed after wiring the reusable view.

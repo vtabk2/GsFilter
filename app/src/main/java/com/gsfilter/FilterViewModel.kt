@@ -10,6 +10,7 @@ import com.gsfilter.filter.AdjustControl
 import com.gsfilter.filter.FilterCategory
 import com.gsfilter.filter.FilterCatalog
 import com.gsfilter.filter.FilterOption
+import com.gsfilter.filter.FilterSourceKey
 import java.io.IOException
 import kotlin.math.roundToInt
 import kotlinx.coroutines.Dispatchers
@@ -72,7 +73,7 @@ class FilterViewModel(application: Application) : AndroidViewModel(application) 
                     it.copy(
                         sourceBitmap = bitmap,
                         filterThumbnailBitmap = thumbnail,
-                        filterThumbnailKey = SAMPLE_ASSET,
+                        filterThumbnailKey = FilterSourceKey.asset(SAMPLE_ASSET),
                         isLoading = false,
                         error = null,
                     )

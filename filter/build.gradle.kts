@@ -22,7 +22,8 @@ android {
 }
 
 dependencies {
-    compileOnly("com.github.bumptech.glide:glide:4.16.0")
+    api("androidx.recyclerview:recyclerview:1.3.2")
+    api("com.github.bumptech.glide:glide:4.16.0")
 
     testImplementation("junit:junit:4.13.2")
 }

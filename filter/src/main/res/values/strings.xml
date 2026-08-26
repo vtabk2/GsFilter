@@ -1,5 +1,8 @@
 <resources>
     <string name="gs_action_original">Original</string>
+    <string name="gs_action_close">Close</string>
+    <string name="gs_section_filter">Filter</string>
+    <string name="gs_section_adjust">Adjust</string>
     <string name="gs_filter_mono">B&amp;W</string>
     <string name="gs_filter_fresh">Fresh</string>
     <string name="gs_filter_portra">Portra</string>
