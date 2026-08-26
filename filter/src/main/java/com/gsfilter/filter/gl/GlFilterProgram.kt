@@ -59,6 +59,7 @@ internal object GlFilterProgram {
             effectStrength = GLES20.glGetUniformLocation(program, U_EFFECT_STRENGTH),
             effectThreshold = GLES20.glGetUniformLocation(program, U_EFFECT_THRESHOLD),
             effectTone = GLES20.glGetUniformLocation(program, U_EFFECT_TONE),
+            intensity = GLES20.glGetUniformLocation(program, U_INTENSITY),
             mono = GLES20.glGetUniformLocation(program, U_MONO),
             texelSize = GLES20.glGetUniformLocation(program, U_TEXEL_SIZE),
             rgbShift = GLES20.glGetUniformLocation(program, U_RGB_SHIFT),
@@ -111,6 +112,7 @@ internal object GlFilterProgram {
         GLES20.glUniform1f(handles.effectStrength, params.effectStrength)
         GLES20.glUniform1f(handles.effectThreshold, params.effectThreshold)
         GLES20.glUniform1f(handles.effectTone, params.effectTone)
+        GLES20.glUniform1f(handles.intensity, params.intensity)
         GLES20.glUniform1f(handles.mono, params.isMonochrome)
         GLES20.glUniform2f(
             handles.texelSize,
@@ -156,6 +158,7 @@ internal object GlFilterProgram {
         val effectStrength: Int,
         val effectThreshold: Int,
         val effectTone: Int,
+        val intensity: Int,
         val mono: Int,
         val texelSize: Int,
         val rgbShift: Int,
@@ -194,6 +197,7 @@ internal object GlFilterProgram {
     private const val U_EFFECT_STRENGTH = "uEffectStrength"
     private const val U_EFFECT_THRESHOLD = "uEffectThreshold"
     private const val U_EFFECT_TONE = "uEffectTone"
+    private const val U_INTENSITY = "uIntensity"
     private const val U_MONO = "uMono"
     private const val U_TEXEL_SIZE = "uTexelSize"
     private const val U_RGB_SHIFT = "uRgbShift"
@@ -232,6 +236,7 @@ internal object GlFilterProgram {
         uniform float uEffectStrength;
         uniform float uEffectThreshold;
         uniform float uEffectTone;
+        uniform float uIntensity;
         uniform float uMono;
         uniform vec2 uTexelSize;
         uniform vec3 uRgbShift;
@@ -318,6 +323,7 @@ internal object GlFilterProgram {
             rgb = mix(vec3(gray), rgb, 1.0 + (uVibrance * vibranceMask));
 
             if (uEffect > 0.5) {
+                vec3 beforeEffect = rgb;
                 float sourceGray = dot(color.rgb, vec3(0.299, 0.587, 0.114));
                 float edge = edgeAt(vTexCoord);
                 if (uEffect > 5.5) {
@@ -348,6 +354,7 @@ internal object GlFilterProgram {
                     float paper = mix(1.0, sourceGray, uEffectTone);
                     rgb = vec3(clamp(paper - (line * 0.8), 0.0, 1.0));
                 }
+                rgb = mix(beforeEffect, rgb, uIntensity);
             }
 
             rgb = mix(rgb, vec3(0.5), clamp(uFade * 0.35, 0.0, 0.35));

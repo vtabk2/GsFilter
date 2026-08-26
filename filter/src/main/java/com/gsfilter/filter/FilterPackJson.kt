@@ -48,6 +48,7 @@ object FilterPackJson {
             effectStrength = optInt("effectStrength", EFFECT_STRENGTH_DEFAULT).coerceIn(EFFECT_MIN, EFFECT_MAX),
             effectThreshold = optInt("effectThreshold", EFFECT_THRESHOLD_DEFAULT).coerceIn(EFFECT_MIN, EFFECT_MAX),
             effectTone = optInt("effectTone", EFFECT_TONE_DEFAULT).coerceIn(EFFECT_MIN, EFFECT_MAX),
+            intensity = optInt("intensity", INTENSITY_DEFAULT).coerceIn(EFFECT_MIN, EFFECT_MAX),
             isMonochrome = optBoolean("isMonochrome", false),
             redShift = optInt("redShift", 0).coerceIn(COLOR_SHIFT_MIN, COLOR_SHIFT_MAX),
             greenShift = optInt("greenShift", 0).coerceIn(COLOR_SHIFT_MIN, COLOR_SHIFT_MAX),
@@ -103,4 +104,5 @@ object FilterPackJson {
     private const val EFFECT_STRENGTH_DEFAULT = 100
     private const val EFFECT_THRESHOLD_DEFAULT = 50
     private const val EFFECT_TONE_DEFAULT = 20
+    private const val INTENSITY_DEFAULT = 100
 }

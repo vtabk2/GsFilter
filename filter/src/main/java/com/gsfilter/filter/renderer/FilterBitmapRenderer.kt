@@ -172,6 +172,9 @@ object FilterBitmapRenderer {
         val textureX = (x + 0.5f) / width
         val textureY = (y + 0.5f) / height
         val edge = edgeAt(pixels, x, y, width, height)
+        val beforeEffectRed = red
+        val beforeEffectGreen = green
+        val beforeEffectBlue = blue
         when (params.effect) {
             FilterEffect.Color -> Unit
             FilterEffect.Sketch -> {
@@ -230,6 +233,11 @@ object FilterBitmapRenderer {
                 green = crossHatch
                 blue = crossHatch
             }
+        }
+        if (params.effect != FilterEffect.Color) {
+            red = mix(beforeEffectRed, red, params.intensity)
+            green = mix(beforeEffectGreen, green, params.intensity)
+            blue = mix(beforeEffectBlue, blue, params.intensity)
         }
 
         val fade = clamp(params.fade * 0.35f, 0f, 0.35f)

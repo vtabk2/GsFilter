@@ -25,6 +25,7 @@ class FilterPackJsonTest {
                     "effectStrength": 140,
                     "effectThreshold": -10,
                     "effectTone": 65,
+                    "intensity": -10,
                     "redShift": 180,
                     "adjustments": {
                       "contrast": 180,
@@ -45,6 +46,7 @@ class FilterPackJsonTest {
         assertEquals(100, filter.recipe.effectStrength)
         assertEquals(0, filter.recipe.effectThreshold)
         assertEquals(65, filter.recipe.effectTone)
+        assertEquals(0, filter.recipe.intensity)
         assertEquals(100, filter.recipe.redShift)
         assertEquals(100, filter.recipe.adjustments.contrast)
         assertEquals(0, filter.recipe.adjustments.sharpness)

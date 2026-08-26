@@ -1346,7 +1346,7 @@ Status: DONE
 - `git diff --check` passed.
 - `:filter:testDebugUnitTest :app:testDebugUnitTest :app:assembleDebug` passed after rerunning Gradle outside the sandbox due network/cache restrictions.
 
-## Task: Add effect strength seekbar for adjustable filters
+## Task: Add filter intensity seekbar
 
 Status: DONE
 
@@ -1355,24 +1355,30 @@ Status: DONE
 - Keep the main preview image updating when Adjust values change.
 - Keep filter rail thumbnails as preset previews only.
 - Do not reload or preload filter thumbnails during Adjust seekbar changes.
-- Show a seekbar for filters with adjustable effect parameters.
-- Use the existing `effectStrength` recipe field for the first version.
+- Show an Intensity seekbar for every non-original filter.
+- Apply intensity through the shared recipe/render mapping.
 
 ### Checklist
 
 - [x] Stop `setAdjustments()` from rendering the filter rail.
 - [x] Stop passing user adjustments into filter thumbnail models.
-- [x] Add effect strength UI for non-color filters.
-- [x] Apply filter strength changes to preview/export.
+- [x] Add Intensity UI for non-original filters.
+- [x] Apply filter intensity changes to preview/export.
+- [x] Recalculate Intensity with a softer lower-half curve.
 - [x] Skip test execution by request.
 
 ### Notes
 
 - Current flow applies user `Adjustments` to every thumbnail model, which makes the rail reload while dragging Adjust.
-- The small first version adjusts only `effectStrength`; `effectThreshold`/`effectTone` can stay preset data unless users need them exposed.
-- Added a Strength seekbar for non-color filters.
+- The first version exposes one Intensity seekbar instead of separate recipe internals.
+- Added an Intensity seekbar for non-original filters.
 - Filter thumbnails now keep preset recipes and ignore user Adjust changes.
-- Preview and export now use the selected recipe with any per-filter strength override.
+- `FilterRecipe.intensity` now scales color preset values, B&W amount, and Art effect mix in the shared render mapping.
+- Preview and export now use the selected recipe with any per-filter intensity override.
+- Reopened because linear intensity changes too quickly below 50%.
+- Intensity now uses `linear * linear`; slider 50 maps to effective 25.
+- Added focused mapping coverage for Intensity 50 and JSON intensity clamp.
+- `:filter:compileDebugKotlin :app:compileDebugKotlin :filter:compileDebugUnitTestKotlin` passed.
 - `git diff --check` passed.
 - `:filter:compileDebugKotlin :app:compileDebugKotlin` passed.
 - Unit tests were not run by request.

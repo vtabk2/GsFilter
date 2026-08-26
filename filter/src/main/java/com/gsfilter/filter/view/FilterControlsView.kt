@@ -29,7 +29,6 @@ import com.gsfilter.filter.AdjustControl
 import com.gsfilter.filter.Adjustments
 import com.gsfilter.filter.FilterCatalog
 import com.gsfilter.filter.FilterCategory
-import com.gsfilter.filter.FilterEffect
 import com.gsfilter.filter.FilterOption
 import com.gsfilter.filter.FilterPack
 import com.gsfilter.filter.FilterPackJson
@@ -56,13 +55,13 @@ class FilterControlsView @JvmOverloads constructor(
     private var thumbnailKey: String? = null
     private var thumbnailGenerationId = 0
     private var lastPreloadKey: String? = null
-    private var isRenderingFilterStrength = false
+    private var isRenderingFilterIntensity = false
 
     var onCloseClick: (() -> Unit)? = null
     var onControlTabSelected: ((ControlTab) -> Unit)? = null
     var onCategorySelected: ((FilterCategory) -> Unit)? = null
     var onFilterSelected: ((FilterOption) -> Unit)? = null
-    var onFilterEffectStrengthChanged: ((Int) -> Unit)? = null
+    var onFilterIntensityChanged: ((Int) -> Unit)? = null
     var onAdjustmentChanged: ((AdjustControl, Int) -> Unit)? = null
     var onResetAllAdjustClick: (() -> Unit)? = null
     var onCatalogLoaded: ((FilterPack) -> Unit)? = null
@@ -83,9 +82,9 @@ class FilterControlsView @JvmOverloads constructor(
         itemAnimator = null
         overScrollMode = OVER_SCROLL_NEVER
     }
-    private val filterStrengthSeekBar = SeekBar(context)
-    private val filterStrengthValue = TextView(context)
-    private val filterStrengthRow = createFilterStrengthRow()
+    private val filterIntensitySeekBar = SeekBar(context)
+    private val filterIntensityValue = TextView(context)
+    private val filterIntensityRow = createFilterIntensityRow()
     private val filterContent = LinearLayout(context).apply {
         orientation = VERTICAL
     }
@@ -182,11 +181,11 @@ class FilterControlsView @JvmOverloads constructor(
                 this.thumbnailBitmap !== thumbnailBitmap ||
                 this.thumbnailKey != thumbnailKey ||
                 this.thumbnailGenerationId != nextThumbnailGenerationId
-        val shouldRenderFilterStrength =
+        val shouldRenderFilterIntensity =
             this.selectedFilter != nextFilter || this.selectedRecipe != selectedRecipe
         if (
             !shouldRenderFilters &&
-            !shouldRenderFilterStrength
+            !shouldRenderFilterIntensity
         ) {
             return
         }
@@ -200,7 +199,7 @@ class FilterControlsView @JvmOverloads constructor(
         if (shouldRenderFilters) {
             renderState()
         } else {
-            renderFilterStrength()
+            renderFilterIntensity()
         }
     }
 
@@ -216,7 +215,7 @@ class FilterControlsView @JvmOverloads constructor(
     private fun renderState() {
         renderOriginalAction()
         renderCategories(selectedCategory)
-        renderFilterStrength()
+        renderFilterIntensity()
         val items = catalog.filtersForCategory(selectedCategory.id).map { filter ->
             FilterItem(
                 filter = filter,
@@ -318,7 +317,7 @@ class FilterControlsView @JvmOverloads constructor(
             },
         )
         filterContent.addView(
-            filterStrengthRow,
+            filterIntensityRow,
             LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT).apply {
                 topMargin = itemSpacing()
             },
@@ -376,7 +375,7 @@ class FilterControlsView @JvmOverloads constructor(
         onFilterSelected?.invoke(filter)
     }
 
-    private fun createFilterStrengthRow(): View =
+    private fun createFilterIntensityRow(): View =
         LinearLayout(context).apply {
             isBaselineAligned = false
             gravity = Gravity.CENTER_VERTICAL
@@ -386,17 +385,17 @@ class FilterControlsView @JvmOverloads constructor(
             addView(TextView(context).apply {
                 ellipsize = TextUtils.TruncateAt.END
                 maxLines = 1
-                setText(R.string.gs_filter_strength)
+                setText(R.string.gs_filter_intensity)
                 setTextColor(style.textColor)
                 textSize = 12f
             })
             addView(
-                filterStrengthSeekBar.apply {
-                    max = FILTER_STRENGTH_MAX
+                filterIntensitySeekBar.apply {
+                    max = FILTER_INTENSITY_MAX
                     setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
                         override fun onProgressChanged(view: SeekBar, progress: Int, fromUser: Boolean) {
-                            if (fromUser && !isRenderingFilterStrength) {
-                                onFilterEffectStrengthChanged?.invoke(progress)
+                            if (fromUser && !isRenderingFilterIntensity) {
+                                onFilterIntensityChanged?.invoke(progress)
                             }
                         }
 
@@ -411,7 +410,7 @@ class FilterControlsView @JvmOverloads constructor(
                 },
             )
             addView(
-                filterStrengthValue.apply {
+                filterIntensityValue.apply {
                     gravity = Gravity.END
                     setTextColor(style.textColor)
                     textSize = 12f
@@ -423,18 +422,18 @@ class FilterControlsView @JvmOverloads constructor(
             )
         }
 
-    private fun renderFilterStrength() {
-        val canAdjustStrength = selectedRecipe.effect != FilterEffect.Color
-        filterStrengthRow.visibility = if (canAdjustStrength) VISIBLE else GONE
-        if (!canAdjustStrength) {
+    private fun renderFilterIntensity() {
+        val canAdjustIntensity = selectedFilter.recipe != FilterRecipe()
+        filterIntensityRow.visibility = if (canAdjustIntensity) VISIBLE else GONE
+        if (!canAdjustIntensity) {
             return
         }
 
-        val strength = selectedRecipe.effectStrength.coerceIn(0, FILTER_STRENGTH_MAX)
-        isRenderingFilterStrength = true
-        filterStrengthSeekBar.progress = strength
-        filterStrengthValue.text = strength.toString()
-        isRenderingFilterStrength = false
+        val intensity = selectedRecipe.intensity.coerceIn(0, FILTER_INTENSITY_MAX)
+        isRenderingFilterIntensity = true
+        filterIntensitySeekBar.progress = intensity
+        filterIntensityValue.text = intensity.toString()
+        isRenderingFilterIntensity = false
     }
 
     private fun createTab(textRes: Int, tab: ControlTab, isSelected: Boolean): LinearLayout {
@@ -543,7 +542,7 @@ class FilterControlsView @JvmOverloads constructor(
 
     private companion object {
         val CATALOG_EXECUTOR = Executors.newSingleThreadExecutor()
-        const val FILTER_STRENGTH_MAX = 100
+        const val FILTER_INTENSITY_MAX = 100
     }
 
     enum class ControlTab {

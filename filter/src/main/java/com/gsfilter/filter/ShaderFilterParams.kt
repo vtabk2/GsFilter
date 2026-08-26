@@ -1,10 +1,13 @@
 package com.gsfilter.filter
 
+import kotlin.math.roundToInt
+
 data class ShaderFilterParams(
     val effect: FilterEffect,
     val effectStrength: Float,
     val effectThreshold: Float,
     val effectTone: Float,
+    val intensity: Float,
     val isMonochrome: Float,
     val redShift: Float,
     val greenShift: Float,
@@ -25,17 +28,19 @@ data class ShaderFilterParams(
     val grain: Float,
 ) {
     companion object {
-        fun from(recipe: FilterRecipe, adjustments: Adjustments): ShaderFilterParams =
-            combineAdjustments(recipe.adjustments, adjustments).let { combined ->
+        fun from(recipe: FilterRecipe, adjustments: Adjustments): ShaderFilterParams {
+            val intensity = intensityAmount(recipe.intensity)
+            return combineAdjustments(recipe.adjustments.scaledBy(intensity), adjustments).let { combined ->
                 ShaderFilterParams(
                     effect = recipe.effect,
                     effectStrength = amount(recipe.effectStrength, PERCENT_MAX),
                     effectThreshold = amount(recipe.effectThreshold, PERCENT_MAX),
                     effectTone = amount(recipe.effectTone, PERCENT_MAX),
-                    isMonochrome = if (recipe.isMonochrome) 1f else 0f,
-                    redShift = recipe.redShift / COLOR_CHANNEL_MAX,
-                    greenShift = recipe.greenShift / COLOR_CHANNEL_MAX,
-                    blueShift = recipe.blueShift / COLOR_CHANNEL_MAX,
+                    intensity = intensity,
+                    isMonochrome = if (recipe.isMonochrome) intensity else 0f,
+                    redShift = recipe.redShift.scaledBy(intensity) / COLOR_CHANNEL_MAX,
+                    greenShift = recipe.greenShift.scaledBy(intensity) / COLOR_CHANNEL_MAX,
+                    blueShift = recipe.blueShift.scaledBy(intensity) / COLOR_CHANNEL_MAX,
                     brightness = signed(combined.brightness, BRIGHTNESS_MAX),
                     exposure = signed(combined.exposure, SAFE_PERCENT_MAX),
                     contrast = 1f + signed(combined.contrast, SAFE_PERCENT_MAX),
@@ -52,6 +57,7 @@ data class ShaderFilterParams(
                     grain = amount(combined.grain, PERCENT_MAX),
                 )
             }
+        }
 
         private fun combineAdjustments(preset: Adjustments, user: Adjustments): Adjustments =
             Adjustments(
@@ -76,6 +82,32 @@ data class ShaderFilterParams(
 
         private fun amount(value: Int, divisor: Float): Float =
             value.coerceIn(AMOUNT_MIN, AMOUNT_MAX) / divisor
+
+        private fun intensityAmount(value: Int): Float {
+            val linear = amount(value, PERCENT_MAX)
+            return linear * linear
+        }
+
+        private fun Int.scaledBy(amount: Float): Int =
+            (this * amount).roundToInt()
+
+        private fun Adjustments.scaledBy(amount: Float): Adjustments =
+            Adjustments(
+                brightness = brightness.scaledBy(amount),
+                exposure = exposure.scaledBy(amount),
+                contrast = contrast.scaledBy(amount),
+                highlights = highlights.scaledBy(amount),
+                shadows = shadows.scaledBy(amount),
+                saturation = saturation.scaledBy(amount),
+                vibrance = vibrance.scaledBy(amount),
+                temperature = temperature.scaledBy(amount),
+                tint = tint.scaledBy(amount),
+                sharpness = sharpness.scaledBy(amount),
+                clarity = clarity.scaledBy(amount),
+                fade = fade.scaledBy(amount),
+                vignette = vignette.scaledBy(amount),
+                grain = grain.scaledBy(amount),
+            )
 
         private const val COLOR_CHANNEL_MAX = 255f
         private const val BRIGHTNESS_MAX = 400f

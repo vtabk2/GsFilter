@@ -153,6 +153,24 @@ class ShaderFilterParamsTest {
         assertEquals(0.2f, params.fade, DELTA)
     }
 
+    @Test
+    fun `filter intensity has softer lower range`() {
+        val params = ShaderFilterParams.from(
+            recipe = FilterRecipe(
+                intensity = 50,
+                isMonochrome = true,
+                redShift = 100,
+                adjustments = Adjustments(contrast = 100),
+            ),
+            adjustments = Adjustments(),
+        )
+
+        assertEquals(0.25f, params.intensity, DELTA)
+        assertEquals(0.25f, params.isMonochrome, DELTA)
+        assertEquals(25f / 255f, params.redShift, DELTA)
+        assertEquals(1.125f, params.contrast, DELTA)
+    }
+
     private companion object {
         const val DELTA = 0.0001f
     }

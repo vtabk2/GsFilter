@@ -9,10 +9,10 @@ import com.gsfilter.filter.Adjustments
 import com.gsfilter.filter.AdjustControl
 import com.gsfilter.filter.renderer.FilterBitmapRenderer
 import com.gsfilter.filter.FilterCategory
-import com.gsfilter.filter.FilterEffect
 import com.gsfilter.filter.renderer.FilterGpuBitmapRenderer
 import com.gsfilter.filter.FilterOption
 import com.gsfilter.filter.FilterPack
+import com.gsfilter.filter.FilterRecipe
 import com.gsfilter.filter.FilterSourceKey
 import java.io.IOException
 import kotlinx.coroutines.CancellationException
@@ -73,24 +73,22 @@ class FilterViewModel(application: Application) : AndroidViewModel(application) 
         _state.update { it.copy(adjustments = Adjustments()) }
     }
 
-    fun setFilterEffectStrength(value: Int) {
+    fun setFilterIntensity(value: Int) {
         _state.update { state ->
-            if (state.selectedFilter.recipe.effect == FilterEffect.Color) {
+            if (state.selectedFilter.recipe == FilterRecipe()) {
                 return@update state
             }
 
-            val strength = value.coerceIn(EFFECT_STRENGTH_MIN, EFFECT_STRENGTH_MAX)
-            val currentStrength =
-                state.filterEffectStrengths[state.selectedFilter.id] ?: state.selectedFilter.recipe.effectStrength
-            if (currentStrength == strength) {
+            val intensity = value.coerceIn(FILTER_INTENSITY_MIN, FILTER_INTENSITY_MAX)
+            if (state.selectedFilterIntensity == intensity) {
                 state
             } else {
                 state.copy(
-                    filterEffectStrengths =
-                        if (strength == state.selectedFilter.recipe.effectStrength) {
-                            state.filterEffectStrengths - state.selectedFilter.id
+                    filterIntensities =
+                        if (intensity == state.selectedFilter.recipe.intensity) {
+                            state.filterIntensities - state.selectedFilter.id
                         } else {
-                            state.filterEffectStrengths + (state.selectedFilter.id to strength)
+                            state.filterIntensities + (state.selectedFilter.id to intensity)
                         },
                 )
             }
@@ -173,7 +171,7 @@ class FilterViewModel(application: Application) : AndroidViewModel(application) 
 
     private companion object {
         const val SAMPLE_ASSET = "sample.jpg"
-        const val EFFECT_STRENGTH_MIN = 0
-        const val EFFECT_STRENGTH_MAX = 100
+        const val FILTER_INTENSITY_MIN = 0
+        const val FILTER_INTENSITY_MAX = 100
     }
 }

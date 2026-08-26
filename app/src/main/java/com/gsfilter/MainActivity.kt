@@ -48,7 +48,7 @@ class MainActivity : ComponentActivity() {
         binding.filterControls.onControlTabSelected = ::selectControlTab
         binding.filterControls.onCategorySelected = viewModel::selectCategory
         binding.filterControls.onFilterSelected = viewModel::selectFilter
-        binding.filterControls.onFilterEffectStrengthChanged = viewModel::setFilterEffectStrength
+        binding.filterControls.onFilterIntensityChanged = viewModel::setFilterIntensity
         binding.filterControls.onCatalogLoaded = viewModel::setCatalog
         binding.filterControls.onCatalogLoadFailed = {
             Toast.makeText(this, R.string.filter_pack_load_failed, Toast.LENGTH_SHORT).show()
