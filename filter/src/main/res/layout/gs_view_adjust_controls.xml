@@ -18,14 +18,13 @@
             android:id="@+id/gs_adjust_reset_button"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:contentDescription="@string/gs_action_reset_adjust"/>
+            android:contentDescription="@string/gs_action_reset_adjust"
+            android:visibility="invisible"/>
 
         <SeekBar
             android:id="@+id/gs_adjust_seek_bar"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_marginStart="@dimen/gs_filter_item_spacing"
-            android:layout_marginEnd="@dimen/gs_filter_item_spacing"
             android:layout_weight="1"/>
 
         <TextView

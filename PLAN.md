@@ -1403,6 +1403,7 @@ Status: DONE
 - [x] Keep/apply Filter and Adjust styling attributes.
 - [x] Make XML-bound child view lookups fail-soft.
 - [x] Move filter item selected border to foreground above the thumbnail image.
+- [x] Hide selected Adjust reset button until the active value changes.
 - [x] Run lightweight verification.
 
 ### Notes
@@ -1418,6 +1419,8 @@ Status: DONE
 - `AdjustControlsView` and `FilterControlsView` now use nullable `findViewById` references and safe binding for XML child views.
 - Reopened to move the filter item selected border to foreground so it draws above the thumbnail image.
 - Added transparent foreground stroke drawables for normal and selected filter cards, configurable through XML attrs.
+- Reopened to keep the selected Adjust reset button invisible until the active adjust value differs from default.
+- The selected Adjust reset button now defaults to `invisible` in XML and toggles visible only when the active control value differs from default.
 - `git diff --check` passed.
 - `:filter:compileDebugKotlin :app:compileDebugKotlin` passed.
 - Unit tests were not run.

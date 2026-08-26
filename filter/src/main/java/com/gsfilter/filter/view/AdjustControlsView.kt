@@ -125,11 +125,13 @@ internal class AdjustControlsView @JvmOverloads constructor(
     private fun renderAdjustments() {
         isRendering = true
         val activeValue = selectedControl.valueIn(adjustments)
+        val defaults = Adjustments()
+        val defaultValue = selectedControl.valueIn(defaults)
+        resetButton?.visibility = if (activeValue == defaultValue) INVISIBLE else VISIBLE
         seekBar?.max = selectedControl.progressMax
         seekBar?.progress = selectedControl.progressFrom(activeValue)
         valueText?.text = activeValue.toString()
 
-        val defaults = Adjustments()
         AdjustControl.entries.forEach { control ->
             val isSelected = control == selectedControl
             val textColor = if (isSelected) style.selectedColor else style.secondaryTextColor
