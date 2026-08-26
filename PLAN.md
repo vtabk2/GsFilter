@@ -1116,3 +1116,34 @@ Status: DONE
 - Added `FilterBitmapRendererTest` for default output, user adjustments, and invalid dimensions.
 - `git diff --check` passed.
 - `:filter:testDebugUnitTest :app:assembleDebug` passed after rerunning Gradle outside the sandbox due network/cache restrictions.
+
+## Task: Optimize bitmap export with scaling and offscreen GPU rendering
+
+Status: DONE
+
+### Requirements
+
+- Add output scaling for view-free bitmap rendering.
+- Add an offscreen GPU render path that does not require `FilterPreviewView`.
+- Keep API 24 compatibility.
+- Keep existing preview behavior unchanged.
+
+### Checklist
+
+- [x] Add CPU renderer max-size option.
+- [x] Add background export helper in the sample app.
+- [x] Add offscreen GPU bitmap renderer in `:filter`.
+- [x] Reuse shader constants between preview and offscreen renderer.
+- [x] Add/update focused tests where local JVM can cover logic.
+- [x] Run relevant verification.
+
+### Notes
+
+- Offscreen GPU rendering will use EGL pbuffer + `glReadPixels`; hosts can choose it only when they need faster full-image export.
+- `FilterBitmapRenderer.getBitmap()` now accepts optional `maxWidth` and `maxHeight`, downscales only when needed, and keeps aspect ratio.
+- Added `FilterGpuBitmapRenderer.getBitmap()` for EGL pbuffer rendering without `FilterPreviewView`.
+- `FilterPreviewView` and `FilterGpuBitmapRenderer` now share `GlFilterProgram` shader/program binding logic.
+- Added `FilterViewModel.renderFilteredBitmap(maxWidth, maxHeight, useGpu)` to show off-main export in the sample app.
+- Updated README usage for CPU scaled output and GPU offscreen output.
+- `git diff --check` passed.
+- `:filter:testDebugUnitTest :app:assembleDebug` passed after rerunning Gradle outside the sandbox due network/cache restrictions.

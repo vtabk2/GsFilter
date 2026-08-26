@@ -7,6 +7,7 @@ import kotlin.math.min
 import kotlin.math.pow
 import kotlin.math.roundToInt
 import kotlin.math.sqrt
+import androidx.core.graphics.scale
 
 object FilterBitmapRenderer {
 
@@ -14,19 +15,59 @@ object FilterBitmapRenderer {
         source: Bitmap,
         recipe: FilterRecipe,
         adjustments: Adjustments = Adjustments(),
+        maxWidth: Int? = null,
+        maxHeight: Int? = null,
     ): Bitmap {
-        val width = source.width
-        val height = source.height
+        val renderSource = scaledSource(source, maxWidth, maxHeight)
+        val width = renderSource.width
+        val height = renderSource.height
         val pixels = IntArray(width * height)
 
-        source.getPixels(pixels, 0, width, 0, 0, width, height)
-        val output = renderPixels(
-            pixels = pixels,
-            width = width,
-            height = height,
-            params = ShaderFilterParams.from(recipe, adjustments),
+        return try {
+            renderSource.getPixels(pixels, 0, width, 0, 0, width, height)
+            val output = renderPixels(
+                pixels = pixels,
+                width = width,
+                height = height,
+                params = ShaderFilterParams.from(recipe, adjustments),
+            )
+            Bitmap.createBitmap(output, width, height, Bitmap.Config.ARGB_8888)
+        } finally {
+            recycleIfTemporary(renderSource, source)
+        }
+    }
+
+    internal fun targetSize(
+        width: Int,
+        height: Int,
+        maxWidth: Int?,
+        maxHeight: Int?,
+    ): RenderSize {
+        require(width > 0 && height > 0) { "Source size must be positive." }
+        require(maxWidth == null || maxWidth > 0) { "maxWidth must be positive." }
+        require(maxHeight == null || maxHeight > 0) { "maxHeight must be positive." }
+
+        val widthScale = maxWidth?.let { it.toFloat() / width } ?: 1f
+        val heightScale = maxHeight?.let { it.toFloat() / height } ?: 1f
+        val scale = min(1f, min(widthScale, heightScale))
+        return RenderSize(
+            width = (width * scale).roundToInt().coerceAtLeast(1),
+            height = (height * scale).roundToInt().coerceAtLeast(1),
         )
-        return Bitmap.createBitmap(output, width, height, Bitmap.Config.ARGB_8888)
+    }
+
+    internal fun scaledSource(source: Bitmap, maxWidth: Int?, maxHeight: Int?): Bitmap {
+        val size = targetSize(source.width, source.height, maxWidth, maxHeight)
+        if (size.width == source.width && size.height == source.height) {
+            return source
+        }
+        return source.scale(size.width, size.height)
+    }
+
+    internal fun recycleIfTemporary(renderSource: Bitmap, originalSource: Bitmap) {
+        if (renderSource !== originalSource) {
+            renderSource.recycle()
+        }
     }
 
     internal fun renderPixels(
@@ -170,6 +211,11 @@ object FilterBitmapRenderer {
         (alpha shl 24) or (channel(red) shl 16) or (channel(green) shl 8) or channel(blue)
 
     private fun channel(value: Float): Int = (clamp(value, 0f, 1f) * CHANNEL_MASK).roundToInt().coerceIn(0, CHANNEL_MASK)
+
+    internal data class RenderSize(
+        val width: Int,
+        val height: Int,
+    )
 
     private const val CHANNEL_MASK = 255
     private const val CHANNEL_MAX = 255f

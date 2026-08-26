@@ -8,7 +8,9 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.gsfilter.filter.Adjustments
 import com.gsfilter.filter.AdjustControl
+import com.gsfilter.filter.FilterBitmapRenderer
 import com.gsfilter.filter.FilterCategory
+import com.gsfilter.filter.FilterGpuBitmapRenderer
 import com.gsfilter.filter.FilterOption
 import com.gsfilter.filter.FilterPack
 import com.gsfilter.filter.FilterSourceKey
@@ -69,6 +71,34 @@ class FilterViewModel(application: Application) : AndroidViewModel(application) 
 
     fun resetAdjustments() {
         _state.update { it.copy(adjustments = Adjustments()) }
+    }
+
+    suspend fun renderFilteredBitmap(
+        maxWidth: Int? = null,
+        maxHeight: Int? = null,
+        useGpu: Boolean = false,
+    ): Bitmap? {
+        val state = _state.value
+        val source = state.sourceBitmap ?: return null
+        return withContext(Dispatchers.Default) {
+            if (useGpu) {
+                FilterGpuBitmapRenderer.getBitmap(
+                    source = source,
+                    recipe = state.selectedFilter.recipe,
+                    adjustments = state.adjustments,
+                    maxWidth = maxWidth,
+                    maxHeight = maxHeight,
+                )
+            } else {
+                FilterBitmapRenderer.getBitmap(
+                    source = source,
+                    recipe = state.selectedFilter.recipe,
+                    adjustments = state.adjustments,
+                    maxWidth = maxWidth,
+                    maxHeight = maxHeight,
+                )
+            }
+        }
     }
 
     private fun loadSample() {

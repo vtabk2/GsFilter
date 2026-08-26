@@ -49,4 +49,20 @@ class FilterBitmapRendererTest {
 
         assertTrue(result.exceptionOrNull() is IllegalArgumentException)
     }
+
+    @Test
+    fun `target size keeps aspect ratio and does not upscale`() {
+        assertEquals(
+            FilterBitmapRenderer.RenderSize(width = 1000, height = 500),
+            FilterBitmapRenderer.targetSize(width = 4000, height = 2000, maxWidth = 1000, maxHeight = 1000),
+        )
+        assertEquals(
+            FilterBitmapRenderer.RenderSize(width = 500, height = 1000),
+            FilterBitmapRenderer.targetSize(width = 2000, height = 4000, maxWidth = 1000, maxHeight = 1000),
+        )
+        assertEquals(
+            FilterBitmapRenderer.RenderSize(width = 800, height = 600),
+            FilterBitmapRenderer.targetSize(width = 800, height = 600, maxWidth = 1200, maxHeight = 1200),
+        )
+    }
 }

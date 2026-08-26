@@ -83,10 +83,14 @@ val resultBitmap = FilterBitmapRenderer.getBitmap(
     source = sourceBitmap,
     recipe = selectedFilter.recipe,
     adjustments = adjustments,
+    maxWidth = 2048,
+    maxHeight = 2048,
 )
 ```
 
-API này không phụ thuộc UI view hay `GLSurfaceView`. Với ảnh lớn, gọi nó ngoài main thread:
+`maxWidth`/`maxHeight` là tùy chọn, renderer chỉ downscale để giữ aspect ratio và không upscale ảnh nhỏ.
+
+API CPU này không phụ thuộc UI view hay `GLSurfaceView`. Với ảnh lớn, gọi nó ngoài main thread:
 
 ```kotlin
 val resultBitmap = withContext(Dispatchers.Default) {
@@ -94,9 +98,27 @@ val resultBitmap = withContext(Dispatchers.Default) {
         source = sourceBitmap,
         recipe = selectedFilter.recipe,
         adjustments = adjustments,
+        maxWidth = 2048,
+        maxHeight = 2048,
     )
 }
 ```
+
+Nếu cần export nhanh hơn cho ảnh lớn, có thể dùng GPU offscreen renderer. API này tạo EGL pbuffer nội bộ, không cần gắn `FilterPreviewView` lên UI:
+
+```kotlin
+val resultBitmap = withContext(Dispatchers.Default) {
+    FilterGpuBitmapRenderer.getBitmap(
+        source = sourceBitmap,
+        recipe = selectedFilter.recipe,
+        adjustments = adjustments,
+        maxWidth = 2048,
+        maxHeight = 2048,
+    )
+}
+```
+
+Trong app mẫu, `FilterViewModel.renderFilteredBitmap(maxWidth, maxHeight, useGpu)` đã bọc sẵn việc chạy background.
 
 ## Cách dùng controls
 
