@@ -1013,3 +1013,23 @@ Status: DONE
 - The app now only wires `onAdjustmentChanged`, `onResetAllAdjustClick`, and `setAdjustments()`.
 - Removed app-owned adjust reset icon, changed-dot drawable, strings, colors, and dimens that moved into `:filter`.
 - `:filter:testDebugUnitTest :app:testDebugUnitTest :app:assembleDebug` passed after moving adjust controls into the filter module.
+
+## Task: Add category row top spacing
+
+Status: DONE
+
+### Requirements
+
+- Move the filter category row down by 10dp.
+- Keep other filter/adjust spacings unchanged.
+
+### Checklist
+
+- [x] Add a dedicated 10dp category top spacing dimen.
+- [x] Apply it to the category row.
+- [x] Run unit tests and assemble debug.
+
+### Notes
+
+- Added `gs_filter_category_top_spacing` and applied it only to the category row.
+- `:filter:testDebugUnitTest :app:testDebugUnitTest :app:assembleDebug` passed after the spacing update.

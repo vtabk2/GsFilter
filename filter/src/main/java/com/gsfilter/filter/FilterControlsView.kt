@@ -221,7 +221,7 @@ class FilterControlsView @JvmOverloads constructor(
                 gravity = Gravity.CENTER_VERTICAL
                 orientation = HORIZONTAL
                 layoutParams = LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT).apply {
-                    topMargin = itemSpacing()
+                    topMargin = categoryTopSpacing()
                 }
                 addView(buttonOriginalFilter)
                 addView(HorizontalScrollView(context).apply {
@@ -384,6 +384,9 @@ class FilterControlsView @JvmOverloads constructor(
     }
 
     private fun itemSpacing(): Int = resources.getDimensionPixelSize(R.dimen.gs_filter_item_spacing)
+
+    private fun categoryTopSpacing(): Int =
+        resources.getDimensionPixelSize(R.dimen.gs_filter_category_top_spacing)
 
     private fun chipMinHeight(): Int = resources.getDimensionPixelSize(R.dimen.gs_filter_chip_min_height)
 
