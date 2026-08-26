@@ -1,6 +1,9 @@
-package com.gsfilter.filter
+package com.gsfilter.filter.renderer
 
 import android.graphics.Bitmap
+import com.gsfilter.filter.renderer.FilterBitmapRenderer
+import com.gsfilter.filter.FilterRecipe
+import com.gsfilter.filter.ShaderFilterParams
 
 object FilterThumbnailRenderer {
 

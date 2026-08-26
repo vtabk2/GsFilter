@@ -1,4 +1,4 @@
-package com.gsfilter.filter
+package com.gsfilter.filter.renderer
 
 import android.graphics.Bitmap
 import android.opengl.EGL14
@@ -8,6 +8,10 @@ import android.opengl.EGLDisplay
 import android.opengl.EGLSurface
 import android.opengl.GLES20
 import android.opengl.GLUtils
+import com.gsfilter.filter.Adjustments
+import com.gsfilter.filter.renderer.FilterBitmapRenderer
+import com.gsfilter.filter.FilterRecipe
+import com.gsfilter.filter.ShaderFilterParams
 import com.gsfilter.filter.gl.GlFilterProgram
 import java.nio.ByteBuffer
 
@@ -45,7 +49,7 @@ object FilterGpuBitmapRenderer {
                 textureId = textureId,
                 imageWidth = width,
                 imageHeight = height,
-                params = ShaderFilterParams.from(recipe, adjustments),
+                params = ShaderFilterParams.Companion.from(recipe, adjustments),
             )
             GLES20.glDrawArrays(GLES20.GL_TRIANGLE_STRIP, 0, GlFilterProgram.VERTEX_COUNT)
             GlFilterProgram.disableAttributes(handles)

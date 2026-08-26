@@ -1,5 +1,6 @@
 package com.gsfilter.filter
 
+import com.gsfilter.filter.renderer.FilterThumbnailRenderer
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotEquals
 import org.junit.Test

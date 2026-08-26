@@ -1,13 +1,17 @@
-package com.gsfilter.filter
+package com.gsfilter.filter.renderer
 
 import android.graphics.Bitmap
+import androidx.core.graphics.scale
+import com.gsfilter.filter.Adjustments
+import com.gsfilter.filter.FilterRecipe
+import com.gsfilter.filter.ShaderFilterParams
 import kotlin.math.floor
 import kotlin.math.max
 import kotlin.math.min
 import kotlin.math.pow
 import kotlin.math.roundToInt
+import kotlin.math.sin
 import kotlin.math.sqrt
-import androidx.core.graphics.scale
 
 object FilterBitmapRenderer {
 
@@ -29,7 +33,7 @@ object FilterBitmapRenderer {
                 pixels = pixels,
                 width = width,
                 height = height,
-                params = ShaderFilterParams.from(recipe, adjustments),
+                params = ShaderFilterParams.Companion.from(recipe, adjustments),
             )
             Bitmap.createBitmap(output, width, height, Bitmap.Config.ARGB_8888)
         } finally {
@@ -203,7 +207,7 @@ object FilterBitmapRenderer {
     private fun clamp(value: Float, minValue: Float, maxValue: Float): Float = min(max(value, minValue), maxValue)
 
     private fun random(x: Float, y: Float): Float {
-        val value = kotlin.math.sin((x * 12.9898) + (y * 78.233)) * 43758.5453
+        val value = sin((x * 12.9898) + (y * 78.233)) * 43758.5453
         return (value - floor(value)).toFloat()
     }
 

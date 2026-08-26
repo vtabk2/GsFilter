@@ -9,7 +9,7 @@ import com.bumptech.glide.load.model.ModelLoader
 import com.bumptech.glide.load.model.ModelLoaderFactory
 import com.bumptech.glide.load.model.MultiModelLoaderFactory
 import com.bumptech.glide.signature.ObjectKey
-import com.gsfilter.filter.FilterThumbnailRenderer
+import com.gsfilter.filter.renderer.FilterThumbnailRenderer
 
 class FilterThumbnailModelLoader : ModelLoader<FilterThumbnailModel, Bitmap> {
 

@@ -8,9 +8,9 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.gsfilter.filter.Adjustments
 import com.gsfilter.filter.AdjustControl
-import com.gsfilter.filter.FilterBitmapRenderer
+import com.gsfilter.filter.renderer.FilterBitmapRenderer
 import com.gsfilter.filter.FilterCategory
-import com.gsfilter.filter.FilterGpuBitmapRenderer
+import com.gsfilter.filter.renderer.FilterGpuBitmapRenderer
 import com.gsfilter.filter.FilterOption
 import com.gsfilter.filter.FilterPack
 import com.gsfilter.filter.FilterSourceKey
