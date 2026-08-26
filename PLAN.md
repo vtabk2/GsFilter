@@ -1117,6 +1117,32 @@ Status: DONE
 - `git diff --check` passed.
 - `:filter:testDebugUnitTest :app:assembleDebug` passed after rerunning Gradle outside the sandbox due network/cache restrictions.
 
+## Task: Expand non-LUT built-in filters
+
+Status: DONE
+
+### Requirements
+
+- Add the remaining filter presets that can be represented without LUT.
+- Keep filters as `FilterRecipe` + `Adjustments` data.
+- Add missing categories needed for those presets.
+- Preserve existing engine, preview, thumbnail, and adjust behavior.
+
+### Checklist
+
+- [x] Add Landscape, Night, Aesthetic, and Creative categories.
+- [x] Add non-LUT filter recipes across existing categories.
+- [x] Add filter/category string resources.
+- [x] Add focused catalog coverage for category references.
+- [x] Run relevant verification.
+
+### Notes
+
+- This should be data-only catalog expansion; no shader/LUT changes.
+- Added Landscape, Night, Aesthetic, and Creative categories with recipe-only presets.
+- `git diff --check` passed.
+- `:filter:testDebugUnitTest :app:testDebugUnitTest :app:assembleDebug` passed after rerunning Gradle outside the sandbox due network/cache restrictions.
+
 ## Task: Optimize bitmap export with scaling and offscreen GPU rendering
 
 Status: DONE

@@ -29,6 +29,16 @@ class FilterCatalogTest {
     }
 
     @Test
+    fun `filter category ids all exist in catalog`() {
+        val categoryIds = FilterCatalog.categories.map { it.id }.toSet()
+        val unknownIds = FilterCatalog.options
+            .flatMap { it.categoryIds }
+            .filterNot { it in categoryIds }
+
+        assertTrue(unknownIds.isEmpty())
+    }
+
+    @Test
     fun `category filter lists exclude original action`() {
         FilterCatalog.categories.forEach { category ->
             assertFalse(

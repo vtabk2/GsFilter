@@ -33,7 +33,7 @@ object FilterBitmapRenderer {
                 pixels = pixels,
                 width = width,
                 height = height,
-                params = ShaderFilterParams.Companion.from(recipe, adjustments),
+                params = ShaderFilterParams.from(recipe, adjustments),
             )
             Bitmap.createBitmap(output, width, height, Bitmap.Config.ARGB_8888)
         } finally {
