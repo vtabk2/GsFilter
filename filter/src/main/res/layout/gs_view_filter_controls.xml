@@ -127,14 +127,14 @@
             android:id="@+id/gs_filter_recycler"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="@dimen/gs_filter_item_spacing"
+            android:layout_marginTop="@dimen/gs_filter_category_top_spacing"
             android:overScrollMode="never"/>
 
         <LinearLayout
             android:id="@+id/gs_filter_intensity_row"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="@dimen/gs_filter_item_spacing"
+            android:layout_marginTop="@dimen/gs_filter_category_top_spacing"
             android:baselineAligned="false"
             android:gravity="center_vertical"
             android:orientation="horizontal"
@@ -147,7 +147,7 @@
                 android:ellipsize="end"
                 android:maxLines="1"
                 android:text="@string/gs_filter_intensity"
-                android:textSize="12sp"/>
+                android:textSize="13sp"/>
 
             <SeekBar
                 android:id="@+id/gs_filter_intensity_seek_bar"
@@ -163,7 +163,7 @@
                 android:layout_width="@dimen/gs_adjust_value_width"
                 android:layout_height="wrap_content"
                 android:gravity="end"
-                android:textSize="12sp"/>
+                android:textSize="13sp"/>
         </LinearLayout>
     </LinearLayout>
 

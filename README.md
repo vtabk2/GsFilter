@@ -288,6 +288,8 @@ Các XML attributes hiện có:
 | `gsFilterUseTabBackground` | Set `false` để render tab Filter/Adjust không có background |
 | `gsFilterCardBackground` | Background filter thumbnail card bình thường |
 | `gsFilterSelectedCardBackground` | Background filter thumbnail card đang chọn |
+| `gsFilterCardForeground` | Foreground viền thumbnail card bình thường, nằm trên ảnh |
+| `gsFilterSelectedCardForeground` | Foreground viền thumbnail card đang chọn, nằm trên ảnh |
 | `gsFilterLabelBackground` | Background nhãn thumbnail |
 | `gsFilterLabelTextColor` | Màu text nhãn thumbnail |
 | `gsFilterCloseIcon` | Drawable icon đóng |
@@ -321,7 +323,6 @@ Các dimension có thể override:
 | `gs_filter_tab_indicator_height` | `2dp` | Chiều cao indicator của tab Filter/Adjust |
 | `gs_filter_thumbnail_width` | `76dp` | Chiều rộng item thumbnail filter |
 | `gs_filter_thumbnail_height` | `88dp` | Chiều cao item thumbnail filter |
-| `gs_filter_thumbnail_inset` | `2dp` | Inset của image/card thumbnail filter |
 | `gs_filter_thumbnail_label_height` | `26dp` | Chiều cao dải label thumbnail filter |
 | `gs_filter_thumbnail_label_padding` | `4dp` | Padding ngang label thumbnail filter |
 | `gs_adjust_panel_padding` | `8dp` | Padding bên trong panel adjust |

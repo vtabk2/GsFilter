@@ -466,6 +466,8 @@ class FilterControlsView @JvmOverloads constructor(
         val useTabBackground: Boolean,
         val cardBackgroundRes: Int,
         val selectedCardBackgroundRes: Int,
+        val cardForegroundRes: Int,
+        val selectedCardForegroundRes: Int,
         val labelBackgroundRes: Int,
         val labelTextColor: Int,
         val closeIconRes: Int,
@@ -542,6 +544,14 @@ class FilterControlsView @JvmOverloads constructor(
             selectedCardBackgroundRes = array.getResourceId(
                 R.styleable.FilterControlsView_gsFilterSelectedCardBackground,
                 R.drawable.gs_bg_filter_card_selected,
+            ),
+            cardForegroundRes = array.getResourceId(
+                R.styleable.FilterControlsView_gsFilterCardForeground,
+                R.drawable.gs_fg_filter_card,
+            ),
+            selectedCardForegroundRes = array.getResourceId(
+                R.styleable.FilterControlsView_gsFilterSelectedCardForeground,
+                R.drawable.gs_fg_filter_card_selected,
             ),
             labelBackgroundRes = array.getResourceId(
                 R.styleable.FilterControlsView_gsFilterLabelBackground,
@@ -651,6 +661,10 @@ class FilterControlsView @JvmOverloads constructor(
                 itemView.setBackgroundResource(
                     if (item.isSelected) style.selectedCardBackgroundRes else style.cardBackgroundRes,
                 )
+                itemView.foreground = itemView.context.getDrawable(
+                    if (item.isSelected) style.selectedCardForegroundRes else style.cardForegroundRes,
+                )
+                itemView.isSelected = item.isSelected
                 itemView.setOnClickListener { onFilterSelected(item.filter) }
                 label?.setBackgroundResource(style.labelBackgroundRes)
                 label?.setTextColor(style.labelTextColor)

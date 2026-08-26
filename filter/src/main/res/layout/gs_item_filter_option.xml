@@ -10,7 +10,6 @@
         android:id="@+id/gs_filter_option_image"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_margin="@dimen/gs_filter_thumbnail_inset"
         android:importantForAccessibility="no"
         android:scaleType="centerCrop"/>
 
@@ -19,14 +18,11 @@
         android:layout_width="match_parent"
         android:layout_height="@dimen/gs_filter_thumbnail_label_height"
         android:layout_gravity="bottom"
-        android:layout_marginStart="@dimen/gs_filter_thumbnail_inset"
-        android:layout_marginEnd="@dimen/gs_filter_thumbnail_inset"
-        android:layout_marginBottom="@dimen/gs_filter_thumbnail_inset"
         android:ellipsize="end"
         android:gravity="center"
         android:includeFontPadding="false"
         android:maxLines="1"
         android:paddingStart="@dimen/gs_filter_thumbnail_label_padding"
         android:paddingEnd="@dimen/gs_filter_thumbnail_label_padding"
-        android:textSize="12sp"/>
+        android:textSize="10sp"/>
 </FrameLayout>

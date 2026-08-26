@@ -1402,6 +1402,7 @@ Status: DONE
 - [x] Update custom views to inflate and bind XML views.
 - [x] Keep/apply Filter and Adjust styling attributes.
 - [x] Make XML-bound child view lookups fail-soft.
+- [x] Move filter item selected border to foreground above the thumbnail image.
 - [x] Run lightweight verification.
 
 ### Notes
@@ -1415,6 +1416,8 @@ Status: DONE
 - README styling attrs now include the new Intensity XML attributes.
 - Reopened to make XML-bound child view references nullable so missing customized ids do not crash the host app.
 - `AdjustControlsView` and `FilterControlsView` now use nullable `findViewById` references and safe binding for XML child views.
+- Reopened to move the filter item selected border to foreground so it draws above the thumbnail image.
+- Added transparent foreground stroke drawables for normal and selected filter cards, configurable through XML attrs.
 - `git diff --check` passed.
 - `:filter:compileDebugKotlin :app:compileDebugKotlin` passed.
 - Unit tests were not run.
