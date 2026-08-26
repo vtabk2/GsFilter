@@ -17,6 +17,7 @@ object FilterCatalog {
         FilterCategory(id = BLACK_WHITE, nameRes = R.string.gs_category_black_white),
         FilterCategory(id = AESTHETIC, nameRes = R.string.gs_category_aesthetic),
         FilterCategory(id = CREATIVE, nameRes = R.string.gs_category_creative),
+        FilterCategory(id = ART, nameRes = R.string.gs_category_art),
     )
 
     val options: List<FilterOption> = listOf(
@@ -1585,7 +1586,7 @@ object FilterCatalog {
         ),
         FilterOption(
             id = "sketch",
-            categoryIds = setOf(POPULAR, CREATIVE),
+            categoryIds = setOf(ART),
             nameRes = R.string.gs_filter_sketch,
             recipe = FilterRecipe(
                 effect = FilterEffect.Sketch,
@@ -1599,7 +1600,7 @@ object FilterCatalog {
         ),
         FilterOption(
             id = "ink",
-            categoryIds = setOf(CREATIVE, BLACK_WHITE),
+            categoryIds = setOf(ART),
             nameRes = R.string.gs_filter_ink,
             recipe = FilterRecipe(
                 effect = FilterEffect.Ink,
@@ -1642,5 +1643,6 @@ object FilterCatalog {
     private const val BLACK_WHITE = "black_white"
     private const val AESTHETIC = "aesthetic"
     private const val CREATIVE = "creative"
+    private const val ART = "art"
 }
 

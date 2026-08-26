@@ -104,6 +104,7 @@
     <string name="gs_category_black_white">B&amp;W</string>
     <string name="gs_category_aesthetic">Aesthetic</string>
     <string name="gs_category_creative">Creative</string>
+    <string name="gs_category_art">Art</string>
     <string name="gs_brightness">Brightness</string>
     <string name="gs_exposure">Exposure</string>
     <string name="gs_contrast">Contrast</string>

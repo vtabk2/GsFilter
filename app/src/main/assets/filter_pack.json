@@ -3,7 +3,8 @@
   "categories": [
     { "id": "json_popular", "name": "JSON Popular" },
     { "id": "json_cinematic", "name": "JSON Cinematic" },
-    { "id": "json_soft", "name": "JSON Soft" }
+    { "id": "json_soft", "name": "JSON Soft" },
+    { "id": "json_art", "name": "JSON Art" }
   ],
   "filters": [
     {
@@ -122,7 +123,7 @@
     {
       "id": "json_sketch",
       "name": "Sketch",
-      "categoryIds": ["json_popular", "json_cinematic"],
+      "categoryIds": ["json_art"],
       "recipe": {
         "effect": "sketch",
         "adjustments": {

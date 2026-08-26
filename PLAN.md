@@ -1159,16 +1159,23 @@ Status: DONE
 - [x] Render Sketch and Ink in the shared GPU shader path.
 - [x] Render Sketch and Ink in the CPU bitmap path.
 - [x] Add built-in Sketch and Ink presets/resources.
+- [x] Move sketch-style filters to a single Art category.
 - [x] Add focused tests and run verification.
 
 ### Notes
 
 - Added `FilterEffect.Color`, `FilterEffect.Sketch`, and `FilterEffect.Ink`.
 - JSON recipes can now use `effect: "sketch"` or `effect: "ink"`.
-- Built-in catalog includes `Sketch` and `Ink` under Creative.
+- Built-in catalog includes `Sketch` and `Ink` under Art.
 - `Get-Content app/src/main/assets/filter_pack.json | ConvertFrom-Json | Out-Null` passed.
 - `git diff --check` passed.
 - `:filter:testDebugUnitTest :app:testDebugUnitTest :app:assembleDebug` passed after rerunning Gradle outside the sandbox due network/cache restrictions.
+- Reopened to put sketch-style filters in a single Art category.
+- Added `Art` category and moved built-in sketch-style filters there only.
+- Sample JSON pack now has `JSON Art` for `json_sketch`.
+- `Get-Content app/src/main/assets/filter_pack.json | ConvertFrom-Json | Out-Null` passed after regrouping.
+- `git diff --check` passed after regrouping.
+- `:filter:testDebugUnitTest :app:testDebugUnitTest :app:assembleDebug` passed after regrouping.
 
 ## Task: Optimize bitmap export with scaling and offscreen GPU rendering
 
