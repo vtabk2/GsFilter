@@ -5,6 +5,7 @@
     <string name="gs_action_reset_all_adjust">Reset All</string>
     <string name="gs_section_filter">Filter</string>
     <string name="gs_section_adjust">Adjust</string>
+    <string name="gs_filter_strength">Strength</string>
     <string name="gs_filter_mono">B&amp;W</string>
     <string name="gs_filter_fresh">Fresh</string>
     <string name="gs_filter_portra">Portra</string>

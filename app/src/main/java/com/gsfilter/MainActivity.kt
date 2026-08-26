@@ -48,6 +48,7 @@ class MainActivity : ComponentActivity() {
         binding.filterControls.onControlTabSelected = ::selectControlTab
         binding.filterControls.onCategorySelected = viewModel::selectCategory
         binding.filterControls.onFilterSelected = viewModel::selectFilter
+        binding.filterControls.onFilterEffectStrengthChanged = viewModel::setFilterEffectStrength
         binding.filterControls.onCatalogLoaded = viewModel::setCatalog
         binding.filterControls.onCatalogLoadFailed = {
             Toast.makeText(this, R.string.filter_pack_load_failed, Toast.LENGTH_SHORT).show()
@@ -102,7 +103,7 @@ class MainActivity : ComponentActivity() {
             binding.filterPreview.setSourceBitmap(state.sourceBitmap)
         }
         binding.filterPreview.setFilterState(
-            recipe = state.selectedFilter.recipe,
+            recipe = state.selectedRecipe,
             adjustments = state.adjustments,
         )
         binding.filterControls.setState(
@@ -110,6 +111,7 @@ class MainActivity : ComponentActivity() {
             selectedFilter = state.selectedFilter,
             thumbnailBitmap = state.sourceBitmap,
             thumbnailKey = state.filterThumbnailKey,
+            selectedRecipe = state.selectedRecipe,
         )
         binding.filterControls.setAdjustments(state.adjustments)
     }

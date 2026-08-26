@@ -9,6 +9,7 @@ import com.gsfilter.filter.Adjustments
 import com.gsfilter.filter.AdjustControl
 import com.gsfilter.filter.renderer.FilterBitmapRenderer
 import com.gsfilter.filter.FilterCategory
+import com.gsfilter.filter.FilterEffect
 import com.gsfilter.filter.renderer.FilterGpuBitmapRenderer
 import com.gsfilter.filter.FilterOption
 import com.gsfilter.filter.FilterPack
@@ -72,6 +73,30 @@ class FilterViewModel(application: Application) : AndroidViewModel(application) 
         _state.update { it.copy(adjustments = Adjustments()) }
     }
 
+    fun setFilterEffectStrength(value: Int) {
+        _state.update { state ->
+            if (state.selectedFilter.recipe.effect == FilterEffect.Color) {
+                return@update state
+            }
+
+            val strength = value.coerceIn(EFFECT_STRENGTH_MIN, EFFECT_STRENGTH_MAX)
+            val currentStrength =
+                state.filterEffectStrengths[state.selectedFilter.id] ?: state.selectedFilter.recipe.effectStrength
+            if (currentStrength == strength) {
+                state
+            } else {
+                state.copy(
+                    filterEffectStrengths =
+                        if (strength == state.selectedFilter.recipe.effectStrength) {
+                            state.filterEffectStrengths - state.selectedFilter.id
+                        } else {
+                            state.filterEffectStrengths + (state.selectedFilter.id to strength)
+                        },
+                )
+            }
+        }
+    }
+
     suspend fun renderFilteredBitmap(
         maxWidth: Int? = null,
         maxHeight: Int? = null,
@@ -79,11 +104,12 @@ class FilterViewModel(application: Application) : AndroidViewModel(application) 
     ): Bitmap? {
         val state = _state.value
         val source = state.sourceBitmap ?: return null
+        val recipe = state.selectedRecipe
         return withContext(Dispatchers.Default) {
             fun renderCpu() =
                 FilterBitmapRenderer.getBitmap(
                     source = source,
-                    recipe = state.selectedFilter.recipe,
+                    recipe = recipe,
                     adjustments = state.adjustments,
                     maxWidth = maxWidth,
                     maxHeight = maxHeight,
@@ -96,7 +122,7 @@ class FilterViewModel(application: Application) : AndroidViewModel(application) 
             try {
                 FilterGpuBitmapRenderer.getBitmap(
                     source = source,
-                    recipe = state.selectedFilter.recipe,
+                    recipe = recipe,
                     adjustments = state.adjustments,
                     maxWidth = maxWidth,
                     maxHeight = maxHeight,
@@ -147,5 +173,7 @@ class FilterViewModel(application: Application) : AndroidViewModel(application) 
 
     private companion object {
         const val SAMPLE_ASSET = "sample.jpg"
+        const val EFFECT_STRENGTH_MIN = 0
+        const val EFFECT_STRENGTH_MAX = 100
     }
 }

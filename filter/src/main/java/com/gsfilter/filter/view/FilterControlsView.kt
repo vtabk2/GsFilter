@@ -15,6 +15,7 @@ import android.widget.FrameLayout
 import android.widget.HorizontalScrollView
 import android.widget.ImageView
 import android.widget.LinearLayout
+import android.widget.SeekBar
 import android.widget.TextView
 import androidx.core.graphics.drawable.toDrawable
 import androidx.recyclerview.widget.DiffUtil
@@ -28,9 +29,11 @@ import com.gsfilter.filter.AdjustControl
 import com.gsfilter.filter.Adjustments
 import com.gsfilter.filter.FilterCatalog
 import com.gsfilter.filter.FilterCategory
+import com.gsfilter.filter.FilterEffect
 import com.gsfilter.filter.FilterOption
 import com.gsfilter.filter.FilterPack
 import com.gsfilter.filter.FilterPackJson
+import com.gsfilter.filter.FilterRecipe
 import com.gsfilter.filter.R
 import com.gsfilter.filter.ext.displayName
 import com.gsfilter.filter.glide.FilterThumbnailModel
@@ -48,16 +51,18 @@ class FilterControlsView @JvmOverloads constructor(
     private var catalog = FilterCatalog.pack
     private var selectedCategory = catalog.defaultCategory
     private var selectedFilter = catalog.defaultFilter
-    private var adjustments = Adjustments()
+    private var selectedRecipe = selectedFilter.recipe
     private var thumbnailBitmap: Bitmap? = null
     private var thumbnailKey: String? = null
     private var thumbnailGenerationId = 0
     private var lastPreloadKey: String? = null
+    private var isRenderingFilterStrength = false
 
     var onCloseClick: (() -> Unit)? = null
     var onControlTabSelected: ((ControlTab) -> Unit)? = null
     var onCategorySelected: ((FilterCategory) -> Unit)? = null
     var onFilterSelected: ((FilterOption) -> Unit)? = null
+    var onFilterEffectStrengthChanged: ((Int) -> Unit)? = null
     var onAdjustmentChanged: ((AdjustControl, Int) -> Unit)? = null
     var onResetAllAdjustClick: (() -> Unit)? = null
     var onCatalogLoaded: ((FilterPack) -> Unit)? = null
@@ -78,6 +83,9 @@ class FilterControlsView @JvmOverloads constructor(
         itemAnimator = null
         overScrollMode = OVER_SCROLL_NEVER
     }
+    private val filterStrengthSeekBar = SeekBar(context)
+    private val filterStrengthValue = TextView(context)
+    private val filterStrengthRow = createFilterStrengthRow()
     private val filterContent = LinearLayout(context).apply {
         orientation = VERTICAL
     }
@@ -113,6 +121,7 @@ class FilterControlsView @JvmOverloads constructor(
         this.catalog = catalog
         selectedCategory = catalog.categoryById(selectedCategory.id) ?: catalog.defaultCategory
         selectedFilter = catalog.filterById(selectedFilter.id) ?: catalog.defaultFilter
+        selectedRecipe = selectedFilter.recipe
         renderCategoryChips()
         renderState()
     }
@@ -148,34 +157,55 @@ class FilterControlsView @JvmOverloads constructor(
         thumbnailBitmap: Bitmap?,
         thumbnailKey: String?,
     ) {
+        setState(
+            selectedCategory = selectedCategory,
+            selectedFilter = selectedFilter,
+            thumbnailBitmap = thumbnailBitmap,
+            thumbnailKey = thumbnailKey,
+            selectedRecipe = selectedFilter.recipe,
+        )
+    }
+
+    fun setState(
+        selectedCategory: FilterCategory,
+        selectedFilter: FilterOption,
+        thumbnailBitmap: Bitmap?,
+        thumbnailKey: String?,
+        selectedRecipe: FilterRecipe,
+    ) {
         val nextCategory = catalog.categoryById(selectedCategory.id) ?: catalog.defaultCategory
         val nextFilter = catalog.filterById(selectedFilter.id) ?: selectedFilter
         val nextThumbnailGenerationId = thumbnailBitmap?.generationId ?: 0
+        val shouldRenderFilters =
+            this.selectedCategory != nextCategory ||
+                this.selectedFilter != nextFilter ||
+                this.thumbnailBitmap !== thumbnailBitmap ||
+                this.thumbnailKey != thumbnailKey ||
+                this.thumbnailGenerationId != nextThumbnailGenerationId
+        val shouldRenderFilterStrength =
+            this.selectedFilter != nextFilter || this.selectedRecipe != selectedRecipe
         if (
-            this.selectedCategory == nextCategory &&
-            this.selectedFilter == nextFilter &&
-            this.thumbnailBitmap === thumbnailBitmap &&
-            this.thumbnailKey == thumbnailKey &&
-            this.thumbnailGenerationId == nextThumbnailGenerationId
+            !shouldRenderFilters &&
+            !shouldRenderFilterStrength
         ) {
             return
         }
 
         this.selectedCategory = nextCategory
         this.selectedFilter = nextFilter
+        this.selectedRecipe = selectedRecipe
         this.thumbnailBitmap = thumbnailBitmap
         this.thumbnailKey = thumbnailKey
         this.thumbnailGenerationId = nextThumbnailGenerationId
-        renderState()
+        if (shouldRenderFilters) {
+            renderState()
+        } else {
+            renderFilterStrength()
+        }
     }
 
     fun setAdjustments(adjustments: Adjustments) {
-        val shouldRenderFilters = this.adjustments != adjustments
-        this.adjustments = adjustments
         adjustContent.setAdjustments(adjustments)
-        if (shouldRenderFilters) {
-            renderState()
-        }
     }
 
     override fun onDetachedFromWindow() {
@@ -186,6 +216,7 @@ class FilterControlsView @JvmOverloads constructor(
     private fun renderState() {
         renderOriginalAction()
         renderCategories(selectedCategory)
+        renderFilterStrength()
         val items = catalog.filtersForCategory(selectedCategory.id).map { filter ->
             FilterItem(
                 filter = filter,
@@ -193,7 +224,6 @@ class FilterControlsView @JvmOverloads constructor(
                 thumbnailBitmap = thumbnailBitmap,
                 thumbnailKey = thumbnailKey,
                 thumbnailGenerationId = thumbnailGenerationId,
-                adjustments = adjustments,
                 style = style,
             )
         }
@@ -210,7 +240,7 @@ class FilterControlsView @JvmOverloads constructor(
         val models = items.mapNotNull { item ->
             val source = item.thumbnailBitmap ?: return@mapNotNull null
             val sourceKey = item.thumbnailKey ?: return@mapNotNull null
-            FilterThumbnailModel(sourceKey, source, item.filter, item.adjustments)
+            FilterThumbnailModel(sourceKey, source, item.filter)
         }
         if (models.isEmpty()) {
             lastPreloadKey = null
@@ -287,6 +317,12 @@ class FilterControlsView @JvmOverloads constructor(
                 topMargin = itemSpacing()
             },
         )
+        filterContent.addView(
+            filterStrengthRow,
+            LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT).apply {
+                topMargin = itemSpacing()
+            },
+        )
     }
 
     private fun bindAdjustContent() {
@@ -335,8 +371,70 @@ class FilterControlsView @JvmOverloads constructor(
 
     private fun selectFilter(filter: FilterOption) {
         selectedFilter = filter
+        selectedRecipe = filter.recipe
         renderState()
         onFilterSelected?.invoke(filter)
+    }
+
+    private fun createFilterStrengthRow(): View =
+        LinearLayout(context).apply {
+            isBaselineAligned = false
+            gravity = Gravity.CENTER_VERTICAL
+            orientation = HORIZONTAL
+            visibility = GONE
+
+            addView(TextView(context).apply {
+                ellipsize = TextUtils.TruncateAt.END
+                maxLines = 1
+                setText(R.string.gs_filter_strength)
+                setTextColor(style.textColor)
+                textSize = 12f
+            })
+            addView(
+                filterStrengthSeekBar.apply {
+                    max = FILTER_STRENGTH_MAX
+                    setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
+                        override fun onProgressChanged(view: SeekBar, progress: Int, fromUser: Boolean) {
+                            if (fromUser && !isRenderingFilterStrength) {
+                                onFilterEffectStrengthChanged?.invoke(progress)
+                            }
+                        }
+
+                        override fun onStartTrackingTouch(view: SeekBar) = Unit
+
+                        override fun onStopTrackingTouch(view: SeekBar) = Unit
+                    })
+                },
+                LayoutParams(0, LayoutParams.WRAP_CONTENT, 1f).apply {
+                    marginStart = itemSpacing()
+                    marginEnd = itemSpacing()
+                },
+            )
+            addView(
+                filterStrengthValue.apply {
+                    gravity = Gravity.END
+                    setTextColor(style.textColor)
+                    textSize = 12f
+                },
+                LayoutParams(
+                    resources.getDimensionPixelSize(R.dimen.gs_adjust_value_width),
+                    LayoutParams.WRAP_CONTENT,
+                ),
+            )
+        }
+
+    private fun renderFilterStrength() {
+        val canAdjustStrength = selectedRecipe.effect != FilterEffect.Color
+        filterStrengthRow.visibility = if (canAdjustStrength) VISIBLE else GONE
+        if (!canAdjustStrength) {
+            return
+        }
+
+        val strength = selectedRecipe.effectStrength.coerceIn(0, FILTER_STRENGTH_MAX)
+        isRenderingFilterStrength = true
+        filterStrengthSeekBar.progress = strength
+        filterStrengthValue.text = strength.toString()
+        isRenderingFilterStrength = false
     }
 
     private fun createTab(textRes: Int, tab: ControlTab, isSelected: Boolean): LinearLayout {
@@ -445,6 +543,7 @@ class FilterControlsView @JvmOverloads constructor(
 
     private companion object {
         val CATALOG_EXECUTOR = Executors.newSingleThreadExecutor()
+        const val FILTER_STRENGTH_MAX = 100
     }
 
     enum class ControlTab {
@@ -587,7 +686,6 @@ class FilterControlsView @JvmOverloads constructor(
         val thumbnailBitmap: Bitmap?,
         val thumbnailKey: String?,
         val thumbnailGenerationId: Int,
-        val adjustments: Adjustments,
         val style: FilterControlsStyle,
     )
 
@@ -686,7 +784,7 @@ class FilterControlsView @JvmOverloads constructor(
                 }
 
                 Glide.with(image)
-                    .load(FilterThumbnailModel(sourceKey, source, item.filter, item.adjustments))
+                    .load(FilterThumbnailModel(sourceKey, source, item.filter))
                     .placeholder(source.toDrawable(itemView.resources))
                     .diskCacheStrategy(DiskCacheStrategy.RESOURCE)
                     .dontAnimate()

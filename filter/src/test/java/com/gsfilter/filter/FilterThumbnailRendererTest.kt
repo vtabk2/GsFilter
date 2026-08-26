@@ -88,7 +88,7 @@ class FilterThumbnailRendererTest {
     fun `art thumbnails use a smaller texel scale`() {
         assertEquals(1f, FilterThumbnailRenderer.texelScaleFor(FilterRecipe()), FLOAT_DELTA)
         assertEquals(
-            0.6f,
+            0.5f,
             FilterThumbnailRenderer.texelScaleFor(FilterRecipe(effect = FilterEffect.Ink)),
             FLOAT_DELTA,
         )

@@ -1345,3 +1345,34 @@ Status: DONE
 - Art thumbnail `texelScale` was tightened from `0.7` to `0.6`, and thumbnail cache version was bumped to `gpu-preview-v11`.
 - `git diff --check` passed.
 - `:filter:testDebugUnitTest :app:testDebugUnitTest :app:assembleDebug` passed after rerunning Gradle outside the sandbox due network/cache restrictions.
+
+## Task: Add effect strength seekbar for adjustable filters
+
+Status: DONE
+
+### Requirements
+
+- Keep the main preview image updating when Adjust values change.
+- Keep filter rail thumbnails as preset previews only.
+- Do not reload or preload filter thumbnails during Adjust seekbar changes.
+- Show a seekbar for filters with adjustable effect parameters.
+- Use the existing `effectStrength` recipe field for the first version.
+
+### Checklist
+
+- [x] Stop `setAdjustments()` from rendering the filter rail.
+- [x] Stop passing user adjustments into filter thumbnail models.
+- [x] Add effect strength UI for non-color filters.
+- [x] Apply filter strength changes to preview/export.
+- [x] Skip test execution by request.
+
+### Notes
+
+- Current flow applies user `Adjustments` to every thumbnail model, which makes the rail reload while dragging Adjust.
+- The small first version adjusts only `effectStrength`; `effectThreshold`/`effectTone` can stay preset data unless users need them exposed.
+- Added a Strength seekbar for non-color filters.
+- Filter thumbnails now keep preset recipes and ignore user Adjust changes.
+- Preview and export now use the selected recipe with any per-filter strength override.
+- `git diff --check` passed.
+- `:filter:compileDebugKotlin :app:compileDebugKotlin` passed.
+- Unit tests were not run by request.
