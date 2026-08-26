@@ -784,3 +784,74 @@ Status: DONE
 ### Notes
 
 - README now documents reusable module setup, JSON filter packs, style attrs, callbacks, lifecycle ownership, and thumbnail cache keys.
+
+## Task: Restore visible Adjust tab
+
+Status: DONE
+
+### Requirements
+
+- Make the `Adjust` tab clearly visible in the sample UI.
+- Keep `FilterControlsView` reusable and callback-based.
+- Preserve existing filter and adjust behavior.
+
+### Checklist
+
+- [x] Make the tab row reserve visible space for both tabs.
+- [x] Enable tab indicator styling in the sample app.
+- [x] Run unit tests and assemble debug.
+
+### Notes
+
+- The tab row now gives `Filter` and `Adjust` equal width before the close button.
+- The sample app enables the library tab indicator and uses the app primary text color for unselected tab text.
+- `:filter:testDebugUnitTest :app:testDebugUnitTest :app:assembleDebug` passed after the fix.
+
+## Task: Keep none action visually unselected
+
+Status: DONE
+
+### Requirements
+
+- The leading none/original icon is only an action button.
+- Do not show selected styling on the none/original icon.
+- Keep tapping it resetting the active filter to original.
+
+### Checklist
+
+- [x] Remove selected visual state from the none/original icon.
+- [x] Run unit tests and assemble debug.
+
+### Notes
+
+- The none/original icon now always uses normal styling while still resetting the active filter to original when tapped.
+- `:filter:testDebugUnitTest :app:testDebugUnitTest :app:assembleDebug` passed after the update.
+
+## Task: Use RippleImageView for icon buttons
+
+Status: DONE
+
+### Requirements
+
+- Convert icon-only buttons to `RippleImageView`.
+- Cover filter close, filter none/original, and adjust reset.
+- Keep existing click behavior and styling.
+
+### Checklist
+
+- [x] Replace programmatic filter icon buttons.
+- [x] Replace sample adjust reset XML button.
+- [x] Run unit tests and assemble debug.
+
+### Notes
+
+- `GsCore` `RippleImageView` extends `FrameLayout`, so icon buttons now use `iconRippleRes` and `paddingRipple` instead of `ImageView` APIs.
+- `GsCore` is exposed as an `api` dependency from `:filter` because the sample app XML references `com.core.gscore.view.RippleImageView`.
+- The adjust reset `RippleImageView` keeps its existing accessibility label.
+- `:filter:testDebugUnitTest :app:testDebugUnitTest :app:assembleDebug` passed after the update.
+- Reopened to use the default `RippleImageView` icon padding instead of overriding `paddingRipple`.
+- Removed custom `paddingRipple` assignments and the unused icon padding dimens.
+- `:filter:testDebugUnitTest :app:testDebugUnitTest :app:assembleDebug` passed after removing the custom padding.
+- Reopened to keep icon padding configurable only when `FilterControlsView` declares an explicit padding attr.
+- Added optional `gsFilterIconPadding`; omitted attr keeps `RippleImageView` default padding.
+- `:filter:testDebugUnitTest :app:testDebugUnitTest :app:assembleDebug` passed after the optional padding attr update.

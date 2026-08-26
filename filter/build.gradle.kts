@@ -22,8 +22,10 @@ android {
 }
 
 dependencies {
-    api("androidx.recyclerview:recyclerview:1.3.2")
-    api("com.github.bumptech.glide:glide:4.16.0")
+    implementation("androidx.recyclerview:recyclerview:1.4.0")
+    implementation("com.github.bumptech.glide:glide:5.0.7")
+
+    api("com.github.vtabk2:GsCore:1.1.0")
 
     testImplementation("junit:junit:4.13.2")
     testImplementation("org.json:json:20240303")

@@ -7,7 +7,6 @@
     <dimen name="filter_chip_min_height">36dp</dimen>
     <dimen name="filter_chip_horizontal_padding">18dp</dimen>
     <dimen name="filter_chip_vertical_padding">8dp</dimen>
-    <dimen name="filter_none_icon_padding">10dp</dimen>
     <dimen name="filter_thumbnail_width">76dp</dimen>
     <dimen name="filter_thumbnail_height">88dp</dimen>
     <dimen name="filter_thumbnail_inset">2dp</dimen>

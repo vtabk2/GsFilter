@@ -220,6 +220,7 @@ Available XML attributes:
 | `gsFilterLabelTextColor` | Thumbnail label text color |
 | `gsFilterCloseIcon` | Close icon drawable |
 | `gsFilterNoneIcon` | Original/none icon drawable |
+| `gsFilterIconPadding` | Optional close/original icon padding override; omitted uses `RippleImageView` default |
 | `gsFilterShowTabIndicator` | Show indicator below selected Filter/Adjust tab |
 | `gsFilterTabIndicatorColor` | Tab indicator color |
 | `gsFilterTabIndicatorHeight` | Tab indicator height |

@@ -35,7 +35,9 @@ dependencies {
     implementation("androidx.core:core-ktx:1.13.0")
     implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.9.4")
     implementation("androidx.lifecycle:lifecycle-viewmodel-ktx:2.9.4")
-    annotationProcessor("com.github.bumptech.glide:compiler:4.16.0")
+
+    implementation("com.github.bumptech.glide:glide:5.0.7")
+    annotationProcessor("com.github.bumptech.glide:compiler:5.0.7")
 
     testImplementation("junit:junit:4.13.2")
 }

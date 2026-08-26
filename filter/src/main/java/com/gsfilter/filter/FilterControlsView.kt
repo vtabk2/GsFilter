@@ -1,11 +1,11 @@
 package com.gsfilter.filter
 
 import android.content.Context
+import android.content.res.TypedArray
 import android.graphics.Bitmap
 import android.graphics.Color
 import android.graphics.drawable.BitmapDrawable
 import android.graphics.drawable.ColorDrawable
-import android.graphics.drawable.Drawable
 import android.os.Handler
 import android.os.Looper
 import android.text.TextUtils
@@ -15,7 +15,6 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.FrameLayout
 import android.widget.HorizontalScrollView
-import android.widget.ImageButton
 import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.TextView
@@ -25,6 +24,7 @@ import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.engine.DiskCacheStrategy
+import com.core.gscore.view.RippleImageView
 import com.gsfilter.filter.glide.FilterThumbnailModel
 import java.io.IOException
 import java.util.concurrent.Executors
@@ -137,7 +137,7 @@ class FilterControlsView @JvmOverloads constructor(
     }
 
     private fun renderState() {
-        renderOriginalAction(selectedFilter)
+        renderOriginalAction()
         renderCategories(selectedCategory)
         val items = catalog.filtersForCategory(selectedCategory.id).map { filter ->
             FilterItem(
@@ -164,14 +164,18 @@ class FilterControlsView @JvmOverloads constructor(
             orientation = HORIZONTAL
             layoutParams = LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT)
 
-            addView(tabFilter)
-            addView(tabAdjust)
-            addView(View(context), LayoutParams(0, 1, 1f))
-            addView(ImageButton(context).apply {
-                background = null
+            addView(tabFilter, LayoutParams(0, LayoutParams.WRAP_CONTENT, 1f))
+            addView(
+                tabAdjust,
+                LayoutParams(0, LayoutParams.WRAP_CONTENT, 1f).apply {
+                    marginStart = itemSpacing()
+                    marginEnd = itemSpacing()
+                },
+            )
+            addView(RippleImageView(context).apply {
                 contentDescription = context.getString(R.string.gs_action_close)
-                setImageDrawable(style.closeIcon.constantState?.newDrawable() ?: style.closeIcon)
-                setColorFilter(style.textColor)
+                iconRippleRes = style.closeIconRes
+                style.iconPadding?.let { paddingRipple = it }
                 setOnClickListener { onCloseClick?.invoke() }
                 layoutParams = LayoutParams(chipMinHeight(), chipMinHeight())
             })
@@ -244,6 +248,8 @@ class FilterControlsView @JvmOverloads constructor(
         val label = TextView(context).apply {
             gravity = Gravity.CENTER
             includeFontPadding = false
+            maxLines = 1
+            ellipsize = TextUtils.TruncateAt.END
             minHeight = chipMinHeight()
             setPadding(chipHorizontalPadding(), chipVerticalPadding(), chipHorizontalPadding(), chipVerticalPadding())
             setText(textRes)
@@ -282,14 +288,11 @@ class FilterControlsView @JvmOverloads constructor(
         parts.indicator.visibility = if (style.showTabIndicator && isSelected) VISIBLE else INVISIBLE
     }
 
-    private fun createOriginalButton(): ImageButton =
-        ImageButton(context).apply {
+    private fun createOriginalButton(): RippleImageView =
+        RippleImageView(context).apply {
             contentDescription = context.getString(R.string.gs_action_original)
-            setBackgroundResource(style.chipBackgroundRes)
-            setImageDrawable(style.noneIcon.constantState?.newDrawable() ?: style.noneIcon)
-            setColorFilter(style.textColor)
-            setPadding(iconPadding(), iconPadding(), iconPadding(), iconPadding())
-            scaleType = ImageView.ScaleType.CENTER
+            iconRippleRes = style.noneIconRes
+            style.iconPadding?.let { paddingRipple = it }
             layoutParams = LayoutParams(chipMinHeight(), chipMinHeight())
         }
 
@@ -314,14 +317,8 @@ class FilterControlsView @JvmOverloads constructor(
             }
         }
 
-    private fun renderOriginalAction(selectedFilter: FilterOption) {
-        val isSelected = selectedFilter.id == catalog.defaultFilter.id
-        buttonOriginalFilter.setBackgroundResource(
-            if (isSelected) style.selectedChipBackgroundRes else style.chipBackgroundRes,
-        )
-        buttonOriginalFilter.setColorFilter(
-            if (isSelected) style.selectedTextColor else style.textColor,
-        )
+    private fun renderOriginalAction() {
+        buttonOriginalFilter.isSelected = false
     }
 
     private fun renderCategories(selectedCategory: FilterCategory) {
@@ -341,8 +338,6 @@ class FilterControlsView @JvmOverloads constructor(
 
     private fun chipVerticalPadding(): Int =
         resources.getDimensionPixelSize(R.dimen.gs_filter_chip_vertical_padding)
-
-    private fun iconPadding(): Int = resources.getDimensionPixelSize(R.dimen.gs_filter_none_icon_padding)
 
     private companion object {
         val CATALOG_EXECUTOR = Executors.newSingleThreadExecutor()
@@ -367,8 +362,9 @@ class FilterControlsView @JvmOverloads constructor(
         val selectedCardBackgroundRes: Int,
         val labelBackgroundRes: Int,
         val labelTextColor: Int,
-        val closeIcon: Drawable,
-        val noneIcon: Drawable,
+        val closeIconRes: Int,
+        val noneIconRes: Int,
+        val iconPadding: Float?,
         val showTabIndicator: Boolean,
         val tabIndicatorColor: Int,
         val tabIndicatorHeight: Int,
@@ -379,7 +375,7 @@ class FilterControlsView @JvmOverloads constructor(
             array = context.obtainStyledAttributes(attrs, R.styleable.FilterControlsView),
         )
 
-        private constructor(context: Context, array: android.content.res.TypedArray) : this(
+        private constructor(context: Context, array: TypedArray) : this(
             textColor = array.getColor(
                 R.styleable.FilterControlsView_gsFilterTextColor,
                 context.getColor(R.color.gs_text_secondary),
@@ -412,10 +408,19 @@ class FilterControlsView @JvmOverloads constructor(
                 R.styleable.FilterControlsView_gsFilterLabelTextColor,
                 Color.WHITE,
             ),
-            closeIcon = array.getDrawable(R.styleable.FilterControlsView_gsFilterCloseIcon)
-                ?: context.getDrawable(R.drawable.ic_gs_close) ?: ColorDrawable(Color.TRANSPARENT),
-            noneIcon = array.getDrawable(R.styleable.FilterControlsView_gsFilterNoneIcon)
-                ?: context.getDrawable(R.drawable.ic_gs_filter_none) ?: ColorDrawable(Color.TRANSPARENT),
+            closeIconRes = array.getResourceId(
+                R.styleable.FilterControlsView_gsFilterCloseIcon,
+                R.drawable.ic_gs_close,
+            ),
+            noneIconRes = array.getResourceId(
+                R.styleable.FilterControlsView_gsFilterNoneIcon,
+                R.drawable.ic_gs_filter_none,
+            ),
+            iconPadding = if (array.hasValue(R.styleable.FilterControlsView_gsFilterIconPadding)) {
+                array.getDimension(R.styleable.FilterControlsView_gsFilterIconPadding, 0f)
+            } else {
+                null
+            },
             showTabIndicator = array.getBoolean(R.styleable.FilterControlsView_gsFilterShowTabIndicator, false),
             tabIndicatorColor = array.getColor(
                 R.styleable.FilterControlsView_gsFilterTabIndicatorColor,

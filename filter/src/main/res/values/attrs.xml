@@ -11,6 +11,7 @@
         <attr name="gsFilterLabelTextColor" format="color|reference"/>
         <attr name="gsFilterCloseIcon" format="reference"/>
         <attr name="gsFilterNoneIcon" format="reference"/>
+        <attr name="gsFilterIconPadding" format="dimension"/>
         <attr name="gsFilterShowTabIndicator" format="boolean"/>
         <attr name="gsFilterTabIndicatorColor" format="color|reference"/>
         <attr name="gsFilterTabIndicatorHeight" format="dimension"/>
