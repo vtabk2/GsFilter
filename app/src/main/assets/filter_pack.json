@@ -126,6 +126,9 @@
       "categoryIds": ["json_art"],
       "recipe": {
         "effect": "sketch",
+        "effectStrength": 58,
+        "effectThreshold": 58,
+        "effectTone": 12,
         "adjustments": {
           "contrast": 10,
           "highlights": 8,

@@ -6,6 +6,7 @@ import com.gsfilter.filter.Adjustments
 import com.gsfilter.filter.FilterEffect
 import com.gsfilter.filter.FilterRecipe
 import com.gsfilter.filter.ShaderFilterParams
+import kotlin.math.abs
 import kotlin.math.floor
 import kotlin.math.max
 import kotlin.math.min
@@ -107,10 +108,13 @@ object FilterBitmapRenderer {
         val up = pixels[(y - 1).coerceAtLeast(0) * width + x]
         val down = pixels[(y + 1).coerceAtMost(height - 1) * width + x]
 
-        var red = red(color)
-        var green = green(color)
-        var blue = blue(color)
-        val sourceGray = gray(red, green, blue)
+        val sourceRed = red(color)
+        val sourceGreen = green(color)
+        val sourceBlue = blue(color)
+        var red = sourceRed
+        var green = sourceGreen
+        var blue = sourceBlue
+        val sourceGray = gray(sourceRed, sourceGreen, sourceBlue)
         val sharpAmount = (params.sharpness * 0.65f) + (params.clarity * 0.35f)
 
         red += (red - average(red(left), red(right), red(up), red(down))) * sharpAmount
@@ -165,22 +169,66 @@ object FilterBitmapRenderer {
         green = mix(gray, green, 1f + (params.vibrance * vibranceMask))
         blue = mix(gray, blue, 1f + (params.vibrance * vibranceMask))
 
+        val textureX = (x + 0.5f) / width
+        val textureY = (y + 0.5f) / height
+        val edge = edgeAt(pixels, x, y, width, height)
         when (params.effect) {
             FilterEffect.Color -> Unit
             FilterEffect.Sketch -> {
-                val line = smoothstep(0.06f, 0.28f, edgeAt(pixels, x, y, width, height))
-                val sketch = clamp(mix(1f, sourceGray, 0.18f) - (line * 0.8f), 0f, 1f)
+                val line = lineFromEdge(edge, params, 0.12f)
+                val sketch = clamp(mix(1f, sourceGray, params.effectTone) - (line * 0.8f), 0f, 1f)
                 red = sketch
                 green = sketch
                 blue = sketch
             }
 
             FilterEffect.Ink -> {
-                val line = smoothstep(0.10f, 0.25f, edgeAt(pixels, x, y, width, height))
+                val line = lineFromEdge(edge, params, 0.08f)
                 val ink = 1f - line
                 red = ink
                 green = ink
                 blue = ink
+            }
+
+            FilterEffect.Pencil -> {
+                val line = lineFromEdge(edge, params, 0.10f)
+                val paper = mix(1f, sourceGray, 0.35f + (params.effectTone * 0.35f))
+                val pencil = clamp(paper - (line * 0.92f), 0f, 1f)
+                red = pencil
+                green = pencil
+                blue = pencil
+            }
+
+            FilterEffect.ColorPencil -> {
+                val line = lineFromEdge(edge, params, 0.11f)
+                red = clamp(mix(1f, sourceRed, 0.35f + (params.effectTone * 0.5f)) - (line * 0.58f), 0f, 1f)
+                green = clamp(mix(1f, sourceGreen, 0.35f + (params.effectTone * 0.5f)) - (line * 0.58f), 0f, 1f)
+                blue = clamp(mix(1f, sourceBlue, 0.35f + (params.effectTone * 0.5f)) - (line * 0.58f), 0f, 1f)
+            }
+
+            FilterEffect.Charcoal -> {
+                val line = lineFromEdge(edge, params, 0.14f)
+                val texture = (random(textureX * 680f, textureY * 920f) - 0.5f) * 0.28f * params.effectStrength
+                val charcoal = clamp(
+                    mix(0.92f, sourceGray, 0.65f + (params.effectTone * 0.2f)) - (line * 0.95f) - texture,
+                    0f,
+                    1f,
+                )
+                red = charcoal
+                green = charcoal
+                blue = charcoal
+            }
+
+            FilterEffect.CrossHatch -> {
+                val dark = 1f - sourceGray
+                var hatch = stripe((textureX + textureY) * 34f) * if (dark >= 0.18f) 1f else 0f
+                hatch += stripe((textureX - textureY) * 38f) * if (dark >= 0.42f) 1f else 0f
+                hatch += stripe(textureX * 46f) * if (dark >= 0.68f) 1f else 0f
+                val line = lineFromEdge(edge, params, 0.10f) * 0.45f
+                val crossHatch = 1f - clamp(((hatch * 0.55f) + line) * params.effectStrength, 0f, 0.95f)
+                red = crossHatch
+                green = crossHatch
+                blue = crossHatch
             }
         }
 
@@ -189,8 +237,6 @@ object FilterBitmapRenderer {
         green = mix(green, 0.5f, fade)
         blue = mix(blue, 0.5f, fade)
 
-        val textureX = (x + 0.5f) / width
-        val textureY = (y + 0.5f) / height
         val edgeDistance = sqrt(((textureX - 0.5f) * (textureX - 0.5f)) + ((textureY - 0.5f) * (textureY - 0.5f)))
         val edgeMask = smoothstep(0.35f, 0.75f, edgeDistance)
         val vignette = 1f - (params.vignette * 0.7f * edgeMask)
@@ -236,6 +282,13 @@ object FilterBitmapRenderer {
         val color = pixels[y.coerceIn(0, height - 1) * width + x.coerceIn(0, width - 1)]
         return gray(red(color), green(color), blue(color))
     }
+
+    private fun lineFromEdge(edge: Float, params: ShaderFilterParams, softness: Float): Float {
+        val threshold = mix(0.04f, 0.34f, params.effectThreshold)
+        return smoothstep(threshold - softness, threshold + softness, edge) * params.effectStrength
+    }
+
+    private fun stripe(value: Float): Float = 1f - smoothstep(0f, 0.055f, abs((value - floor(value)) - 0.5f))
 
     private fun mix(start: Float, end: Float, amount: Float): Float = start * (1f - amount) + end * amount
 

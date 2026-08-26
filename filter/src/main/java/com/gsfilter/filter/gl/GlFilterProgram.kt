@@ -56,6 +56,9 @@ internal object GlFilterProgram {
             textureCoordinate = GLES20.glGetAttribLocation(program, A_TEX_COORD),
             texture = GLES20.glGetUniformLocation(program, U_TEXTURE),
             effect = GLES20.glGetUniformLocation(program, U_EFFECT),
+            effectStrength = GLES20.glGetUniformLocation(program, U_EFFECT_STRENGTH),
+            effectThreshold = GLES20.glGetUniformLocation(program, U_EFFECT_THRESHOLD),
+            effectTone = GLES20.glGetUniformLocation(program, U_EFFECT_TONE),
             mono = GLES20.glGetUniformLocation(program, U_MONO),
             texelSize = GLES20.glGetUniformLocation(program, U_TEXEL_SIZE),
             rgbShift = GLES20.glGetUniformLocation(program, U_RGB_SHIFT),
@@ -104,6 +107,9 @@ internal object GlFilterProgram {
         GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, textureId)
         GLES20.glUniform1i(handles.texture, 0)
         GLES20.glUniform1f(handles.effect, params.effect.shaderValue)
+        GLES20.glUniform1f(handles.effectStrength, params.effectStrength)
+        GLES20.glUniform1f(handles.effectThreshold, params.effectThreshold)
+        GLES20.glUniform1f(handles.effectTone, params.effectTone)
         GLES20.glUniform1f(handles.mono, params.isMonochrome)
         GLES20.glUniform2f(
             handles.texelSize,
@@ -146,6 +152,9 @@ internal object GlFilterProgram {
         val textureCoordinate: Int,
         val texture: Int,
         val effect: Int,
+        val effectStrength: Int,
+        val effectThreshold: Int,
+        val effectTone: Int,
         val mono: Int,
         val texelSize: Int,
         val rgbShift: Int,
@@ -181,6 +190,9 @@ internal object GlFilterProgram {
     private const val A_TEX_COORD = "aTexCoord"
     private const val U_TEXTURE = "uTexture"
     private const val U_EFFECT = "uEffect"
+    private const val U_EFFECT_STRENGTH = "uEffectStrength"
+    private const val U_EFFECT_THRESHOLD = "uEffectThreshold"
+    private const val U_EFFECT_TONE = "uEffectTone"
     private const val U_MONO = "uMono"
     private const val U_TEXEL_SIZE = "uTexelSize"
     private const val U_RGB_SHIFT = "uRgbShift"
@@ -216,6 +228,9 @@ internal object GlFilterProgram {
         precision mediump float;
         uniform sampler2D uTexture;
         uniform float uEffect;
+        uniform float uEffectStrength;
+        uniform float uEffectThreshold;
+        uniform float uEffectTone;
         uniform float uMono;
         uniform vec2 uTexelSize;
         uniform vec3 uRgbShift;
@@ -259,6 +274,15 @@ internal object GlFilterProgram {
             return clamp(length(vec2(horizontal, vertical)), 0.0, 1.0);
         }
 
+        float lineFromEdge(float edge, float softness) {
+            float threshold = mix(0.04, 0.34, uEffectThreshold);
+            return smoothstep(threshold - softness, threshold + softness, edge) * uEffectStrength;
+        }
+
+        float stripe(float value) {
+            return 1.0 - smoothstep(0.0, 0.055, abs(fract(value) - 0.5));
+        }
+
         void main() {
             vec4 color = texture2D(uTexture, vTexCoord);
             vec3 left = texture2D(uTexture, vTexCoord - vec2(uTexelSize.x, 0.0)).rgb;
@@ -295,12 +319,32 @@ internal object GlFilterProgram {
             if (uEffect > 0.5) {
                 float sourceGray = dot(color.rgb, vec3(0.299, 0.587, 0.114));
                 float edge = edgeAt(vTexCoord);
-                if (uEffect > 1.5) {
-                    float line = smoothstep(0.10, 0.25, edge);
+                if (uEffect > 5.5) {
+                    float dark = 1.0 - sourceGray;
+                    float hatch = stripe((vTexCoord.x + vTexCoord.y) * 34.0) * step(0.18, dark);
+                    hatch += stripe((vTexCoord.x - vTexCoord.y) * 38.0) * step(0.42, dark);
+                    hatch += stripe(vTexCoord.x * 46.0) * step(0.68, dark);
+                    float line = lineFromEdge(edge, 0.10) * 0.45;
+                    rgb = vec3(1.0 - clamp(((hatch * 0.55) + line) * uEffectStrength, 0.0, 0.95));
+                } else if (uEffect > 4.5) {
+                    float line = lineFromEdge(edge, 0.14);
+                    float texture = (random(vTexCoord * vec2(680.0, 920.0)) - 0.5) * 0.28 * uEffectStrength;
+                    float charcoal = clamp(mix(0.92, sourceGray, 0.65 + (uEffectTone * 0.2)) - (line * 0.95) - texture, 0.0, 1.0);
+                    rgb = vec3(charcoal);
+                } else if (uEffect > 3.5) {
+                    float line = lineFromEdge(edge, 0.11);
+                    vec3 paper = mix(vec3(1.0), color.rgb, 0.35 + (uEffectTone * 0.5));
+                    rgb = clamp(paper - (line * 0.58), 0.0, 1.0);
+                } else if (uEffect > 2.5) {
+                    float line = lineFromEdge(edge, 0.10);
+                    float paper = mix(1.0, sourceGray, 0.35 + (uEffectTone * 0.35));
+                    rgb = vec3(clamp(paper - (line * 0.92), 0.0, 1.0));
+                } else if (uEffect > 1.5) {
+                    float line = lineFromEdge(edge, 0.08);
                     rgb = vec3(1.0 - line);
                 } else {
-                    float line = smoothstep(0.06, 0.28, edge);
-                    float paper = mix(1.0, sourceGray, 0.18);
+                    float line = lineFromEdge(edge, 0.12);
+                    float paper = mix(1.0, sourceGray, uEffectTone);
                     rgb = vec3(clamp(paper - (line * 0.8), 0.0, 1.0));
                 }
             }

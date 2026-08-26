@@ -1585,16 +1585,62 @@ object FilterCatalog {
             ),
         ),
         FilterOption(
-            id = "sketch",
+            id = "pencil",
             categoryIds = setOf(ART),
-            nameRes = R.string.gs_filter_sketch,
+            nameRes = R.string.gs_filter_pencil,
+            recipe = FilterRecipe(
+                effect = FilterEffect.Pencil,
+                effectStrength = 90,
+                effectThreshold = 48,
+                effectTone = 45,
+                adjustments = Adjustments(
+                    fade = 8,
+                    grain = 8,
+                ),
+            ),
+        ),
+        FilterOption(
+            id = "soft_sketch",
+            categoryIds = setOf(ART),
+            nameRes = R.string.gs_filter_soft_sketch,
             recipe = FilterRecipe(
                 effect = FilterEffect.Sketch,
+                effectStrength = 58,
+                effectThreshold = 58,
+                effectTone = 12,
                 adjustments = Adjustments(
-                    contrast = 10,
-                    highlights = 8,
-                    shadows = -6,
-                    grain = 4,
+                    fade = 18,
+                    grain = 3,
+                ),
+            ),
+        ),
+        FilterOption(
+            id = "color_pencil",
+            categoryIds = setOf(ART),
+            nameRes = R.string.gs_filter_color_pencil,
+            recipe = FilterRecipe(
+                effect = FilterEffect.ColorPencil,
+                effectStrength = 78,
+                effectThreshold = 46,
+                effectTone = 78,
+                adjustments = Adjustments(
+                    saturation = 8,
+                    vibrance = 10,
+                    fade = 8,
+                    grain = 6,
+                ),
+            ),
+        ),
+        FilterOption(
+            id = "fine_line",
+            categoryIds = setOf(ART),
+            nameRes = R.string.gs_filter_fine_line,
+            recipe = FilterRecipe(
+                effect = FilterEffect.Ink,
+                effectStrength = 56,
+                effectThreshold = 36,
+                adjustments = Adjustments(
+                    fade = 4,
                 ),
             ),
         ),
@@ -1604,10 +1650,52 @@ object FilterCatalog {
             nameRes = R.string.gs_filter_ink,
             recipe = FilterRecipe(
                 effect = FilterEffect.Ink,
+                effectStrength = 92,
+                effectThreshold = 45,
                 adjustments = Adjustments(
-                    contrast = 18,
-                    highlights = 10,
-                    shadows = -12,
+                    grain = 2,
+                ),
+            ),
+        ),
+        FilterOption(
+            id = "manga",
+            categoryIds = setOf(ART),
+            nameRes = R.string.gs_filter_manga,
+            recipe = FilterRecipe(
+                effect = FilterEffect.Ink,
+                effectStrength = 100,
+                effectThreshold = 52,
+                adjustments = Adjustments(
+                    vignette = 6,
+                ),
+            ),
+        ),
+        FilterOption(
+            id = "charcoal",
+            categoryIds = setOf(ART),
+            nameRes = R.string.gs_filter_charcoal,
+            recipe = FilterRecipe(
+                effect = FilterEffect.Charcoal,
+                effectStrength = 94,
+                effectThreshold = 40,
+                effectTone = 72,
+                adjustments = Adjustments(
+                    grain = 18,
+                    vignette = 10,
+                ),
+            ),
+        ),
+        FilterOption(
+            id = "cross_hatch",
+            categoryIds = setOf(ART),
+            nameRes = R.string.gs_filter_cross_hatch,
+            recipe = FilterRecipe(
+                effect = FilterEffect.CrossHatch,
+                effectStrength = 82,
+                effectThreshold = 44,
+                effectTone = 50,
+                adjustments = Adjustments(
+                    grain = 5,
                 ),
             ),
         ),

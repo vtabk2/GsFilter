@@ -80,16 +80,16 @@ class FilterCatalogTest {
 
     @Test
     fun `catalog includes sketch-style filters`() {
-        assertTrue(FilterCatalog.options.any { it.id == "sketch" && it.recipe.effect == FilterEffect.Sketch })
-        assertTrue(FilterCatalog.options.any { it.id == "ink" && it.recipe.effect == FilterEffect.Ink })
+        val artFilterIds = FilterCatalog.filtersForCategory("art").map { it.id }.toSet()
+
+        assertEquals(
+            setOf("pencil", "soft_sketch", "color_pencil", "fine_line", "ink", "manga", "charcoal", "cross_hatch"),
+            artFilterIds,
+        )
     }
 
     @Test
     fun `sketch-style filters live in art category only`() {
-        val artFilterIds = FilterCatalog.filtersForCategory("art").map { it.id }.toSet()
-
-        assertTrue("sketch" in artFilterIds)
-        assertTrue("ink" in artFilterIds)
         FilterCatalog.options
             .filter { it.recipe.effect != FilterEffect.Color }
             .forEach { assertEquals(setOf("art"), it.categoryIds) }

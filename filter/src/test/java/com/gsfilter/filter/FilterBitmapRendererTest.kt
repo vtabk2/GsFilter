@@ -65,6 +65,43 @@ class FilterBitmapRendererTest {
     }
 
     @Test
+    fun `art effects change edge pixels`() {
+        val white = 0xffffffff.toInt()
+        val black = 0xff000000.toInt()
+        val pixels = intArrayOf(
+            white,
+            white,
+            black,
+            white,
+            white,
+            black,
+            white,
+            white,
+            black,
+        )
+
+        listOf(
+            FilterEffect.Ink,
+            FilterEffect.Pencil,
+            FilterEffect.ColorPencil,
+            FilterEffect.Charcoal,
+            FilterEffect.CrossHatch,
+        ).forEach { effect ->
+            val output = FilterBitmapRenderer.renderPixels(
+                pixels = pixels,
+                width = 3,
+                height = 3,
+                params = ShaderFilterParams.from(
+                    recipe = FilterRecipe(effect = effect),
+                    adjustments = Adjustments(),
+                ),
+            )
+
+            assertNotEquals(white, output[4])
+        }
+    }
+
+    @Test
     fun `render pixels rejects mismatched dimensions`() {
         val result = runCatching {
             FilterBitmapRenderer.renderPixels(

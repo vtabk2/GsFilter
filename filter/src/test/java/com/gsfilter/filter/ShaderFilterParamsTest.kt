@@ -10,6 +10,9 @@ class ShaderFilterParamsTest {
         val params = ShaderFilterParams.from(
             recipe = FilterRecipe(
                 effect = FilterEffect.Ink,
+                effectStrength = 80,
+                effectThreshold = 35,
+                effectTone = 60,
                 isMonochrome = true,
                 redShift = 10,
                 greenShift = -5,
@@ -34,6 +37,9 @@ class ShaderFilterParamsTest {
         )
 
         assertEquals(FilterEffect.Ink, params.effect)
+        assertEquals(0.8f, params.effectStrength, DELTA)
+        assertEquals(0.35f, params.effectThreshold, DELTA)
+        assertEquals(0.6f, params.effectTone, DELTA)
         assertEquals(1f, params.isMonochrome, DELTA)
         assertEquals(10f / 255f, params.redShift, DELTA)
         assertEquals(-5f / 255f, params.greenShift, DELTA)

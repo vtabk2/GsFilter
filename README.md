@@ -255,7 +255,8 @@ Ví dụ JSON:
 
 Các field recipe đang hỗ trợ:
 
-- `effect`: `color`, `sketch`, hoặc `ink`; mặc định là `color`.
+- `effect`: `color`, `sketch`, `ink`, `pencil`, `color_pencil`, `charcoal`, hoặc `cross_hatch`; mặc định là `color`.
+- `effectStrength`, `effectThreshold`, `effectTone`: số `0..100` để tinh chỉnh effect nét vẽ.
 - `isMonochrome`: boolean.
 - `redShift`, `greenShift`, `blueShift`: được clamp trong `-100..100`.
 - `adjustments`: `brightness`, `exposure`, `contrast`, `highlights`, `shadows`, `saturation`, `vibrance`, `temperature`, `tint`, `sharpness`, `clarity`, `fade`, `vignette`, `grain`.

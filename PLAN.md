@@ -1160,6 +1160,8 @@ Status: DONE
 - [x] Render Sketch and Ink in the CPU bitmap path.
 - [x] Add built-in Sketch and Ink presets/resources.
 - [x] Move sketch-style filters to a single Art category.
+- [x] Add the remaining Art presets.
+- [x] Add lightweight effect tuning params.
 - [x] Add focused tests and run verification.
 
 ### Notes
@@ -1176,6 +1178,12 @@ Status: DONE
 - `Get-Content app/src/main/assets/filter_pack.json | ConvertFrom-Json | Out-Null` passed after regrouping.
 - `git diff --check` passed after regrouping.
 - `:filter:testDebugUnitTest :app:testDebugUnitTest :app:assembleDebug` passed after regrouping.
+- Reopened to add the remaining Art presets: Pencil, Soft Sketch, Color Pencil, Fine Line, Manga, Charcoal, and Cross Hatch.
+- Built-in Art now has the 8 requested samples: Pencil, Soft Sketch, Color Pencil, Fine Line, Ink, Manga, Charcoal, and Cross Hatch.
+- Added reusable effect tuning fields: `effectStrength`, `effectThreshold`, and `effectTone`.
+- `Get-Content app/src/main/assets/filter_pack.json | ConvertFrom-Json | Out-Null` passed.
+- `git diff --check` passed.
+- `:filter:testDebugUnitTest :app:testDebugUnitTest :app:assembleDebug` passed after rerunning Gradle outside the sandbox due network/cache restrictions.
 
 ## Task: Optimize bitmap export with scaling and offscreen GPU rendering
 
