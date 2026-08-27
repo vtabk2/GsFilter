@@ -936,7 +936,7 @@ object FilterCatalog {
         ),
         FilterOption(
             id = "retro_matte",
-            categoryIds = setOf(VINTAGE, BLACK_WHITE),
+            categoryIds = setOf(VINTAGE),
             nameRes = R.string.gs_filter_retro_matte,
             recipe = FilterRecipe(
                 redShift = 6,
@@ -2031,7 +2031,7 @@ object FilterCatalog {
             "arthouse",
         ),
         VINTAGE to listOf("lut_vintage_fade", "retro", "fade", "dust", "oldie", "nineties", "retro_matte"),
-        BLACK_WHITE to listOf("mono", "soft_mono", "pearl_mono", "noir", "high_contrast", "matte", "retro_matte"),
+        BLACK_WHITE to listOf("mono", "soft_mono", "pearl_mono", "noir", "high_contrast", "matte"),
         WARM to listOf("warm", "sunset", "amber", "caramel", "cozy"),
         COOL to listOf("cool", "cyan_clean", "arctic", "blue_mist", "mist", "steel"),
         AESTHETIC to listOf("lut_editorial_matte", "beige", "minimal", "dreamy", "latte", "pink"),

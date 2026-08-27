@@ -160,4 +160,10 @@ class FilterCatalogTest {
             .filter { it.recipe.effect != FilterEffect.Color }
             .forEach { assertEquals(setOf("art"), it.categoryIds) }
     }
+
+    @Test
+    fun `black white category contains monochrome filters only`() {
+        FilterCatalog.filtersForCategory("black_white")
+            .forEach { filter -> assertTrue(filter.recipe.isMonochrome) }
+    }
 }

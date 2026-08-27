@@ -1504,6 +1504,30 @@ Status: DONE
 - `:filter:testDebugUnitTest` passed after rerunning Gradle outside the sandbox for wrapper network access.
 - `:app:compileDebugKotlin` passed after rerunning Gradle outside the sandbox for wrapper network access.
 
+## Task: Keep Retro Matte out of Black & White
+
+Status: DONE
+
+### Requirements
+
+- Explain why Retro Matte differs from BW filters.
+- Keep Retro Matte's existing vintage look unchanged.
+- Keep Black & White category limited to true monochrome filters.
+
+### Checklist
+
+- [x] Remove `retro_matte` from Black & White category data.
+- [x] Add focused catalog coverage.
+- [x] Run focused verification.
+
+### Notes
+
+- `retro_matte` uses warm/cool channel shifts and reduced saturation, not `isMonochrome = true`.
+- Kept Retro Matte in Vintage only.
+- Added catalog coverage requiring Black & White category filters to be monochrome.
+- `git diff --check` passed.
+- `:filter:testDebugUnitTest` passed after rerunning Gradle outside the sandbox for wrapper network access.
+
 - Reopened to add another people-prioritized preset batch.
 - Added 8 people-prioritized presets: Selfie Clear, Soft Portrait, Studio Skin, Golden Skin, Indoor Warm, Flash Soft, Low Light Skin, and Clean Face.
 - `git diff --check` passed.
