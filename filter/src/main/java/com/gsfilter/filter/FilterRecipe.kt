@@ -5,6 +5,8 @@ data class FilterRecipe(
     val effectStrength: Int = 100,
     val effectThreshold: Int = 50,
     val effectTone: Int = 20,
+    val lut: FilterLut = FilterLut.None,
+    val lutStrength: Int = 100,
     val intensity: Int = 100,
     val isMonochrome: Boolean = false,
     val redShift: Int = 0,

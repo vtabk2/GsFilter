@@ -12,6 +12,7 @@ import com.gsfilter.filter.Adjustments
 import com.gsfilter.filter.FilterRecipe
 import com.gsfilter.filter.ShaderFilterParams
 import com.gsfilter.filter.gl.GlFilterProgram
+import com.gsfilter.filter.gl.GlLutTexture
 import java.nio.ByteBuffer
 
 object FilterGpuBitmapRenderer {
@@ -35,13 +36,18 @@ object FilterGpuBitmapRenderer {
         val width = if (scaleSource) renderSource.width else renderSize.width
         val height = if (scaleSource) renderSource.height else renderSize.height
         val egl = EglPbuffer(width, height)
+        val params = ShaderFilterParams.from(recipe, adjustments)
         var program = 0
         var textureId = 0
+        var lutTextureId = 0
 
         return try {
             egl.makeCurrent()
             program = GlFilterProgram.buildProgram()
             textureId = uploadTexture(renderSource)
+            if (params.lutStrength > 0f) {
+                lutTextureId = GlLutTexture.upload(params.lut)
+            }
             GLES20.glViewport(0, 0, width, height)
             GLES20.glClearColor(0f, 0f, 0f, 0f)
             GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT)
@@ -54,9 +60,10 @@ object FilterGpuBitmapRenderer {
             GlFilterProgram.bindUniforms(
                 handles = handles,
                 textureId = textureId,
+                lutTextureId = lutTextureId,
                 renderWidth = width,
                 renderHeight = height,
-                params = ShaderFilterParams.from(recipe, adjustments),
+                params = params,
                 texelScale = texelScale,
             )
             GLES20.glDrawArrays(GLES20.GL_TRIANGLE_STRIP, 0, GlFilterProgram.VERTEX_COUNT)
@@ -67,6 +74,9 @@ object FilterGpuBitmapRenderer {
         } finally {
             if (textureId != 0) {
                 GLES20.glDeleteTextures(1, intArrayOf(textureId), 0)
+            }
+            if (lutTextureId != 0) {
+                GLES20.glDeleteTextures(1, intArrayOf(lutTextureId), 0)
             }
             if (program != 0) {
                 GLES20.glDeleteProgram(program)

@@ -48,14 +48,14 @@ class FilterCatalogTest {
     @Test
     fun `category filter lists prioritize strongest choices`() {
         mapOf(
-            "popular" to listOf("selfie_clear", "fresh", "clear", "clean_light"),
-            "portrait" to listOf("selfie_clear", "soft_portrait", "skin", "portra", "studio_skin"),
-            "natural" to listOf("fresh", "clear", "clean_light", "soft_day"),
-            "food" to listOf("tasty", "crispy", "fresh_plate", "warm_plate"),
-            "landscape" to listOf("clear_day", "golden_hour", "sunlit_forest", "forest"),
-            "night" to listOf("midnight_city", "city", "night", "blue_hour"),
+            "popular" to listOf("lut_clean_portrait", "lut_daylight_fresh", "selfie_clear", "fresh"),
+            "portrait" to listOf("lut_clean_portrait", "lut_soft_skin", "selfie_clear", "lut_golden_portrait"),
+            "natural" to listOf("lut_daylight_fresh", "fresh", "clear", "clean_light"),
+            "food" to listOf("lut_food_pop", "tasty", "crispy", "fresh_plate"),
+            "landscape" to listOf("lut_green_film", "clear_day", "golden_hour", "sunlit_forest"),
+            "night" to listOf("lut_night_mood", "midnight_city", "city", "night"),
             "film" to listOf("portra", "fuji", "kodak", "gold"),
-            "cinematic" to listOf("teal_orange", "cinema", "blockbuster", "deep_teal"),
+            "cinematic" to listOf("lut_teal_cinema", "teal_orange", "cinema", "blockbuster"),
             "black_white" to listOf("mono", "soft_mono", "pearl_mono", "noir"),
             "art" to listOf("pencil", "soft_sketch", "color_pencil", "fine_line"),
         ).forEach { (categoryId, expectedIds) ->
@@ -120,6 +120,27 @@ class FilterCatalogTest {
             FilterCatalog.options.any { filter ->
                 filter.id != "original" && filter.recipe.adjustments != Adjustments()
             },
+        )
+    }
+
+    @Test
+    fun `catalog includes starter LUT filters`() {
+        val lutFilters = FilterCatalog.options.filter { it.recipe.lut != FilterLut.None }
+
+        assertEquals(
+            setOf(
+                "lut_clean_portrait",
+                "lut_soft_skin",
+                "lut_golden_portrait",
+                "lut_daylight_fresh",
+                "lut_food_pop",
+                "lut_green_film",
+                "lut_teal_cinema",
+                "lut_night_mood",
+                "lut_vintage_fade",
+                "lut_editorial_matte",
+            ),
+            lutFilters.map { it.id }.toSet(),
         )
     }
 

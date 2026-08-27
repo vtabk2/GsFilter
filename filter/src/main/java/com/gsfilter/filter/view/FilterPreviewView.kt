@@ -7,9 +7,11 @@ import android.opengl.GLSurfaceView
 import android.opengl.GLUtils
 import android.util.AttributeSet
 import com.gsfilter.filter.Adjustments
+import com.gsfilter.filter.FilterLut
 import com.gsfilter.filter.FilterRecipe
 import com.gsfilter.filter.ShaderFilterParams
 import com.gsfilter.filter.gl.GlFilterProgram
+import com.gsfilter.filter.gl.GlLutTexture
 import javax.microedition.khronos.egl.EGLConfig
 import javax.microedition.khronos.opengles.GL10
 
@@ -71,6 +73,8 @@ class FilterPreviewView @JvmOverloads constructor(
         private var program = 0
         private var handles: GlFilterProgram.ProgramHandles? = null
         private var textureId = 0
+        private var lutTextureId = 0
+        private var lutTexture = FilterLut.None
         private var pendingBitmap: Bitmap? = null
         private var imageWidth = 0
         private var imageHeight = 0
@@ -83,6 +87,8 @@ class FilterPreviewView @JvmOverloads constructor(
         override fun onSurfaceCreated(gl: GL10?, config: EGLConfig?) {
             program = GlFilterProgram.buildProgram()
             handles = GlFilterProgram.resolveHandles(program)
+            lutTextureId = 0
+            lutTexture = FilterLut.None
             GLES20.glClearColor(0.93f, 0.93f, 0.93f, 1f)
         }
 
@@ -103,7 +109,14 @@ class FilterPreviewView @JvmOverloads constructor(
 
             GLES20.glUseProgram(program)
             GlFilterProgram.bindAttributes(currentHandles, vertexBuffer, textureBuffer)
-            GlFilterProgram.bindUniforms(currentHandles, textureId, renderWidth, renderHeight, params)
+            GlFilterProgram.bindUniforms(
+                handles = currentHandles,
+                textureId = textureId,
+                lutTextureId = lutTextureFor(params),
+                renderWidth = renderWidth,
+                renderHeight = renderHeight,
+                params = params,
+            )
             GLES20.glDrawArrays(GLES20.GL_TRIANGLE_STRIP, 0, GlFilterProgram.VERTEX_COUNT)
             GlFilterProgram.disableAttributes(currentHandles)
         }
@@ -114,6 +127,21 @@ class FilterPreviewView @JvmOverloads constructor(
 
         fun setFilterParams(nextParams: ShaderFilterParams) {
             params = nextParams
+        }
+
+        private fun lutTextureFor(params: ShaderFilterParams): Int {
+            if (params.lutStrength <= 0f) {
+                return 0
+            }
+            if (lutTextureId != 0 && lutTexture == params.lut) {
+                return lutTextureId
+            }
+            if (lutTextureId != 0) {
+                GLES20.glDeleteTextures(1, intArrayOf(lutTextureId), 0)
+            }
+            lutTexture = params.lut
+            lutTextureId = GlLutTexture.upload(params.lut)
+            return lutTextureId
         }
 
         private fun uploadPendingBitmap() {

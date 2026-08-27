@@ -85,10 +85,11 @@ object FilterBitmapRenderer {
         require(pixels.size == width * height) { "Pixel array size must match width * height." }
 
         val output = IntArray(pixels.size)
+        val lutOutput = FloatArray(3)
         for (y in 0 until height) {
             for (x in 0 until width) {
                 val index = y * width + x
-                output[index] = filterPixel(pixels, x, y, width, height, params)
+                output[index] = filterPixel(pixels, x, y, width, height, params, lutOutput)
             }
         }
         return output
@@ -101,6 +102,16 @@ object FilterBitmapRenderer {
         width: Int,
         height: Int,
         params: ShaderFilterParams,
+    ): Int = filterPixel(pixels, x, y, width, height, params, FloatArray(3))
+
+    private fun filterPixel(
+        pixels: IntArray,
+        x: Int,
+        y: Int,
+        width: Int,
+        height: Int,
+        params: ShaderFilterParams,
+        lutOutput: FloatArray,
     ): Int {
         val color = pixels[y * width + x]
         val left = pixels[y * width + (x - 1).coerceAtLeast(0)]
@@ -168,6 +179,13 @@ object FilterBitmapRenderer {
         red = mix(gray, red, 1f + (params.vibrance * vibranceMask))
         green = mix(gray, green, 1f + (params.vibrance * vibranceMask))
         blue = mix(gray, blue, 1f + (params.vibrance * vibranceMask))
+
+        if (params.lutStrength > 0f) {
+            params.lut.apply(red, green, blue, lutOutput)
+            red = mix(red, lutOutput[0], params.lutStrength)
+            green = mix(green, lutOutput[1], params.lutStrength)
+            blue = mix(blue, lutOutput[2], params.lutStrength)
+        }
 
         val textureX = (x + 0.5f) / width
         val textureY = (y + 0.5f) / height

@@ -55,6 +55,8 @@ internal object GlFilterProgram {
             position = GLES20.glGetAttribLocation(program, A_POSITION),
             textureCoordinate = GLES20.glGetAttribLocation(program, A_TEX_COORD),
             texture = GLES20.glGetUniformLocation(program, U_TEXTURE),
+            lutTexture = GLES20.glGetUniformLocation(program, U_LUT_TEXTURE),
+            lutStrength = GLES20.glGetUniformLocation(program, U_LUT_STRENGTH),
             effect = GLES20.glGetUniformLocation(program, U_EFFECT),
             effectStrength = GLES20.glGetUniformLocation(program, U_EFFECT_STRENGTH),
             effectThreshold = GLES20.glGetUniformLocation(program, U_EFFECT_THRESHOLD),
@@ -100,6 +102,7 @@ internal object GlFilterProgram {
     fun bindUniforms(
         handles: ProgramHandles,
         textureId: Int,
+        lutTextureId: Int = 0,
         renderWidth: Int,
         renderHeight: Int,
         params: ShaderFilterParams,
@@ -108,6 +111,13 @@ internal object GlFilterProgram {
         GLES20.glActiveTexture(GLES20.GL_TEXTURE0)
         GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, textureId)
         GLES20.glUniform1i(handles.texture, 0)
+        val lutStrength = if (lutTextureId != 0) params.lutStrength else 0f
+        if (lutStrength > 0f) {
+            GLES20.glActiveTexture(GLES20.GL_TEXTURE1)
+            GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, lutTextureId)
+            GLES20.glUniform1i(handles.lutTexture, 1)
+        }
+        GLES20.glUniform1f(handles.lutStrength, lutStrength)
         GLES20.glUniform1f(handles.effect, params.effect.shaderValue)
         GLES20.glUniform1f(handles.effectStrength, params.effectStrength)
         GLES20.glUniform1f(handles.effectThreshold, params.effectThreshold)
@@ -154,6 +164,8 @@ internal object GlFilterProgram {
         val position: Int,
         val textureCoordinate: Int,
         val texture: Int,
+        val lutTexture: Int,
+        val lutStrength: Int,
         val effect: Int,
         val effectStrength: Int,
         val effectThreshold: Int,
@@ -193,6 +205,8 @@ internal object GlFilterProgram {
     private const val A_POSITION = "aPosition"
     private const val A_TEX_COORD = "aTexCoord"
     private const val U_TEXTURE = "uTexture"
+    private const val U_LUT_TEXTURE = "uLutTexture"
+    private const val U_LUT_STRENGTH = "uLutStrength"
     private const val U_EFFECT = "uEffect"
     private const val U_EFFECT_STRENGTH = "uEffectStrength"
     private const val U_EFFECT_THRESHOLD = "uEffectThreshold"
@@ -232,6 +246,8 @@ internal object GlFilterProgram {
         """
         precision mediump float;
         uniform sampler2D uTexture;
+        uniform sampler2D uLutTexture;
+        uniform float uLutStrength;
         uniform float uEffect;
         uniform float uEffectStrength;
         uniform float uEffectThreshold;
@@ -289,6 +305,23 @@ internal object GlFilterProgram {
             return 1.0 - smoothstep(0.0, 0.055, abs(fract(value) - 0.5));
         }
 
+        vec3 sampleLut(vec3 rgb) {
+            vec3 color = clamp(rgb, 0.0, 1.0);
+            float blue = color.b * 32.0;
+            float sliceLow = floor(blue);
+            float sliceHigh = min(sliceLow + 1.0, 32.0);
+            float mixAmount = blue - sliceLow;
+            vec2 lowCoord = vec2(
+                ((sliceLow * 33.0) + (color.r * 32.0) + 0.5) / 1089.0,
+                ((color.g * 32.0) + 0.5) / 33.0
+            );
+            vec2 highCoord = vec2(
+                ((sliceHigh * 33.0) + (color.r * 32.0) + 0.5) / 1089.0,
+                lowCoord.y
+            );
+            return mix(texture2D(uLutTexture, lowCoord).rgb, texture2D(uLutTexture, highCoord).rgb, mixAmount);
+        }
+
         void main() {
             vec4 color = texture2D(uTexture, vTexCoord);
             vec3 left = texture2D(uTexture, vTexCoord - vec2(uTexelSize.x, 0.0)).rgb;
@@ -321,6 +354,10 @@ internal object GlFilterProgram {
             float average = (rgb.r + rgb.g + rgb.b) / 3.0;
             float vibranceMask = 1.0 - clamp(maxChannel - average, 0.0, 1.0);
             rgb = mix(vec3(gray), rgb, 1.0 + (uVibrance * vibranceMask));
+
+            if (uLutStrength > 0.0) {
+                rgb = mix(rgb, sampleLut(rgb), uLutStrength);
+            }
 
             if (uEffect > 0.5) {
                 vec3 beforeEffect = rgb;

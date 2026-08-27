@@ -7,6 +7,8 @@ data class ShaderFilterParams(
     val effectStrength: Float,
     val effectThreshold: Float,
     val effectTone: Float,
+    val lut: FilterLut,
+    val lutStrength: Float,
     val intensity: Float,
     val isMonochrome: Float,
     val redShift: Float,
@@ -29,13 +31,21 @@ data class ShaderFilterParams(
 ) {
     companion object {
         fun from(recipe: FilterRecipe, adjustments: Adjustments): ShaderFilterParams {
-            val intensity = intensityAmount(recipe.intensity)
+            val linearIntensity = amount(recipe.intensity, PERCENT_MAX)
+            val intensity = intensityAmount(linearIntensity)
             return combineAdjustments(recipe.adjustments.scaledBy(intensity), adjustments).let { combined ->
                 ShaderFilterParams(
                     effect = recipe.effect,
                     effectStrength = amount(recipe.effectStrength, PERCENT_MAX),
                     effectThreshold = amount(recipe.effectThreshold, PERCENT_MAX),
                     effectTone = amount(recipe.effectTone, PERCENT_MAX),
+                    lut = recipe.lut,
+                    lutStrength =
+                        if (recipe.lut == FilterLut.None) {
+                            0f
+                        } else {
+                            amount(recipe.lutStrength, PERCENT_MAX) * linearIntensity
+                        },
                     intensity = intensity,
                     isMonochrome = if (recipe.isMonochrome) intensity else 0f,
                     redShift = recipe.redShift.scaledBy(intensity) / COLOR_CHANNEL_MAX,
@@ -83,10 +93,8 @@ data class ShaderFilterParams(
         private fun amount(value: Int, divisor: Float): Float =
             value.coerceIn(AMOUNT_MIN, AMOUNT_MAX) / divisor
 
-        private fun intensityAmount(value: Int): Float {
-            val linear = amount(value, PERCENT_MAX)
-            return linear * linear
-        }
+        private fun intensityAmount(linear: Float): Float =
+            linear * linear * (3f - (2f * linear))
 
         private fun Int.scaledBy(amount: Float): Int =
             (this * amount).roundToInt()

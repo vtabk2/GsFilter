@@ -93,6 +93,16 @@
     <string name="gs_filter_midnight_city">Midnight City</string>
     <string name="gs_filter_sunlit_forest">Sunlit Forest</string>
     <string name="gs_filter_pearl_mono">Pearl Mono</string>
+    <string name="gs_filter_lut_clean_portrait">Clean Portrait</string>
+    <string name="gs_filter_lut_soft_skin">Soft Skin</string>
+    <string name="gs_filter_lut_golden_portrait">Golden Portrait</string>
+    <string name="gs_filter_lut_daylight_fresh">Daylight Fresh</string>
+    <string name="gs_filter_lut_food_pop">Food Pop</string>
+    <string name="gs_filter_lut_green_film">Green Film</string>
+    <string name="gs_filter_lut_teal_cinema">Teal Cinema</string>
+    <string name="gs_filter_lut_night_mood">Night Mood</string>
+    <string name="gs_filter_lut_vintage_fade">Vintage Fade</string>
+    <string name="gs_filter_lut_editorial_matte">Editorial Matte</string>
     <string name="gs_filter_pencil">Pencil</string>
     <string name="gs_filter_soft_sketch">Soft Sketch</string>
     <string name="gs_filter_color_pencil">Color Pencil</string>

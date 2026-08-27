@@ -40,6 +40,8 @@ class ShaderFilterParamsTest {
         assertEquals(0.8f, params.effectStrength, DELTA)
         assertEquals(0.35f, params.effectThreshold, DELTA)
         assertEquals(0.6f, params.effectTone, DELTA)
+        assertEquals(FilterLut.None, params.lut)
+        assertEquals(0f, params.lutStrength, DELTA)
         assertEquals(1f, params.isMonochrome, DELTA)
         assertEquals(10f / 255f, params.redShift, DELTA)
         assertEquals(-5f / 255f, params.greenShift, DELTA)
@@ -154,10 +156,12 @@ class ShaderFilterParamsTest {
     }
 
     @Test
-    fun `filter intensity has softer lower range`() {
+    fun `filter intensity uses smooth response curve`() {
         val params = ShaderFilterParams.from(
             recipe = FilterRecipe(
                 intensity = 50,
+                lut = FilterLut.TealCinema,
+                lutStrength = 80,
                 isMonochrome = true,
                 redShift = 100,
                 adjustments = Adjustments(contrast = 100),
@@ -165,10 +169,12 @@ class ShaderFilterParamsTest {
             adjustments = Adjustments(),
         )
 
-        assertEquals(0.25f, params.intensity, DELTA)
-        assertEquals(0.25f, params.isMonochrome, DELTA)
-        assertEquals(25f / 255f, params.redShift, DELTA)
-        assertEquals(1.125f, params.contrast, DELTA)
+        assertEquals(0.5f, params.intensity, DELTA)
+        assertEquals(FilterLut.TealCinema, params.lut)
+        assertEquals(0.4f, params.lutStrength, DELTA)
+        assertEquals(0.5f, params.isMonochrome, DELTA)
+        assertEquals(50f / 255f, params.redShift, DELTA)
+        assertEquals(1.25f, params.contrast, DELTA)
     }
 
     private companion object {

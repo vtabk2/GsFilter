@@ -1503,6 +1503,7 @@ Status: DONE
 - `git diff --check` passed.
 - `:filter:testDebugUnitTest` passed after rerunning Gradle outside the sandbox for wrapper network access.
 - `:app:compileDebugKotlin` passed after rerunning Gradle outside the sandbox for wrapper network access.
+
 - Reopened to add another people-prioritized preset batch.
 - Added 8 people-prioritized presets: Selfie Clear, Soft Portrait, Studio Skin, Golden Skin, Indoor Warm, Flash Soft, Low Light Skin, and Clean Face.
 - `git diff --check` passed.
@@ -1610,3 +1611,117 @@ Status: DONE
 - Added focused catalog tests for top filters in Popular, Portrait, Natural, Food, Landscape, Night, Film, Cinematic, Black & White, and Art.
 - `git diff --check` passed.
 - `:filter:testDebugUnitTest` passed after rerunning Gradle outside the sandbox for wrapper network access.
+
+## Task: Add starter LUT filter presets
+
+Status: DONE
+
+### Requirements
+
+- Add 10 starter LUT-style built-in filters.
+- Keep existing filter recipes and UI behavior working.
+- Apply LUT grading consistently in preview, thumbnails, GPU export, and CPU fallback.
+- Avoid new dependencies and external LUT asset files for this first pass.
+
+### Checklist
+
+- [x] Add LUT metadata to `FilterRecipe` and render params.
+- [x] Add GPU LUT sampling and CPU fallback grading.
+- [x] Add 10 built-in LUT presets and names.
+- [x] Update JSON/catalog/render tests.
+- [x] Run focused verification.
+
+### Notes
+
+- Use generated internal LUT textures instead of shipping PNG assets for now.
+- Added 10 LUT presets: Clean Portrait, Soft Skin, Golden Portrait, Daylight Fresh, Food Pop, Green Film, Teal Cinema, Night Mood, Vintage Fade, and Editorial Matte.
+- Built-in catalog now has 105 filter options including Original.
+- GPU preview/export sample generated 16x16x16 LUT textures through `uLutTexture`; CPU fallback uses the same LUT grading formulas.
+- JSON filter packs can specify `lut` and `lutStrength`.
+- `git diff --check` passed.
+- `:filter:testDebugUnitTest` passed after rerunning Gradle outside the sandbox for wrapper network access.
+- `:app:compileDebugKotlin` passed after rerunning Gradle outside the sandbox for wrapper network access.
+
+## Task: Make LUT intensity visibly responsive
+
+Status: DONE
+
+### Requirements
+
+- Make the Intensity seekbar visibly affect LUT-based filters.
+- Make the Intensity seekbar feel less abrupt while dragging.
+- Preserve 0 and 100 endpoints for all filters.
+
+### Checklist
+
+- [x] Map LUT strength with linear filter intensity.
+- [x] Replace squared preset intensity with a smoother response curve.
+- [x] Update focused shader parameter coverage.
+- [x] Run focused verification.
+
+### Notes
+
+- Root issue: LUT strength used the same squared intensity curve as recipe adjustments, so mid-slider values became too subtle.
+- The squared preset curve also made the upper half of the seekbar change too quickly.
+- LUT strength now follows the linear seekbar value, while preset adjustments use a smoothstep curve.
+- `git diff --check` passed.
+- `:filter:testDebugUnitTest` passed after rerunning Gradle outside the sandbox for wrapper network access.
+
+## Task: Retune starter LUT presets for visible differences
+
+Status: DONE
+
+### Requirements
+
+- Make the newly added LUT filters visibly distinct on real photos.
+- Keep the existing generated-LUT implementation.
+- Keep filter ids, names, categories, UI, and renderer API unchanged.
+- Refresh thumbnail cache keys so old subtle LUT thumbnails are not reused.
+
+### Checklist
+
+- [x] Increase starter LUT grade strength.
+- [x] Set LUT presets to full default strength.
+- [x] Increase generated LUT size from 16 to 33.
+- [x] Bump thumbnail render cache version.
+- [x] Add focused LUT visibility coverage.
+- [x] Run focused verification.
+
+### Notes
+
+- User feedback: current LUT presets are too subtle and do not look meaningfully different.
+- 33x33x33 is still small enough for generated internal LUTs and gives finer color grading than the first 16x16x16 pass.
+- Retuned all starter LUT formulas with stronger channel shifts, split-tone, fade, saturation, and contrast differences.
+- Set all 10 LUT presets to `lutStrength = 100`.
+- Bumped thumbnail render cache version to `gpu-preview-v14`.
+- Added LUT visibility coverage requiring each color LUT to produce a minimum visible color delta.
+- `git diff --check` passed.
+- `:filter:testDebugUnitTest` passed after rerunning Gradle outside the sandbox for wrapper network access.
+- `:app:compileDebugKotlin` passed after rerunning Gradle outside the sandbox for wrapper network access.
+
+## Task: Soften Food Pop LUT highlights
+
+Status: DONE
+
+### Requirements
+
+- Fix Food Pop looking too harsh on portrait/highlight photos.
+- Keep Food Pop visibly food-oriented.
+- Keep other LUTs, categories, UI, and renderer behavior unchanged.
+
+### Checklist
+
+- [x] Retune the `FoodPop` LUT formula.
+- [x] Reduce the `lut_food_pop` preset strength/boosts.
+- [x] Refresh thumbnail cache keys.
+- [x] Run focused verification.
+
+### Notes
+
+- Screenshot feedback: Food Pop pushes skin too yellow/orange and creates cyan-looking highlight artifacts.
+- Reduced Food Pop LUT contrast/saturation and highlight warming while keeping a small warm food shift.
+- Reduced `lut_food_pop` strength from 100 to 85 and lowered saturation/vibrance/clarity boosts.
+- Bumped thumbnail render cache version to `gpu-preview-v15`.
+- `git diff --check` passed.
+- `:filter:testDebugUnitTest` passed after rerunning Gradle outside the sandbox for wrapper network access.
+- `:app:compileDebugKotlin` passed after rerunning Gradle outside the sandbox for wrapper network access.
