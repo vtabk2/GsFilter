@@ -41,7 +41,7 @@ Thêm GsFilter vào module app:
 
 ```kotlin
 dependencies {
-    implementation("com.github.vtabk2:GsFilter:1.0.0")
+    implementation("com.github.vtabk2:GsFilter:1.0.1")
 }
 ```
 
@@ -60,11 +60,13 @@ dependencyResolutionManagement {
 
 ```groovy
 dependencies {
-    implementation 'com.github.vtabk2:GsFilter:1.0.0'
+    implementation 'com.github.vtabk2:GsFilter:1.0.1'
 }
 ```
 
-`1.0.0` là tag release hiện tại. Khi cần test bản chưa release, có thể thay bằng commit hash hoặc branch JitPack như `main-SNAPSHOT`. Không cần khai báo `GsCore` riêng; GsFilter đã kéo `com.github.vtabk2:GsCore:1.1.0` qua dependency transitive.
+`1.0.1` là tag release hiện tại. Khi cần test bản chưa release, có thể thay bằng commit hash hoặc branch JitPack như `main-SNAPSHOT`. Không cần khai báo `GsCore` riêng; GsFilter đã kéo `com.github.vtabk2:GsCore:1.1.0` qua dependency transitive.
+
+Host app cần `minSdk >= 24`.
 
 Nếu dùng `FilterControlsView` và thumbnail rail, host app cần thêm Glide compiler để `AppGlideModule` được generate:
 
@@ -245,6 +247,7 @@ Ghi chú:
 - Trong tab Adjust, hàng icon control nằm trên seekbar/value hiện tại; nút reset control và Reset All dùng trạng thái disabled khi không có gì để reset.
 - `gsFilterCompactTabs` kéo label/indicator của tab Filter và Adjust gần nhau hơn; `gsFilterTabSpacing` chỉnh khoảng cách giữa hai tab.
 - `gsFilterCloseIcon` đổi icon của `gs_filter_close_button`; app mẫu đang dùng `ic_gs_tick`.
+- `gsAdjustResetIcon` mặc định dùng selector có disabled/pressed state.
 
 ## Test JSON pack trong app mẫu
 
@@ -429,10 +432,9 @@ Các dimension có thể override:
 | `gs_filter_thumbnail_height` | `102dp` | Chiều cao item thumbnail filter |
 | `gs_filter_thumbnail_label_height` | `24dp` | Chiều cao dải label thumbnail filter |
 | `gs_filter_thumbnail_label_padding` | `4dp` | Padding ngang label thumbnail filter |
-| `gs_adjust_button_min_height` | `48dp` | Chiều cao tối thiểu nút reset tất cả |
 | `gs_adjust_icon_size` | `24dp` | Kích thước icon adjust control |
 | `gs_adjust_dot_size` | `5dp` | Kích thước dot báo value đã đổi |
-| `gs_adjust_item_gap` | `3dp` | Khoảng cách giữa dot, icon, và label của adjust item |
+| `gs_adjust_item_gap` | `4dp` | Khoảng cách giữa dot, icon, và label của adjust item |
 | `gs_adjust_item_width` | `78dp` | Chiều rộng adjust item trong horizontal rail |
 | `gs_adjust_value_width` | `36dp` | Chiều rộng text giá trị adjust hiện tại |
 
