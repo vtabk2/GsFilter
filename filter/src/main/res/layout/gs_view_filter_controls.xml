@@ -53,8 +53,6 @@
             android:id="@+id/gs_filter_tab_adjust"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_marginStart="@dimen/gs_filter_item_spacing"
-            android:layout_marginEnd="@dimen/gs_filter_item_spacing"
             android:layout_weight="1"
             android:clickable="true"
             android:focusable="true"
@@ -110,14 +108,14 @@
                 android:id="@+id/gs_filter_original"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_gravity="center_vertical"/>
+                android:layout_gravity="center_vertical"
+                android:layout_marginEnd="@dimen/gs_filter_item_spacing"/>
 
             <HorizontalScrollView
                 android:id="@+id/gs_filter_category_scroll"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center_vertical"
-                android:layout_marginStart="@dimen/gs_filter_item_spacing"
                 android:layout_weight="1"
                 android:scrollbars="none">
 
@@ -160,8 +158,6 @@
                 android:id="@+id/gs_filter_intensity_seek_bar"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="@dimen/gs_filter_item_spacing"
-                android:layout_marginEnd="@dimen/gs_filter_item_spacing"
                 android:layout_weight="1"
                 android:max="100"/>
 
