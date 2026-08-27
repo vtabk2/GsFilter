@@ -29,7 +29,7 @@ object FilterCatalog {
         ),
         FilterOption(
             id = "fresh",
-            categoryIds = setOf(POPULAR, NATURAL),
+            categoryIds = setOf(POPULAR, NATURAL, PORTRAIT),
             nameRes = R.string.gs_filter_fresh,
             recipe = FilterRecipe(
                 redShift = 4,
@@ -186,7 +186,7 @@ object FilterCatalog {
         ),
         FilterOption(
             id = "clear",
-            categoryIds = setOf(POPULAR, NATURAL),
+            categoryIds = setOf(POPULAR, NATURAL, PORTRAIT),
             nameRes = R.string.gs_filter_clear,
             recipe = FilterRecipe(
                 redShift = 2,
@@ -1586,7 +1586,7 @@ object FilterCatalog {
         ),
         FilterOption(
             id = "clean_light",
-            categoryIds = setOf(POPULAR, NATURAL),
+            categoryIds = setOf(POPULAR, NATURAL, PORTRAIT),
             nameRes = R.string.gs_filter_clean_light,
             recipe = FilterRecipe(
                 redShift = 3,
@@ -1932,7 +1932,7 @@ object FilterCatalog {
         ),
         FilterOption(
             id = "pearl_mono",
-            categoryIds = setOf(BLACK_WHITE, AESTHETIC),
+            categoryIds = setOf(BLACK_WHITE, AESTHETIC, PORTRAIT),
             nameRes = R.string.gs_filter_pearl_mono,
             recipe = FilterRecipe(
                 isMonochrome = true,

@@ -1494,6 +1494,7 @@ Status: DONE
 - [x] Add people-prioritized preset entries to the built-in catalog.
 - [x] Add people-prioritized filter name string resources.
 - [x] Run focused catalog verification for the expanded batch.
+- [x] Add Portrait category reuse for existing people-friendly filters.
 
 ### Notes
 
@@ -1507,3 +1508,7 @@ Status: DONE
 - `git diff --check` passed.
 - `:filter:testDebugUnitTest` passed after rerunning Gradle outside the sandbox for wrapper network access.
 - `:app:compileDebugKotlin` passed after rerunning Gradle outside the sandbox for wrapper network access.
+- Reopened to add `PORTRAIT` to existing people-friendly filters: Fresh, Clear, Clean Light, and Pearl Mono.
+- Added `PORTRAIT` to Fresh, Clear, Clean Light, and Pearl Mono.
+- `git diff --check` passed.
+- `:filter:testDebugUnitTest` passed after rerunning Gradle outside the sandbox for wrapper network access.
