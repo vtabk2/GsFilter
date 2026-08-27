@@ -1528,6 +1528,54 @@ Status: DONE
 - `git diff --check` passed.
 - `:filter:testDebugUnitTest` passed after rerunning Gradle outside the sandbox for wrapper network access.
 
+## Task: Add compact Filter/Adjust tab spacing
+
+Status: DONE
+
+### Requirements
+
+- Add a mechanism to place `gs_filter_tab_filter` and `gs_filter_tab_adjust` closer together.
+- Keep the existing library default layout unless the new option is enabled.
+- Apply the compact option in the demo screen.
+
+### Checklist
+
+- [x] Add tab compact/spacing style attributes.
+- [x] Apply compact tab layout in `FilterControlsView`.
+- [x] Enable the compact tab layout in the app sample.
+- [x] Run focused verification.
+
+### Notes
+
+- Current tab labels are far apart because both tab containers use equal `layout_weight`.
+- Added `gsFilterCompactTabs` and `gsFilterTabSpacing`.
+- The app sample enables compact tabs with `gsFilterTabSpacing="0dp"`.
+- `git diff --check` passed.
+- `:app:compileDebugKotlin` passed after rerunning Gradle outside the sandbox for wrapper network access.
+- `:filter:testDebugUnitTest` passed after rerunning Gradle outside the sandbox for wrapper network access.
+
+## Task: Align compact tab indicators
+
+Status: DONE
+
+### Requirements
+
+- Keep compact Filter/Adjust tabs close together.
+- Align each active indicator under its label text.
+- Avoid changing non-compact tab behavior.
+
+### Checklist
+
+- [x] Offset compact tab indicators by label padding.
+- [x] Run focused verification.
+
+### Notes
+
+- Compact mode aligns tab containers by edge, but label padding shifts the visible text inward.
+- Compact indicators now keep text-width sizing and add the matching label padding as a start/end margin.
+- `git diff --check` passed.
+- `:app:compileDebugKotlin` passed after rerunning Gradle outside the sandbox for wrapper network access.
+
 - Reopened to add another people-prioritized preset batch.
 - Added 8 people-prioritized presets: Selfie Clear, Soft Portrait, Studio Skin, Golden Skin, Indoor Warm, Flash Soft, Low Light Skin, and Clean Face.
 - `git diff --check` passed.
@@ -1748,4 +1796,27 @@ Status: DONE
 - Bumped thumbnail render cache version to `gpu-preview-v15`.
 - `git diff --check` passed.
 - `:filter:testDebugUnitTest` passed after rerunning Gradle outside the sandbox for wrapper network access.
+- `:app:compileDebugKotlin` passed after rerunning Gradle outside the sandbox for wrapper network access.
+
+## Task: Add tick icon for filter close button
+
+Status: DONE
+
+### Requirements
+
+- Add a tick icon drawable for `gs_filter_close_button`.
+- Use the existing close-icon customization path.
+- Keep current close-button behavior unchanged.
+
+### Checklist
+
+- [x] Add a prefixed tick vector drawable.
+- [x] Apply the tick icon in the app sample.
+- [x] Run focused verification.
+
+### Notes
+
+- `FilterControlsView` already supports `gsFilterCloseIcon`, so no view code change is needed.
+- Added `ic_gs_tick` and assigned it to `gsFilterCloseIcon` in the app sample.
+- `git diff --check` passed.
 - `:app:compileDebugKotlin` passed after rerunning Gradle outside the sandbox for wrapper network access.

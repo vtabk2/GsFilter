@@ -20,6 +20,8 @@
         <attr name="gsFilterNoneIcon" format="reference"/>
         <attr name="gsFilterIconPadding" format="dimension"/>
         <attr name="gsFilterShowTabIndicator" format="boolean"/>
+        <attr name="gsFilterCompactTabs" format="boolean"/>
+        <attr name="gsFilterTabSpacing" format="dimension"/>
         <attr name="gsFilterTabIndicatorColor" format="color|reference"/>
         <attr name="gsFilterTabIndicatorHeight" format="dimension"/>
         <attr name="gsFilterTabIndicatorWidthMode">

@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<merge xmlns:android="http://schemas.android.com/apk/res/android">
+<merge xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
 
     <LinearLayout
         android:id="@+id/gs_filter_header"
@@ -8,6 +9,14 @@
         android:baselineAligned="false"
         android:gravity="center_vertical"
         android:orientation="horizontal">
+
+        <com.core.gscore.view.RippleImageView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_vertical"
+            android:contentDescription="@string/gs_action_close"
+            android:visibility="invisible"
+            app:riv_icon_ripple="@drawable/ic_gs_close"/>
 
         <LinearLayout
             android:id="@+id/gs_filter_tab_filter"
@@ -80,7 +89,8 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center_vertical"
-            android:contentDescription="@string/gs_action_close"/>
+            android:contentDescription="@string/gs_action_close"
+            app:riv_icon_ripple="@drawable/ic_gs_tick"/>
     </LinearLayout>
 
     <LinearLayout

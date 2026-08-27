@@ -8,6 +8,7 @@ import android.graphics.Color
 import android.os.Handler
 import android.os.Looper
 import android.util.AttributeSet
+import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -277,20 +278,37 @@ class FilterControlsView @JvmOverloads constructor(
         val filterParts = TabParts(
             label = filterLabel,
             indicator = filterIndicator,
+            compactGravity = Gravity.END,
         )
         val adjustParts = TabParts(
             label = adjustLabel,
             indicator = adjustIndicator,
+            compactGravity = Gravity.START,
         )
         tabFilter?.tag = filterParts
         tabAdjust?.tag = adjustParts
+        bindTabLayout(filterParts, adjustParts)
         listOf(filterParts, adjustParts).forEach { parts ->
             val indicator = parts.indicator ?: return@forEach
             indicator.background = style.tabIndicatorColor.toDrawable()
             indicator.layoutParams?.let { params ->
                 params.height = style.tabIndicatorHeight
                 params.width = tabIndicatorWidth(parts.label)
-                (params as? LinearLayout.LayoutParams)?.gravity = android.view.Gravity.CENTER_HORIZONTAL
+                (params as? LinearLayout.LayoutParams)?.let { layoutParams ->
+                    layoutParams.gravity = if (style.compactTabs) parts.compactGravity else Gravity.CENTER_HORIZONTAL
+                    if (style.compactTabs) {
+                        layoutParams.marginStart = if (parts.compactGravity == Gravity.START) {
+                            parts.label?.paddingStart ?: 0
+                        } else {
+                            0
+                        }
+                        layoutParams.marginEnd = if (parts.compactGravity == Gravity.END) {
+                            parts.label?.paddingEnd ?: 0
+                        } else {
+                            0
+                        }
+                    }
+                }
                 indicator.layoutParams = params
             }
         }
@@ -305,6 +323,26 @@ class FilterControlsView @JvmOverloads constructor(
         buttonClose?.iconRippleRes = style.closeIconRes
         style.iconPadding?.let { buttonClose?.paddingRipple = it }
         buttonClose?.setOnClickListener { onCloseClick?.invoke() }
+    }
+
+    private fun bindTabLayout(filterParts: TabParts, adjustParts: TabParts) {
+        (tabAdjust?.layoutParams as? LinearLayout.LayoutParams)?.let { params ->
+            params.marginStart = style.tabSpacing
+            tabAdjust?.layoutParams = params
+        }
+        if (!style.compactTabs) {
+            return
+        }
+        compactTab(tabFilter, filterParts)
+        compactTab(tabAdjust, adjustParts)
+    }
+
+    private fun compactTab(tab: LinearLayout?, parts: TabParts) {
+        tab?.gravity = parts.compactGravity
+        parts.label?.layoutParams?.let { params ->
+            params.width = ViewGroup.LayoutParams.WRAP_CONTENT
+            parts.label.layoutParams = params
+        }
     }
 
     private fun bindFilterContent() {
@@ -468,6 +506,7 @@ class FilterControlsView @JvmOverloads constructor(
     private data class TabParts(
         val label: TextView?,
         val indicator: View?,
+        val compactGravity: Int,
     )
 
     private data class FilterControlsStyle(
@@ -494,6 +533,8 @@ class FilterControlsView @JvmOverloads constructor(
         val tabIndicatorHeight: Int,
         val tabIndicatorWidthMode: Int,
         val tabIndicatorMinWidth: Int,
+        val compactTabs: Boolean,
+        val tabSpacing: Int,
         val showIntensity: Boolean,
         val intensityTextColor: Int,
         val intensityProgressColor: Int,
@@ -581,7 +622,7 @@ class FilterControlsView @JvmOverloads constructor(
             ),
             closeIconRes = array.getResourceId(
                 R.styleable.FilterControlsView_gsFilterCloseIcon,
-                R.drawable.ic_gs_close,
+                R.drawable.ic_gs_tick,
             ),
             noneIconRes = array.getResourceId(
                 R.styleable.FilterControlsView_gsFilterNoneIcon,
@@ -611,6 +652,11 @@ class FilterControlsView @JvmOverloads constructor(
             tabIndicatorMinWidth = array.getDimensionPixelSize(
                 R.styleable.FilterControlsView_gsFilterTabIndicatorMinWidth,
                 context.resources.getDimensionPixelSize(R.dimen.gs_filter_chip_min_width),
+            ),
+            compactTabs = array.getBoolean(R.styleable.FilterControlsView_gsFilterCompactTabs, false),
+            tabSpacing = array.getDimensionPixelSize(
+                R.styleable.FilterControlsView_gsFilterTabSpacing,
+                context.resources.getDimensionPixelSize(R.dimen.gs_filter_item_spacing),
             ),
             showIntensity = array.getBoolean(R.styleable.FilterControlsView_gsFilterShowIntensity, true),
             intensityTextColor = array.getColor(
