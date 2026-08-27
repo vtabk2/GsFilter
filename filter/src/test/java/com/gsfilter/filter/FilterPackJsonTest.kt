@@ -12,6 +12,7 @@ class FilterPackJsonTest {
             """
             {
               "defaultCategoryId": "cinematic",
+              "defaultFilterId": "teal",
               "categories": [
                 {"id": "cinematic", "name": "Cinematic"}
               ],
@@ -43,6 +44,7 @@ class FilterPackJsonTest {
         val filter = pack.filtersForCategory("cinematic").single()
 
         assertEquals("cinematic", pack.defaultCategory.id)
+        assertEquals("teal", pack.defaultFilter.id)
         assertEquals("Teal", filter.name)
         assertEquals(FilterEffect.ColorPencil, filter.recipe.effect)
         assertEquals(100, filter.recipe.effectStrength)
@@ -74,5 +76,25 @@ class FilterPackJsonTest {
         }
 
         assertTrue(result.exceptionOrNull() is IllegalArgumentException)
+    }
+
+    @Test
+    fun `json pack defaults to first filter when default filter id is missing`() {
+        val pack = FilterPackJson.parse(
+            """
+            {
+              "defaultFilterId": "missing",
+              "categories": [
+                {"id": "cinematic", "name": "Cinematic"}
+              ],
+              "filters": [
+                {"id": "teal", "name": "Teal", "categoryIds": ["cinematic"]},
+                {"id": "warm", "name": "Warm", "categoryIds": ["cinematic"]}
+              ]
+            }
+            """.trimIndent(),
+        )
+
+        assertEquals("teal", pack.defaultFilter.id)
     }
 }

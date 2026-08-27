@@ -2027,3 +2027,30 @@ Status: DONE
 - Reset button now stays in the seek row and uses disabled alpha when the selected adjust is at default.
 - `git diff --check` passed.
 - `:app:compileDebugKotlin` passed after rerunning Gradle outside the sandbox for wrapper network access.
+
+## Task: Expose filter APIs needed by Family Photo Frame
+
+Status: DONE
+
+### Requirements
+
+- Keep changes limited to the `filter` module.
+- Make display names usable by consuming apps.
+- Provide one public render entry point that uses GPU first and CPU fallback.
+- Fix custom JSON packs so their default filter belongs to the parsed pack.
+- Avoid public renderer internals that the consuming app does not need.
+
+### Checklist
+
+- [x] Make filter/category display name helpers public.
+- [x] Add a public GPU-first render facade.
+- [x] Parse custom pack default filter safely.
+- [x] Add focused unit coverage.
+- [x] Run focused verification.
+
+### Notes
+
+- Family Photo Frame currently needs `displayName` outside the module and has to keep its own GPU/CPU fallback wrapper.
+- Added `FilterRenderer.getBitmap(...)` as the public GPU-first/CPU-fallback entry point.
+- `git diff --check` passed.
+- `:filter:testDebugUnitTest` passed after rerunning Gradle outside the sandbox for wrapper network access.

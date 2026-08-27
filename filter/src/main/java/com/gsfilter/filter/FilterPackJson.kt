@@ -33,12 +33,16 @@ object FilterPackJson {
         val defaultCategory = defaultCategoryId?.let { id ->
             categories.firstOrNull { it.id == id }
         } ?: categories.first()
+        val defaultFilterId = root.optString("defaultFilterId").takeIf { it.isNotBlank() }
+        val defaultFilter = defaultFilterId?.let { id ->
+            filters.firstOrNull { it.id == id }
+        } ?: filters.first()
 
         return FilterPack(
             categories = categories,
             options = filters,
             defaultCategory = defaultCategory,
-            defaultFilter = FilterCatalog.default,
+            defaultFilter = defaultFilter,
         )
     }
 
