@@ -1868,3 +1868,94 @@ Status: DONE
 - Added the built-in preset list grouped by category to README.
 - Verified the catalog currently has 104 string-id presets, excluding `Original`.
 - `git diff --check` passed.
+
+## Task: Make Reset All adjust action lighter
+
+Status: DONE
+
+### Requirements
+
+- Make Reset All look like a secondary adjust action instead of a full-width primary button.
+- Show Reset All only when at least one adjust value changed.
+- Keep existing reset callbacks and behavior.
+
+### Checklist
+
+- [x] Restyle Reset All in adjust layout.
+- [x] Hide/show Reset All from current adjustments.
+- [x] Run focused verification.
+
+### Notes
+
+- Keep the per-control reset icon unchanged.
+- Reset All is now a small right-aligned text action.
+- Reset All is hidden until any adjust control differs from defaults.
+- `git diff --check` passed.
+- `:app:compileDebugKotlin` passed after rerunning Gradle outside the sandbox for wrapper network access.
+
+## Task: Fix Reset All inflate crash
+
+Status: DONE
+
+### Requirements
+
+- Fix `gs_view_adjust_controls` crashing while inflating `gs_adjust_reset_all_button`.
+- Keep Reset All as a lightweight right-aligned action.
+
+### Checklist
+
+- [x] Use a framework-safe ripple background attribute.
+- [x] Run focused verification.
+
+### Notes
+
+- Crash points at the `Button` after adding `?attr/selectableItemBackground`; host themes may not define that unqualified attr.
+- Switched Reset All background to `?android:attr/selectableItemBackground`.
+- `git diff --check` passed.
+- `:app:compileDebugKotlin` passed after rerunning Gradle outside the sandbox for wrapper network access.
+
+## Task: Improve Reset All disabled state and rounded background
+
+Status: DONE
+
+### Requirements
+
+- Keep Reset All visible with a reasonable disabled state when no adjust value changed.
+- Use a rounded Reset All background with 30dp corner radius.
+- Preserve existing reset callback behavior.
+
+### Checklist
+
+- [x] Add rounded enabled/disabled Reset All background.
+- [x] Use stateful Reset All text color.
+- [x] Toggle `isEnabled` instead of hiding the button.
+- [x] Run focused verification.
+
+### Notes
+
+- Avoid theme-dependent background attrs after the previous inflate crash.
+- Added `gs_bg_adjust_reset_all` with 30dp rounded enabled/disabled states.
+- Reset All now stays visible and uses `isEnabled` for the disabled state.
+- `git diff --check` passed.
+- `:app:compileDebugKotlin` passed after rerunning Gradle outside the sandbox for wrapper network access.
+
+## Task: Add Reset All pressed state
+
+Status: DONE
+
+### Requirements
+
+- Add a pressed state to the Reset All rounded background.
+- Keep existing enabled/disabled states and 30dp corner radius.
+
+### Checklist
+
+- [x] Add `state_pressed` to Reset All background selector.
+- [x] Run focused verification.
+
+### Notes
+
+- Pressed item must appear before the default enabled item in the selector.
+- Added the pressed rounded state before disabled/default states.
+- `git diff --check` passed.
+- `:app:compileDebugKotlin` passed after rerunning Gradle outside the sandbox for wrapper network access.

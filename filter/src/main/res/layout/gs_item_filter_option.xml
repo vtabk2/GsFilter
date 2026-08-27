@@ -24,5 +24,5 @@
         android:maxLines="1"
         android:paddingStart="@dimen/gs_filter_thumbnail_label_padding"
         android:paddingEnd="@dimen/gs_filter_thumbnail_label_padding"
-        android:textSize="10sp"/>
+        android:textSize="11sp"/>
 </FrameLayout>

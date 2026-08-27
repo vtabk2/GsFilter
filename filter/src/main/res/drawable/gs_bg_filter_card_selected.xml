@@ -5,5 +5,4 @@
     <stroke
         android:width="2dp"
         android:color="@color/gs_filter_selected"/>
-    <corners android:radius="6dp"/>
 </shape>

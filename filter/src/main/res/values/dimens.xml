@@ -14,7 +14,7 @@
     <dimen name="gs_adjust_button_min_height">48dp</dimen>
     <dimen name="gs_adjust_icon_size">24dp</dimen>
     <dimen name="gs_adjust_dot_size">5dp</dimen>
-    <dimen name="gs_adjust_item_gap">3dp</dimen>
+    <dimen name="gs_adjust_item_gap">4dp</dimen>
     <dimen name="gs_adjust_item_width">78dp</dimen>
     <dimen name="gs_adjust_item_min_height">54dp</dimen>
     <dimen name="gs_adjust_value_width">36dp</dimen>

@@ -49,10 +49,12 @@
             android:orientation="horizontal"/>
     </HorizontalScrollView>
 
-    <Button
-        android:id="@+id/gs_adjust_reset_all_button"
-        android:layout_width="match_parent"
+    <TextView
+        android:id="@+id/gs_adjust_reset_all"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="@dimen/gs_filter_item_spacing"
-        android:minHeight="@dimen/gs_adjust_button_min_height"/>
+        android:layout_gravity="center"
+        android:layout_marginTop="@dimen/gs_filter_category_top_spacing"
+        android:background="@drawable/gs_bg_adjust_reset_all"
+        android:textAllCaps="false"/>
 </LinearLayout>

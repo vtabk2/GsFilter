@@ -26,7 +26,7 @@ internal class AdjustControlsView @JvmOverloads constructor(
     private val seekBar: SeekBar?
     private val valueText: TextView?
     private val controlsContainer: LinearLayout?
-    private val resetAllButton: Button?
+    private val resetAll: TextView?
     private val labels = mutableMapOf<AdjustControl, TextView>()
     private val icons = mutableMapOf<AdjustControl, ImageView>()
     private val dots = mutableMapOf<AdjustControl, View>()
@@ -44,7 +44,7 @@ internal class AdjustControlsView @JvmOverloads constructor(
         seekBar = findViewById(R.id.gs_adjust_seek_bar)
         valueText = findViewById(R.id.gs_adjust_value)
         controlsContainer = findViewById(R.id.gs_adjust_controls_container)
-        resetAllButton = findViewById(R.id.gs_adjust_reset_all_button)
+        resetAll = findViewById(R.id.gs_adjust_reset_all)
         bindSeekRow()
         bindControls()
         bindResetAllButton()
@@ -90,8 +90,9 @@ internal class AdjustControlsView @JvmOverloads constructor(
     }
 
     private fun bindResetAllButton() {
-        resetAllButton?.text = style.resetAllText
-        resetAllButton?.setOnClickListener { onResetAllClick?.invoke() }
+        resetAll?.text = style.resetAllText
+        resetAll?.setTextColor(resetAllTextColors())
+        resetAll?.setOnClickListener { onResetAllClick?.invoke() }
     }
 
     private fun createAdjustControlItem(index: Int, control: AdjustControl, parent: LinearLayout): View {
@@ -132,18 +133,30 @@ internal class AdjustControlsView @JvmOverloads constructor(
         seekBar?.progress = selectedControl.progressFrom(activeValue)
         valueText?.text = activeValue.toString()
 
+        var hasChangedValue = false
         AdjustControl.entries.forEach { control ->
             val isSelected = control == selectedControl
+            val hasChanged = control.valueIn(adjustments) != control.valueIn(defaults)
+            hasChangedValue = hasChangedValue || hasChanged
             val textColor = if (isSelected) style.selectedColor else style.secondaryTextColor
-            dots[control]?.visibility =
-                if (control.valueIn(adjustments) != control.valueIn(defaults)) VISIBLE else INVISIBLE
+            dots[control]?.visibility = if (hasChanged) VISIBLE else INVISIBLE
             icons[control]?.setColorFilter(textColor)
             labels[control]?.setTextColor(textColor)
         }
+        resetAll?.isEnabled = hasChangedValue
         isRendering = false
     }
 
     private fun itemSpacing(): Int = resources.getDimensionPixelSize(R.dimen.gs_filter_item_spacing)
+
+    private fun resetAllTextColors(): ColorStateList =
+        ColorStateList(
+            arrayOf(
+                intArrayOf(-android.R.attr.state_enabled),
+                intArrayOf(),
+            ),
+            intArrayOf(style.secondaryTextColor, style.selectedColor),
+        )
 
     private data class AdjustControlsStyle(
         val textColor: Int,

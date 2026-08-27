@@ -31,5 +31,5 @@
         android:gravity="center"
         android:includeFontPadding="false"
         android:maxLines="1"
-        android:textSize="10sp"/>
+        android:textSize="11sp"/>
 </LinearLayout>
