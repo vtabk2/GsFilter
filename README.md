@@ -1,15 +1,17 @@
 # GsFilter
 
-GsFilter là demo filter ảnh Android nhỏ, đang được tách dần thành thư viện filter có thể tái sử dụng.
+GsFilter là demo filter ảnh Android nhỏ, đồng thời là module thư viện filter có thể tái sử dụng.
 
 Dự án gồm:
 
-- `:filter`: module tái sử dụng cho model filter, preview OpenGL, control Filter/Adjust, parse JSON filter pack, và load thumbnail qua Glide.
+- `:filter`: module tái sử dụng cho model filter, preview OpenGL, control Filter/Adjust, parse JSON filter pack, CPU/GPU bitmap render, và thumbnail qua Glide.
 - `:app`: app mẫu dùng MVVM, ảnh từ `assets`, và module `:filter`.
 
 Phạm vi hiện tại:
 
 - Min SDK 24.
+- Compile SDK 36; app mẫu target SDK 36.
+- Gradle wrapper 9.0.0, Android Gradle Plugin 8.13.2, Kotlin 2.1.10, Java 17.
 - Kotlin + XML views.
 - Không có camera flow.
 - Preview GPU qua `FilterPreviewView`.
@@ -144,6 +146,7 @@ binding.filterControls.onControlTabSelected = { tab ->
 }
 binding.filterControls.onCategorySelected = { category -> viewModel.selectCategory(category) }
 binding.filterControls.onFilterSelected = { filter -> viewModel.selectFilter(filter) }
+binding.filterControls.onFilterIntensityChanged = { value -> viewModel.setFilterIntensity(value) }
 binding.filterControls.onAdjustmentChanged = { control, value -> viewModel.setAdjustment(control, value) }
 binding.filterControls.onResetAllAdjustClick = { viewModel.resetAdjustments() }
 binding.filterControls.onCatalogLoaded = { pack ->
@@ -161,11 +164,14 @@ Render state hiện tại ngược lại vào view:
 binding.filterControls.setState(
     selectedCategory = state.selectedCategory,
     selectedFilter = state.selectedFilter,
-    thumbnailBitmap = state.filterThumbnailBitmap,
-    thumbnailKey = FilterSourceKey.asset("sample.jpg"),
+    thumbnailBitmap = state.sourceBitmap,
+    thumbnailKey = state.filterThumbnailKey,
+    selectedRecipe = state.selectedRecipe,
 )
 binding.filterControls.setAdjustments(state.adjustments)
 ```
+
+Nếu host không có override intensity theo filter, có thể dùng overload `setState()` không truyền `selectedRecipe`.
 
 Ghi chú:
 
@@ -190,7 +196,7 @@ Switch `JSON pack` ở góc phải trên cùng đang bật mặc định:
 
 Filter rail dùng Glide để render và cache thumbnail đã apply filter từ `FilterThumbnailModel`.
 
-Truyền thumbnail bitmap nhỏ và source key ổn định vào `setState()`:
+Truyền source bitmap và source key ổn định vào `setState()`:
 
 ```kotlin
 FilterSourceKey.asset("sample.jpg")
@@ -200,7 +206,7 @@ FilterSourceKey.uri(uri, width, height, lastModifiedMillis)
 
 Dùng lại đúng key khi cùng một ảnh source được chọn lại. Glide có thể lấy lại thumbnail filter từ cache thay vì render lại toàn bộ rail.
 
-Thumbnail đã filter được render tối đa `128px` trước khi đưa vào Glide cache, nên các filter Art không phải xử lý lại bitmap source lớn cho từng card.
+Thumbnail đưa vào Glide cache được bound theo request: filter màu tối đa `128px`, filter Art/effect tối đa `256px`. Cache key gồm source key, kích thước source, filter recipe, adjustments, render version, và kích thước thumbnail bound.
 
 ## JSON filter packs
 
@@ -235,6 +241,7 @@ Ví dụ JSON:
       "categoryIds": ["cinematic"],
       "recipe": {
         "effect": "color",
+        "intensity": 100,
         "redShift": 12,
         "greenShift": 4,
         "blueShift": 8,
@@ -259,6 +266,7 @@ Các field recipe đang hỗ trợ:
 
 - `effect`: `color`, `sketch`, `ink`, `pencil`, `color_pencil`, `charcoal`, hoặc `cross_hatch`; mặc định là `color`.
 - `effectStrength`, `effectThreshold`, `effectTone`: số `0..100` để tinh chỉnh effect nét vẽ.
+- `intensity`: số `0..100`, mặc định `100`.
 - `isMonochrome`: boolean.
 - `redShift`, `greenShift`, `blueShift`: được clamp trong `-100..100`.
 - `adjustments`: `brightness`, `exposure`, `contrast`, `highlights`, `shadows`, `saturation`, `vibrance`, `temperature`, `tint`, `sharpness`, `clarity`, `fade`, `vignette`, `grain`.
@@ -318,20 +326,21 @@ Các dimension có thể override:
 | Dimension | Default | Mục đích |
 | --- | --- | --- |
 | `gs_filter_item_spacing` | `8dp` | Khoảng cách mặc định giữa các filter control |
-| `gs_filter_chip_min_height` | `36dp` | Chiều cao tối thiểu của tab và category chip |
+| `gs_filter_chip_min_width` | `80dp` | Chiều rộng tối thiểu của category chip và fallback indicator `min` |
+| `gs_filter_chip_min_height` | `32dp` | Chiều cao tối thiểu của tab và category chip |
 | `gs_filter_chip_horizontal_padding` | `18dp` | Padding ngang của tab và category chip |
-| `gs_filter_chip_vertical_padding` | `8dp` | Padding dọc của tab và category chip |
+| `gs_filter_chip_vertical_padding` | `4dp` | Padding dọc của tab và category chip |
 | `gs_filter_category_top_spacing` | `20dp` | Khoảng cách trên giữa tab row Filter/Adjust và category row |
 | `gs_filter_tab_indicator_height` | `2dp` | Chiều cao indicator của tab Filter/Adjust |
-| `gs_filter_thumbnail_width` | `76dp` | Chiều rộng item thumbnail filter |
-| `gs_filter_thumbnail_height` | `88dp` | Chiều cao item thumbnail filter |
-| `gs_filter_thumbnail_label_height` | `26dp` | Chiều cao dải label thumbnail filter |
+| `gs_filter_thumbnail_width` | `78dp` | Chiều rộng item thumbnail filter |
+| `gs_filter_thumbnail_height` | `102dp` | Chiều cao item thumbnail filter |
+| `gs_filter_thumbnail_label_height` | `24dp` | Chiều cao dải label thumbnail filter |
 | `gs_filter_thumbnail_label_padding` | `4dp` | Padding ngang label thumbnail filter |
 | `gs_adjust_panel_padding` | `8dp` | Padding bên trong panel adjust |
 | `gs_adjust_button_min_height` | `48dp` | Chiều cao tối thiểu nút reset tất cả |
 | `gs_adjust_icon_size` | `24dp` | Kích thước icon adjust control |
 | `gs_adjust_dot_size` | `5dp` | Kích thước dot báo value đã đổi |
-| `gs_adjust_item_gap` | `2dp` | Khoảng cách giữa dot, icon, và label của adjust item |
+| `gs_adjust_item_gap` | `3dp` | Khoảng cách giữa dot, icon, và label của adjust item |
 | `gs_adjust_item_width` | `78dp` | Chiều rộng adjust item trong horizontal rail |
 | `gs_adjust_item_min_height` | `54dp` | Chiều cao tối thiểu của adjust item |
 | `gs_adjust_value_width` | `36dp` | Chiều rộng text giá trị adjust hiện tại |
@@ -354,11 +363,3 @@ Hướng mở rộng nên đi theo data trước:
 4. Chỉ thêm shader/LUT support sau này khi recipe fields không diễn tả được look mong muốn.
 
 Cách này giúp thư viện filter dễ mở rộng hơn so với mỗi filter một class riêng hoặc phụ thuộc cứng vào GPUImage internals.
-
-## Verification
-
-Lệnh check hiện tại của project:
-
-```powershell
-gradle :filter:testDebugUnitTest :app:testDebugUnitTest :app:assembleDebug
-```
