@@ -298,6 +298,8 @@ Các XML attributes hiện có:
 | `gsFilterShowTabIndicator` | Hiển thị indicator dưới tab Filter/Adjust đang chọn |
 | `gsFilterTabIndicatorColor` | Màu tab indicator |
 | `gsFilterTabIndicatorHeight` | Chiều cao tab indicator |
+| `gsFilterTabIndicatorWidthMode` | Kích thước ngang indicator: `full`, `min`, hoặc `text` |
+| `gsFilterTabIndicatorMinWidth` | Chiều rộng indicator khi mode là `min`; mặc định theo `gs_filter_chip_min_width` |
 | `gsFilterShowIntensity` | Bật/tắt slider Intensity cho filter có recipe |
 | `gsFilterIntensityTextColor` | Màu label và value của slider Intensity |
 | `gsFilterIntensityProgressColor` | Màu progress của slider Intensity |

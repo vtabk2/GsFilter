@@ -1424,3 +1424,28 @@ Status: DONE
 - `git diff --check` passed.
 - `:filter:compileDebugKotlin :app:compileDebugKotlin` passed.
 - Unit tests were not run.
+
+## Task: Add configurable FilterControls tab indicator width
+
+Status: DONE
+
+### Requirements
+
+- Let hosts choose the Filter/Adjust tab indicator width behavior.
+- Support full tab width, minimum/wrap width, or label text width.
+- Preserve the current full-width default.
+
+### Checklist
+
+- [x] Add a `FilterControlsView` XML attr for tab indicator width mode.
+- [x] Apply the selected mode to both Filter and Adjust indicators.
+- [x] Document the new attr.
+- [x] Run lightweight verification.
+
+### Notes
+
+- Current XML indicator width is `match_parent`, so `full` must remain the default.
+- Added `gsFilterTabIndicatorWidthMode` with `full`, `min`, and `text`.
+- Added `gsFilterTabIndicatorMinWidth` for the `min` mode, defaulting to `gs_filter_chip_min_width`.
+- `git diff --check` passed.
+- `:filter:compileDebugKotlin :app:compileDebugKotlin` passed after rerunning Gradle with Android Studio JBR and approved network access for the wrapper distribution.

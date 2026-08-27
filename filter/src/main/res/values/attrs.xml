@@ -22,6 +22,12 @@
         <attr name="gsFilterShowTabIndicator" format="boolean"/>
         <attr name="gsFilterTabIndicatorColor" format="color|reference"/>
         <attr name="gsFilterTabIndicatorHeight" format="dimension"/>
+        <attr name="gsFilterTabIndicatorWidthMode">
+            <enum name="full" value="0"/>
+            <enum name="min" value="1"/>
+            <enum name="text" value="2"/>
+        </attr>
+        <attr name="gsFilterTabIndicatorMinWidth" format="dimension"/>
         <attr name="gsFilterShowIntensity" format="boolean"/>
         <attr name="gsFilterIntensityTextColor" format="color|reference"/>
         <attr name="gsFilterIntensityProgressColor" format="color|reference"/>

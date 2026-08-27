@@ -37,6 +37,7 @@ import com.gsfilter.filter.ext.displayName
 import com.gsfilter.filter.glide.FilterThumbnailModel
 import java.io.IOException
 import java.util.concurrent.Executors
+import kotlin.math.ceil
 
 class FilterControlsView @JvmOverloads constructor(
     context: Context,
@@ -283,10 +284,13 @@ class FilterControlsView @JvmOverloads constructor(
         )
         tabFilter?.tag = filterParts
         tabAdjust?.tag = adjustParts
-        listOfNotNull(filterParts.indicator, adjustParts.indicator).forEach { indicator ->
+        listOf(filterParts, adjustParts).forEach { parts ->
+            val indicator = parts.indicator ?: return@forEach
             indicator.background = style.tabIndicatorColor.toDrawable()
             indicator.layoutParams?.let { params ->
                 params.height = style.tabIndicatorHeight
+                params.width = tabIndicatorWidth(parts.label)
+                (params as? LinearLayout.LayoutParams)?.gravity = android.view.Gravity.CENTER_HORIZONTAL
                 indicator.layoutParams = params
             }
         }
@@ -407,6 +411,15 @@ class FilterControlsView @JvmOverloads constructor(
         parts?.indicator?.visibility = if (style.showTabIndicator && isSelected) VISIBLE else INVISIBLE
     }
 
+    private fun tabIndicatorWidth(label: TextView?): Int =
+        when (style.tabIndicatorWidthMode) {
+            TAB_INDICATOR_WIDTH_MIN -> style.tabIndicatorMinWidth
+            TAB_INDICATOR_WIDTH_TEXT -> label?.textWidth() ?: style.tabIndicatorMinWidth
+            else -> ViewGroup.LayoutParams.MATCH_PARENT
+        }
+
+    private fun TextView.textWidth(): Int = ceil(paint.measureText(text.toString()).toDouble()).toInt()
+
     private fun createCategoryChip(index: Int, text: String, onClick: () -> Unit): TextView? {
         val container = categoryContainer ?: return null
         val chip = LayoutInflater.from(context).inflate(
@@ -442,6 +455,9 @@ class FilterControlsView @JvmOverloads constructor(
     private companion object {
         val CATALOG_EXECUTOR = Executors.newSingleThreadExecutor()
         const val FILTER_INTENSITY_MAX = 100
+        const val TAB_INDICATOR_WIDTH_FULL = 0
+        const val TAB_INDICATOR_WIDTH_MIN = 1
+        const val TAB_INDICATOR_WIDTH_TEXT = 2
     }
 
     enum class ControlTab {
@@ -476,6 +492,8 @@ class FilterControlsView @JvmOverloads constructor(
         val showTabIndicator: Boolean,
         val tabIndicatorColor: Int,
         val tabIndicatorHeight: Int,
+        val tabIndicatorWidthMode: Int,
+        val tabIndicatorMinWidth: Int,
         val showIntensity: Boolean,
         val intensityTextColor: Int,
         val intensityProgressColor: Int,
@@ -585,6 +603,14 @@ class FilterControlsView @JvmOverloads constructor(
             tabIndicatorHeight = array.getDimensionPixelSize(
                 R.styleable.FilterControlsView_gsFilterTabIndicatorHeight,
                 context.resources.getDimensionPixelSize(R.dimen.gs_filter_tab_indicator_height),
+            ),
+            tabIndicatorWidthMode = array.getInt(
+                R.styleable.FilterControlsView_gsFilterTabIndicatorWidthMode,
+                TAB_INDICATOR_WIDTH_FULL,
+            ),
+            tabIndicatorMinWidth = array.getDimensionPixelSize(
+                R.styleable.FilterControlsView_gsFilterTabIndicatorMinWidth,
+                context.resources.getDimensionPixelSize(R.dimen.gs_filter_chip_min_width),
             ),
             showIntensity = array.getBoolean(R.styleable.FilterControlsView_gsFilterShowIntensity, true),
             intensityTextColor = array.getColor(

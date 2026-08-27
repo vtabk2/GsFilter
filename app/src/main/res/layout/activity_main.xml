@@ -127,6 +127,7 @@
             app:gsFilterSelectedTabTextColor="@color/filter_selected"
             app:gsFilterShowTabIndicator="true"
             app:gsFilterTabIndicatorColor="@color/filter_selected"
+            app:gsFilterTabIndicatorWidthMode="text"
             app:gsFilterTabTextColor="@color/text_primary"
             app:gsFilterTextColor="@color/text_primary"
             app:gsFilterUseTabBackground="false"/>
