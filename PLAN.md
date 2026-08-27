@@ -1512,3 +1512,29 @@ Status: DONE
 - Added `PORTRAIT` to Fresh, Clear, Clean Light, and Pearl Mono.
 - `git diff --check` passed.
 - `:filter:testDebugUnitTest` passed after rerunning Gradle outside the sandbox for wrapper network access.
+
+## Task: Trim visually similar built-in filter presets
+
+Status: DONE
+
+### Requirements
+
+- Review all built-in filters for recipes that are too similar.
+- Remove redundant presets while preserving category coverage and existing renderer behavior.
+- Keep the change data-only unless tests need updating for removed catalog entries.
+
+### Checklist
+
+- [x] Identify near-duplicate presets from recipe/category similarity.
+- [x] Remove redundant catalog entries and unused string resources.
+- [x] Update focused catalog tests.
+- [x] Run focused verification.
+
+### Notes
+
+- Use the existing preset-data model; no shader, LUT, UI, or renderer changes needed.
+- Removed 15 visually close presets: Classic, Honey, Silver, Clean, Bright, Skin Soft, Ice, Dark Mood, Sweet, Fresh Food, Vivid, Green Pop, Rose Skin, Clean Face, and Manga.
+- Built-in catalog now has 95 filter options including Original, with matching filter name string resources.
+- `git diff --check` passed.
+- `:filter:testDebugUnitTest` passed after rerunning Gradle outside the sandbox for wrapper network access.
+- `:app:compileDebugKotlin` passed after rerunning Gradle outside the sandbox for wrapper network access.

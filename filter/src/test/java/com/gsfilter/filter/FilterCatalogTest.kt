@@ -83,7 +83,7 @@ class FilterCatalogTest {
         val artFilterIds = FilterCatalog.filtersForCategory("art").map { it.id }.toSet()
 
         assertEquals(
-            setOf("pencil", "soft_sketch", "color_pencil", "fine_line", "ink", "manga", "charcoal", "cross_hatch"),
+            setOf("pencil", "soft_sketch", "color_pencil", "fine_line", "ink", "charcoal", "cross_hatch"),
             artFilterIds,
         )
     }

@@ -19,8 +19,6 @@
     <string name="gs_filter_airy">Airy</string>
     <string name="gs_filter_fuji">Fuji</string>
     <string name="gs_filter_gold">Gold</string>
-    <string name="gs_filter_classic">Classic</string>
-    <string name="gs_filter_honey">Honey</string>
     <string name="gs_filter_arctic">Arctic</string>
     <string name="gs_filter_peach">Peach</string>
     <string name="gs_filter_crispy">Crispy</string>
@@ -37,14 +35,10 @@
     <string name="gs_filter_epic">Epic</string>
     <string name="gs_filter_blockbuster">Blockbuster</string>
     <string name="gs_filter_arthouse">Arthouse</string>
-    <string name="gs_filter_silver">Silver</string>
     <string name="gs_filter_pure">Pure</string>
-    <string name="gs_filter_clean">Clean</string>
     <string name="gs_filter_soft">Soft</string>
-    <string name="gs_filter_bright">Bright</string>
     <string name="gs_filter_clear_day">Clear Day</string>
     <string name="gs_filter_blush">Blush</string>
-    <string name="gs_filter_skin_soft">Skin Soft</string>
     <string name="gs_filter_rosy">Rosy</string>
     <string name="gs_filter_tan">Tan</string>
     <string name="gs_filter_beauty">Beauty</string>
@@ -52,7 +46,6 @@
     <string name="gs_filter_caramel">Caramel</string>
     <string name="gs_filter_golden_hour">Golden Hour</string>
     <string name="gs_filter_cozy">Cozy</string>
-    <string name="gs_filter_ice">Ice</string>
     <string name="gs_filter_blue_mist">Blue Mist</string>
     <string name="gs_filter_winter">Winter</string>
     <string name="gs_filter_steel">Steel</string>
@@ -63,19 +56,14 @@
     <string name="gs_filter_oldie">Oldie</string>
     <string name="gs_filter_nineties">90s</string>
     <string name="gs_filter_retro_matte">Retro Matte</string>
-    <string name="gs_filter_dark_mood">Dark Mood</string>
     <string name="gs_filter_bleach">Bleach</string>
     <string name="gs_filter_high_contrast">High Contrast</string>
     <string name="gs_filter_soft_mono">Soft Mono</string>
-    <string name="gs_filter_sweet">Sweet</string>
-    <string name="gs_filter_fresh_food">Fresh Food</string>
     <string name="gs_filter_warm_plate">Warm Plate</string>
-    <string name="gs_filter_vivid">Vivid</string>
     <string name="gs_filter_forest">Forest</string>
     <string name="gs_filter_ocean">Ocean</string>
     <string name="gs_filter_sky">Sky</string>
     <string name="gs_filter_travel">Travel</string>
-    <string name="gs_filter_green_pop">Green Pop</string>
     <string name="gs_filter_beige">Beige</string>
     <string name="gs_filter_latte">Latte</string>
     <string name="gs_filter_pink">Pink</string>
@@ -91,7 +79,6 @@
     <string name="gs_filter_fantasy">Fantasy</string>
     <string name="gs_filter_clean_light">Clean Light</string>
     <string name="gs_filter_soft_day">Soft Day</string>
-    <string name="gs_filter_rose_skin">Rose Skin</string>
     <string name="gs_filter_selfie_clear">Selfie Clear</string>
     <string name="gs_filter_soft_portrait">Soft Portrait</string>
     <string name="gs_filter_studio_skin">Studio Skin</string>
@@ -99,7 +86,6 @@
     <string name="gs_filter_indoor_warm">Indoor Warm</string>
     <string name="gs_filter_flash_soft">Flash Soft</string>
     <string name="gs_filter_low_light_skin">Low Light Skin</string>
-    <string name="gs_filter_clean_face">Clean Face</string>
     <string name="gs_filter_fresh_plate">Fresh Plate</string>
     <string name="gs_filter_warm_table">Warm Table</string>
     <string name="gs_filter_deep_teal">Deep Teal</string>
@@ -112,7 +98,6 @@
     <string name="gs_filter_color_pencil">Color Pencil</string>
     <string name="gs_filter_fine_line">Fine Line</string>
     <string name="gs_filter_ink">Ink</string>
-    <string name="gs_filter_manga">Manga</string>
     <string name="gs_filter_charcoal">Charcoal</string>
     <string name="gs_filter_cross_hatch">Cross Hatch</string>
     <string name="gs_category_popular">Popular</string>
