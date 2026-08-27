@@ -20,17 +20,62 @@ Phạm vi hiện tại:
 - Thumbnail rail của filter được load bằng Glide với cache key ổn định.
 - LUT nội bộ dùng texture 33x33x33 sinh từ `FilterLut`, không cần ship file LUT ngoài.
 
-## Thêm module thư viện
+## Cài đặt thư viện
 
-Với project local này, app mẫu dùng:
+### Project khác qua JitPack
+
+Thêm JitPack vào `settings.gradle.kts` của app:
+
+```kotlin
+dependencyResolutionManagement {
+    repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
+    repositories {
+        google()
+        mavenCentral()
+        maven("https://jitpack.io")
+    }
+}
+```
+
+Thêm GsFilter vào module app:
 
 ```kotlin
 dependencies {
-    implementation(project(":filter"))
+    implementation("com.github.vtabk2:GsFilter:1.0.0")
+}
+```
+
+Nếu project đang dùng Groovy:
+
+```groovy
+dependencyResolutionManagement {
+    repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
+    repositories {
+        google()
+        mavenCentral()
+        maven { url 'https://jitpack.io' }
+    }
+}
+```
+
+```groovy
+dependencies {
+    implementation 'com.github.vtabk2:GsFilter:1.0.0'
+}
+```
+
+`1.0.0` là tag release hiện tại. Khi cần test bản chưa release, có thể thay bằng commit hash hoặc branch JitPack như `main-SNAPSHOT`. Không cần khai báo `GsCore` riêng; GsFilter đã kéo `com.github.vtabk2:GsCore:1.1.0` qua dependency transitive.
+
+Nếu dùng `FilterControlsView` và thumbnail rail, host app cần thêm Glide compiler để `AppGlideModule` được generate:
+
+```kotlin
+dependencies {
     implementation("com.github.bumptech.glide:glide:5.0.7")
     annotationProcessor("com.github.bumptech.glide:compiler:5.0.7")
 }
 ```
+
+Với `AppGlideModule` viết bằng Kotlin, dùng `kapt("com.github.bumptech.glide:compiler:5.0.7")` thay cho `annotationProcessor`.
 
 Filter rail cần host app đăng ký thumbnail loader của thư viện trong `AppGlideModule`:
 
@@ -54,6 +99,18 @@ public final class GsFilterGlideModule extends AppGlideModule {
     public boolean isManifestParsingEnabled() {
         return false;
     }
+}
+```
+
+### Project local trong repo này
+
+App mẫu dùng module local:
+
+```kotlin
+dependencies {
+    implementation(project(":filter"))
+    implementation("com.github.bumptech.glide:glide:5.0.7")
+    annotationProcessor("com.github.bumptech.glide:compiler:5.0.7")
 }
 ```
 
