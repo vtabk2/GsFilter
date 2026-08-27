@@ -206,7 +206,7 @@ FilterSourceKey.uri(uri, width, height, lastModifiedMillis)
 
 Dùng lại đúng key khi cùng một ảnh source được chọn lại. Glide có thể lấy lại thumbnail filter từ cache thay vì render lại toàn bộ rail.
 
-Thumbnail đưa vào Glide cache được bound theo request: filter màu tối đa `128px`, filter Art/effect tối đa `256px`. Cache key gồm source key, kích thước source, filter recipe, adjustments, render version, và kích thước thumbnail bound.
+Thumbnail đưa vào Glide cache được bound theo request, tối đa `256px` cho cả filter màu và filter Art/effect. Cache key gồm source key, kích thước source, filter recipe, adjustments, render version, và kích thước thumbnail bound.
 
 ## JSON filter packs
 

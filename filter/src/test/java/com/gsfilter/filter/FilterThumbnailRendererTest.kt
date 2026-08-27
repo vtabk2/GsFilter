@@ -62,7 +62,7 @@ class FilterThumbnailRendererTest {
     @Test
     fun `thumbnail render size is capped`() {
         assertEquals(
-            FilterBitmapRenderer.RenderSize(width = 128, height = 64),
+            FilterBitmapRenderer.RenderSize(width = 256, height = 128),
             FilterBitmapRenderer.targetSize(
                 width = 4000,
                 height = 2000,
@@ -73,7 +73,7 @@ class FilterThumbnailRendererTest {
     }
 
     @Test
-    fun `art thumbnails allow a larger render cap`() {
+    fun `thumbnail render cap matches current card density`() {
         assertEquals(
             FilterThumbnailRenderer.THUMBNAIL_MAX_SIZE,
             FilterThumbnailRenderer.maxSizeFor(FilterRecipe()),

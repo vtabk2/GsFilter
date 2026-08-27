@@ -119,7 +119,7 @@ object FilterThumbnailRenderer {
         params: ShaderFilterParams,
     ): Int = FilterBitmapRenderer.filterPixel(pixels, x, y, width, height, params)
 
-    internal const val THUMBNAIL_MAX_SIZE = 128
+    internal const val THUMBNAIL_MAX_SIZE = 256
     internal const val ART_THUMBNAIL_MAX_SIZE = 256
 
     private fun Int.scale(percent: Int): Int = (this * percent / PERCENT_MAX).coerceIn(EFFECT_MIN, EFFECT_MAX)

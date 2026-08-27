@@ -32,6 +32,6 @@ class FilterThumbnailModel(
         ): String =
             "$RENDER_VERSION:$sourceKey:${sourceWidth}x$sourceHeight:${filter.id}:${filter.recipe}:$adjustments"
 
-        private const val RENDER_VERSION = "gpu-preview-v11"
+        private const val RENDER_VERSION = "gpu-preview-v12"
     }
 }

@@ -1449,3 +1449,28 @@ Status: DONE
 - Added `gsFilterTabIndicatorMinWidth` for the `min` mode, defaulting to `gs_filter_chip_min_width`.
 - `git diff --check` passed.
 - `:filter:compileDebugKotlin :app:compileDebugKotlin` passed after rerunning Gradle with Android Studio JBR and approved network access for the wrapper distribution.
+
+## Task: Sharpen filter thumbnails on high-density screens
+
+Status: DONE
+
+### Requirements
+
+- Make filter rail thumbnails look less blurry at the currently visible size.
+- Keep the existing thumbnail card layout.
+- Avoid increasing source decode or adding dependencies.
+
+### Checklist
+
+- [x] Raise the filtered thumbnail render cap used by color filters.
+- [x] Bump Glide thumbnail cache version so old low-res entries are not reused.
+- [x] Update focused thumbnail tests.
+- [x] Run lightweight verification.
+
+### Notes
+
+- Screenshot shows the current 78dp cards are upscaling color thumbnails capped at 128px on a high-density device.
+- Color thumbnail render cap is now 256px, matching Art/effect thumbnails.
+- Thumbnail cache version was bumped to `gpu-preview-v12`.
+- `git diff --check` passed.
+- `:filter:testDebugUnitTest` passed after rerunning Gradle with Android Studio JBR and approved network access for the wrapper distribution.

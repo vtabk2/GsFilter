@@ -11,6 +11,24 @@ These rules apply when preparing a release or writing release notes.
 - Name each file `release-notes-X.Y.Z.md`, where `X.Y.Z` is the released version.
 - Do not put release notes in `PLAN.md`; `PLAN.md` is only for implementation tracking.
 
+## PLAN Metadata
+
+When a completed PLAN item should be considered for release notes, include lightweight metadata near the top of that item:
+
+```md
+Status: DONE
+Release: X.Y.Z
+Completed: YYYY-MM-DD
+Docs: docs/release-notes-X.Y.Z.md
+```
+
+- Use `Release: X.Y.Z` for work assigned to a known release.
+- Use `Release: Unreleased` when the work is complete but the release version is not assigned yet.
+- Use date-only `Completed: YYYY-MM-DD`; do not include time unless it matters for an audit.
+- Add `Docs:` after release notes are written; omit it when no release note exists yet.
+- During release note preparation, scan the whole `PLAN.md` and include completed items matching `Status: DONE` and the target `Release:`.
+- Keep full release notes out of `PLAN.md`; store them in `docs/` using the release note rules below.
+
 ## Release Note Format
 
 Follow this structure:
