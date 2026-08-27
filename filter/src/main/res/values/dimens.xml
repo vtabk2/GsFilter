@@ -1,13 +1,14 @@
 <resources>
     <dimen name="gs_filter_item_spacing">8dp</dimen>
-    <dimen name="gs_filter_chip_min_height">36dp</dimen>
+    <dimen name="gs_filter_chip_min_width">80dp</dimen>
+    <dimen name="gs_filter_chip_min_height">32dp</dimen>
     <dimen name="gs_filter_chip_horizontal_padding">18dp</dimen>
-    <dimen name="gs_filter_chip_vertical_padding">8dp</dimen>
+    <dimen name="gs_filter_chip_vertical_padding">4dp</dimen>
     <dimen name="gs_filter_category_top_spacing">20dp</dimen>
     <dimen name="gs_filter_tab_indicator_height">2dp</dimen>
-    <dimen name="gs_filter_thumbnail_width">72dp</dimen>
-    <dimen name="gs_filter_thumbnail_height">84dp</dimen>
-    <dimen name="gs_filter_thumbnail_label_height">26dp</dimen>
+    <dimen name="gs_filter_thumbnail_width">78dp</dimen>
+    <dimen name="gs_filter_thumbnail_height">102dp</dimen>
+    <dimen name="gs_filter_thumbnail_label_height">24dp</dimen>
     <dimen name="gs_filter_thumbnail_label_padding">4dp</dimen>
     <dimen name="gs_adjust_panel_padding">8dp</dimen>
     <dimen name="gs_adjust_button_min_height">48dp</dimen>

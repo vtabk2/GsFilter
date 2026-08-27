@@ -8,6 +8,7 @@
     android:gravity="center"
     android:includeFontPadding="false"
     android:maxLines="1"
+    android:minWidth="@dimen/gs_filter_chip_min_width"
     android:minHeight="@dimen/gs_filter_chip_min_height"
     android:paddingStart="@dimen/gs_filter_chip_horizontal_padding"
     android:paddingTop="@dimen/gs_filter_chip_vertical_padding"

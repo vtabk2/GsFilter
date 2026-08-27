@@ -8,8 +8,8 @@
 
     <ImageView
         android:id="@+id/gs_filter_option_image"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
+        android:layout_width="@dimen/gs_filter_thumbnail_width"
+        android:layout_height="@dimen/gs_filter_thumbnail_width"
         android:importantForAccessibility="no"
         android:scaleType="centerCrop"/>
 
