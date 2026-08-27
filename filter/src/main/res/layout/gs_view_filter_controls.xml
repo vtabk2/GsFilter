@@ -14,7 +14,6 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center_vertical"
-            android:contentDescription="@string/gs_action_close"
             android:visibility="invisible"
             app:riv_icon_ripple="@drawable/ic_gs_close"/>
 
@@ -89,7 +88,6 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center_vertical"
-            android:contentDescription="@string/gs_action_close"
             app:riv_icon_ripple="@drawable/ic_gs_tick"/>
     </LinearLayout>
 
@@ -109,11 +107,10 @@
             android:orientation="horizontal">
 
             <com.core.gscore.view.RippleImageView
-                android:id="@+id/gs_filter_original_button"
+                android:id="@+id/gs_filter_original"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_gravity="center_vertical"
-                android:contentDescription="@string/gs_action_original"/>
+                android:layout_gravity="center_vertical"/>
 
             <HorizontalScrollView
                 android:id="@+id/gs_filter_category_scroll"
@@ -181,5 +178,5 @@
         android:id="@+id/gs_adjust_container"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="@dimen/gs_filter_item_spacing"/>
+        android:layout_marginTop="@dimen/gs_filter_category_top_spacing"/>
 </merge>

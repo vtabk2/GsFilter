@@ -91,7 +91,7 @@ class FilterControlsView @JvmOverloads constructor(
         tabFilter = findViewById(R.id.gs_filter_tab_filter)
         tabAdjust = findViewById(R.id.gs_filter_tab_adjust)
         buttonClose = findViewById(R.id.gs_filter_close_button)
-        buttonOriginalFilter = findViewById(R.id.gs_filter_original_button)
+        buttonOriginalFilter = findViewById(R.id.gs_filter_original)
         categoryContainer = findViewById(R.id.gs_filter_category_container)
         filterRecyclerView = findViewById(R.id.gs_filter_recycler)
         filterIntensityLabel = findViewById(R.id.gs_filter_intensity_label)

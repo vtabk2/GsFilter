@@ -1959,3 +1959,25 @@ Status: DONE
 - Added the pressed rounded state before disabled/default states.
 - `git diff --check` passed.
 - `:app:compileDebugKotlin` passed after rerunning Gradle outside the sandbox for wrapper network access.
+
+## Task: Move Adjust seekbar below control icons
+
+Status: DONE
+
+### Requirements
+
+- Keep Filter tab layout unchanged.
+- In Adjust tab, show the adjust control icons before the active seekbar/value row.
+- Keep existing adjust behavior, reset controls, and styling.
+
+### Checklist
+
+- [x] Reorder `gs_view_adjust_controls` children.
+- [x] Run focused verification.
+
+### Notes
+
+- Kotlin binds by view id, so this should be a layout-only change.
+- Adjust icons now render above the active seekbar/value row.
+- `git diff --check` passed.
+- `:app:compileDebugKotlin` passed after rerunning Gradle outside the sandbox for wrapper network access.

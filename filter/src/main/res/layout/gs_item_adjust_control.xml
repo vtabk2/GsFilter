@@ -5,7 +5,6 @@
     android:clickable="true"
     android:focusable="true"
     android:gravity="center"
-    android:minHeight="@dimen/gs_adjust_item_min_height"
     android:orientation="vertical">
 
     <View

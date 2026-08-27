@@ -371,13 +371,11 @@ Các dimension có thể override:
 | `gs_filter_thumbnail_height` | `102dp` | Chiều cao item thumbnail filter |
 | `gs_filter_thumbnail_label_height` | `24dp` | Chiều cao dải label thumbnail filter |
 | `gs_filter_thumbnail_label_padding` | `4dp` | Padding ngang label thumbnail filter |
-| `gs_adjust_panel_padding` | `8dp` | Padding bên trong panel adjust |
 | `gs_adjust_button_min_height` | `48dp` | Chiều cao tối thiểu nút reset tất cả |
 | `gs_adjust_icon_size` | `24dp` | Kích thước icon adjust control |
 | `gs_adjust_dot_size` | `5dp` | Kích thước dot báo value đã đổi |
 | `gs_adjust_item_gap` | `3dp` | Khoảng cách giữa dot, icon, và label của adjust item |
 | `gs_adjust_item_width` | `78dp` | Chiều rộng adjust item trong horizontal rail |
-| `gs_adjust_item_min_height` | `54dp` | Chiều cao tối thiểu của adjust item |
 | `gs_adjust_value_width` | `36dp` | Chiều rộng text giá trị adjust hiện tại |
 
 Host app có thể override dimension của thư viện bằng cách khai báo cùng resource name trong `values/dimens.xml` của app:
