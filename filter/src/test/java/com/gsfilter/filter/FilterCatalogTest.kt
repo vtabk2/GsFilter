@@ -46,6 +46,27 @@ class FilterCatalogTest {
     }
 
     @Test
+    fun `category filter lists prioritize strongest choices`() {
+        mapOf(
+            "popular" to listOf("selfie_clear", "fresh", "clear", "clean_light"),
+            "portrait" to listOf("selfie_clear", "soft_portrait", "skin", "portra", "studio_skin"),
+            "natural" to listOf("fresh", "clear", "clean_light", "soft_day"),
+            "food" to listOf("tasty", "crispy", "fresh_plate", "warm_plate"),
+            "landscape" to listOf("clear_day", "golden_hour", "sunlit_forest", "forest"),
+            "night" to listOf("midnight_city", "city", "night", "blue_hour"),
+            "film" to listOf("portra", "fuji", "kodak", "gold"),
+            "cinematic" to listOf("teal_orange", "cinema", "blockbuster", "deep_teal"),
+            "black_white" to listOf("mono", "soft_mono", "pearl_mono", "noir"),
+            "art" to listOf("pencil", "soft_sketch", "color_pencil", "fine_line"),
+        ).forEach { (categoryId, expectedIds) ->
+            assertEquals(
+                expectedIds,
+                FilterCatalog.filtersForCategory(categoryId).take(expectedIds.size).map { it.id },
+            )
+        }
+    }
+
+    @Test
     fun `filter ids are unique`() {
         val ids = FilterCatalog.options.map { it.id }
 

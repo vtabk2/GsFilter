@@ -1798,11 +1798,81 @@ object FilterCatalog {
         defaultFilter = default,
     )
 
-    fun filtersForCategory(categoryId: String): List<FilterOption> =
-        pack.filtersForCategory(categoryId)
+    fun filtersForCategory(categoryId: String): List<FilterOption> {
+        val filters = pack.filtersForCategory(categoryId)
+        val priority = categoryFilterPriority[categoryId] ?: return filters
+        return filters.sortedBy { filter ->
+            priority.indexOf(filter.id).takeIf { it >= 0 } ?: Int.MAX_VALUE
+        }
+    }
 
     fun categoryForFilter(filter: FilterOption): FilterCategory? =
         pack.categoryForFilter(filter)
+
+    private val categoryFilterPriority: Map<String, List<String>> = mapOf(
+        POPULAR to listOf(
+            "selfie_clear",
+            "fresh",
+            "clear",
+            "clean_light",
+            "tasty",
+            "teal_orange",
+            "mono",
+            "golden_hour",
+        ),
+        PORTRAIT to listOf(
+            "selfie_clear",
+            "soft_portrait",
+            "skin",
+            "portra",
+            "studio_skin",
+            "golden_skin",
+            "indoor_warm",
+            "low_light_skin",
+        ),
+        NATURAL to listOf("fresh", "clear", "clean_light", "soft_day", "airy", "pure"),
+        FOOD to listOf("tasty", "crispy", "fresh_plate", "warm_plate", "warm_table", "cafe"),
+        LANDSCAPE to listOf(
+            "clear_day",
+            "golden_hour",
+            "sunlit_forest",
+            "forest",
+            "sky",
+            "ocean",
+            "travel",
+            "winter",
+            "blue_hour",
+        ),
+        NIGHT to listOf(
+            "midnight_city",
+            "city",
+            "night",
+            "blue_hour",
+            "neon",
+            "cyberpunk",
+            "low_light_skin",
+        ),
+        FILM to listOf("portra", "fuji", "kodak", "gold", "grain_film"),
+        CINEMATIC to listOf(
+            "teal_orange",
+            "cinema",
+            "blockbuster",
+            "deep_teal",
+            "fade_drama",
+            "noir",
+            "epic",
+            "bleach",
+            "drama",
+            "arthouse",
+        ),
+        VINTAGE to listOf("retro", "fade", "dust", "oldie", "nineties", "retro_matte"),
+        BLACK_WHITE to listOf("mono", "soft_mono", "pearl_mono", "noir", "high_contrast", "matte", "retro_matte"),
+        WARM to listOf("warm", "sunset", "amber", "caramel", "cozy"),
+        COOL to listOf("cool", "cyan_clean", "arctic", "blue_mist", "mist", "steel"),
+        AESTHETIC to listOf("beige", "minimal", "dreamy", "latte", "pink"),
+        CREATIVE to listOf("neon", "cyberpunk", "purple", "dream", "fantasy"),
+        ART to listOf("pencil", "soft_sketch", "color_pencil", "fine_line", "ink", "charcoal", "cross_hatch"),
+    )
 
     private const val ORIGINAL = "original"
     private const val POPULAR = "popular"

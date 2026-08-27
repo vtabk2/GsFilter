@@ -1586,3 +1586,27 @@ Status: DONE
 - Every category still has at least 5 filters after the overlap cleanup.
 - `git diff --check` passed.
 - `:filter:testDebugUnitTest` passed after rerunning Gradle outside the sandbox for wrapper network access.
+
+## Task: Prioritize filters inside each built-in category
+
+Status: DONE
+
+### Requirements
+
+- Optimize the visible order of filters inside each built-in category.
+- Keep filter ids, names, recipes, category assignments, renderer behavior, and resources unchanged.
+- Put the strongest/common choices first for people, natural, food, landscape, night, and style categories.
+
+### Checklist
+
+- [x] Add category-specific filter priority ordering.
+- [x] Add focused catalog order coverage.
+- [x] Run focused verification.
+
+### Notes
+
+- This should be ordering-only catalog behavior; no shader, LUT, UI layout, or preset data changes needed.
+- Added category-specific priority ordering while preserving fallback catalog order for unlisted filters.
+- Added focused catalog tests for top filters in Popular, Portrait, Natural, Food, Landscape, Night, Film, Cinematic, Black & White, and Art.
+- `git diff --check` passed.
+- `:filter:testDebugUnitTest` passed after rerunning Gradle outside the sandbox for wrapper network access.
