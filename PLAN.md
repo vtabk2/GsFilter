@@ -1820,3 +1820,51 @@ Status: DONE
 - Added `ic_gs_tick` and assigned it to `gsFilterCloseIcon` in the app sample.
 - `git diff --check` passed.
 - `:app:compileDebugKotlin` passed after rerunning Gradle outside the sandbox for wrapper network access.
+
+## Task: Update README for latest filter controls
+
+Status: DONE
+
+### Requirements
+
+- Document recent LUT recipe support.
+- Document compact Filter/Adjust tab spacing.
+- Document close-button icon customization with the new tick icon.
+
+### Checklist
+
+- [x] Update README feature summary.
+- [x] Update controls XML example and notes.
+- [x] Update JSON recipe fields.
+- [x] Update styling attribute table.
+- [x] Run documentation verification.
+
+### Notes
+
+- Keep the README concise and aligned with existing Vietnamese docs.
+- Documented generated LUT support and JSON `lut`/`lutStrength` fields.
+- Documented `gsFilterCompactTabs`, `gsFilterTabSpacing`, and `gsFilterCloseIcon` with `ic_gs_tick`.
+- `git diff --check` passed.
+
+## Task: Document supported built-in filter presets
+
+Status: DONE
+
+### Requirements
+
+- Add the supported built-in filter preset list to README.
+- Group presets by category.
+- Note that JSON packs can replace or extend the built-in list.
+
+### Checklist
+
+- [x] Generate the current built-in preset list from catalog resources.
+- [x] Add the preset list to README.
+- [x] Run documentation verification.
+
+### Notes
+
+- `Original` is a fixed action, not counted as a filter preset.
+- Added the built-in preset list grouped by category to README.
+- Verified the catalog currently has 104 string-id presets, excluding `Original`.
+- `git diff --check` passed.

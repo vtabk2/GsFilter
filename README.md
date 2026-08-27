@@ -15,9 +15,10 @@ Phạm vi hiện tại:
 - Kotlin + XML views.
 - Không có camera flow.
 - Preview GPU qua `FilterPreviewView`.
-- Filter preset là data recipe.
+- Filter preset là data recipe, gồm color/effect/LUT.
 - Adjust controls là bộ cố định.
 - Thumbnail rail của filter được load bằng Glide với cache key ổn định.
+- LUT nội bộ dùng texture 33x33x33 sinh từ `FilterLut`, không cần ship file LUT ngoài.
 
 ## Thêm module thư viện
 
@@ -131,8 +132,12 @@ Trong app mẫu, `FilterViewModel.renderFilteredBitmap(maxWidth, maxHeight, useG
     android:id="@+id/filterControls"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
+    app:gsFilterCloseIcon="@drawable/ic_gs_tick"
+    app:gsFilterCompactTabs="true"
     app:gsFilterShowTabIndicator="true"
     app:gsFilterTabIndicatorColor="@color/your_selected_color"
+    app:gsFilterTabIndicatorWidthMode="text"
+    app:gsFilterTabSpacing="20dp"
     app:gsFilterCatalogAsset="filters/filter_pack.json" />
 ```
 
@@ -180,6 +185,8 @@ Ghi chú:
 - Filter chỉ được áp dụng sau khi người dùng bấm vào từng filter item.
 - Bấm lại category đang hiển thị có thể đưa UI về category chứa filter đang chọn.
 - Tab Adjust được render trong cùng `FilterControlsView`; host nhận callback adjust và gửi `Adjustments` hiện tại lại bằng `setAdjustments()`.
+- `gsFilterCompactTabs` kéo label/indicator của tab Filter và Adjust gần nhau hơn; `gsFilterTabSpacing` chỉnh khoảng cách giữa hai tab.
+- `gsFilterCloseIcon` đổi icon của `gs_filter_close_button`; app mẫu đang dùng `ic_gs_tick`.
 
 ## Test JSON pack trong app mẫu
 
@@ -191,6 +198,28 @@ Switch `JSON pack` ở góc phải trên cùng đang bật mặc định:
 - Tắt: app quay lại built-in `FilterCatalog.pack`.
 
 `MainActivity` cũng gửi `FilterPack` đã load vào `FilterViewModel`, vì ViewModel cần dùng đúng catalog hiện tại khi xử lý category/filter state.
+
+## Mẫu filter tích hợp
+
+Built-in `FilterCatalog` có 104 preset, không tính action `Original`. Một preset có thể xuất hiện ở nhiều category; `Popular` là nhóm shortcut cho các mẫu hay dùng. Host app có thể thay thế hoặc mở rộng danh sách này bằng JSON pack.
+
+| Category | Preset hỗ trợ |
+| --- | --- |
+| Popular | Fresh, Warm, Tasty, B&W, Clear, Gold, Teal Orange, Cream, Glow, Sunset, Blockbuster, Soft, Beauty, Golden Hour, Travel, Neon, Clean Light, Selfie Clear, Fresh Plate, Clean Portrait, Daylight Fresh, Food Pop, Teal Cinema |
+| Portrait | Portra, Skin, Peach, Cream, Glow, Soft, Blush, Rosy, Tan, Beauty, Soft Mono, Selfie Clear, Soft Portrait, Studio Skin, Golden Skin, Indoor Warm, Flash Soft, Low Light Skin, Pearl Mono, Clean Portrait, Soft Skin, Golden Portrait |
+| Natural | Fresh, Clear, Airy, Pure, Clean Light, Soft Day, Daylight Fresh |
+| Food | Tasty, Crispy, Cafe, Warm Plate, Fresh Plate, Warm Table, Food Pop |
+| Landscape | Clear Day, Golden Hour, Winter, Forest, Ocean, Sky, Travel, Blue Hour, Sunlit Forest, Green Film |
+| Night | Neon, City, Night, Blue Hour, Cyberpunk, Low Light Skin, Midnight City, Night Mood |
+| Film | Portra, Fuji, Gold, Kodak, Grain Film |
+| Cinematic | Cinema, Teal Orange, Noir, Drama, Epic, Blockbuster, Arthouse, Bleach, Deep Teal, Fade Drama, Teal Cinema |
+| Vintage | Retro, Fade, Dust, Oldie, 90s, Retro Matte, Vintage Fade |
+| B&W | B&W, Noir, Matte, High Contrast, Soft Mono, Pearl Mono |
+| Warm | Warm, Sunset, Amber, Caramel, Cozy |
+| Cool | Cool, Arctic, Mist, Blue Mist, Steel, Cyan Clean |
+| Aesthetic | Beige, Latte, Pink, Dreamy, Minimal, Editorial Matte |
+| Creative | Neon, Cyberpunk, Purple, Dream, Fantasy |
+| Art | Pencil, Soft Sketch, Color Pencil, Fine Line, Ink, Charcoal, Cross Hatch |
 
 ## Khóa cache thumbnail ổn định
 
@@ -241,6 +270,8 @@ Ví dụ JSON:
       "categoryIds": ["cinematic"],
       "recipe": {
         "effect": "color",
+        "lut": "teal_cinema",
+        "lutStrength": 80,
         "intensity": 100,
         "redShift": 12,
         "greenShift": 4,
@@ -266,6 +297,8 @@ Các field recipe đang hỗ trợ:
 
 - `effect`: `color`, `sketch`, `ink`, `pencil`, `color_pencil`, `charcoal`, hoặc `cross_hatch`; mặc định là `color`.
 - `effectStrength`, `effectThreshold`, `effectTone`: số `0..100` để tinh chỉnh effect nét vẽ.
+- `lut`: `none`, `clean_portrait`, `soft_skin`, `golden_portrait`, `daylight_fresh`, `food_pop`, `green_film`, `teal_cinema`, `night_mood`, `vintage_fade`, hoặc `editorial_matte`; mặc định là `none`.
+- `lutStrength`: số `0..100`, mặc định `100`.
 - `intensity`: số `0..100`, mặc định `100`.
 - `isMonochrome`: boolean.
 - `redShift`, `greenShift`, `blueShift`: được clamp trong `-100..100`.
@@ -300,10 +333,12 @@ Các XML attributes hiện có:
 | `gsFilterSelectedCardForeground` | Foreground viền thumbnail card đang chọn, nằm trên ảnh |
 | `gsFilterLabelBackground` | Background nhãn thumbnail |
 | `gsFilterLabelTextColor` | Màu text nhãn thumbnail |
-| `gsFilterCloseIcon` | Drawable icon đóng |
+| `gsFilterCloseIcon` | Drawable icon đóng/xác nhận; app mẫu có `ic_gs_tick` |
 | `gsFilterNoneIcon` | Drawable icon Original/none |
 | `gsFilterIconPadding` | Override padding icon close/original nếu cần; bỏ trống thì dùng default của `RippleImageView` |
 | `gsFilterShowTabIndicator` | Hiển thị indicator dưới tab Filter/Adjust đang chọn |
+| `gsFilterCompactTabs` | Kéo label/indicator của tab Filter và Adjust gần nhau hơn trong khi vùng bấm vẫn rộng |
+| `gsFilterTabSpacing` | Khoảng cách giữa tab Filter và Adjust khi cần chỉnh gần/xa nhau |
 | `gsFilterTabIndicatorColor` | Màu tab indicator |
 | `gsFilterTabIndicatorHeight` | Chiều cao tab indicator |
 | `gsFilterTabIndicatorWidthMode` | Kích thước ngang indicator: `full`, `min`, hoặc `text` |
@@ -360,6 +395,6 @@ Hướng mở rộng nên đi theo data trước:
 1. Thêm hoặc load thêm `FilterOption` recipes.
 2. Group chúng bằng `FilterCategory`.
 3. Giữ user `Adjustments` tách riêng; recipe adjustments và user adjustments được cộng lại khi render.
-4. Chỉ thêm shader/LUT support sau này khi recipe fields không diễn tả được look mong muốn.
+4. Dùng `lut`/`lutStrength` khi recipe thường chưa đủ; chỉ thêm shader mới khi cả recipe và LUT hiện có không diễn tả được look mong muốn.
 
 Cách này giúp thư viện filter dễ mở rộng hơn so với mỗi filter một class riêng hoặc phụ thuộc cứng vào GPUImage internals.
