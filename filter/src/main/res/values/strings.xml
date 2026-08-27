@@ -92,6 +92,14 @@
     <string name="gs_filter_clean_light">Clean Light</string>
     <string name="gs_filter_soft_day">Soft Day</string>
     <string name="gs_filter_rose_skin">Rose Skin</string>
+    <string name="gs_filter_selfie_clear">Selfie Clear</string>
+    <string name="gs_filter_soft_portrait">Soft Portrait</string>
+    <string name="gs_filter_studio_skin">Studio Skin</string>
+    <string name="gs_filter_golden_skin">Golden Skin</string>
+    <string name="gs_filter_indoor_warm">Indoor Warm</string>
+    <string name="gs_filter_flash_soft">Flash Soft</string>
+    <string name="gs_filter_low_light_skin">Low Light Skin</string>
+    <string name="gs_filter_clean_face">Clean Face</string>
     <string name="gs_filter_fresh_plate">Fresh Plate</string>
     <string name="gs_filter_warm_table">Warm Table</string>
     <string name="gs_filter_deep_teal">Deep Teal</string>

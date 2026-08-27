@@ -1482,6 +1482,7 @@ Status: DONE
 ### Requirements
 
 - Add new built-in filters using existing `FilterRecipe` and `Adjustments` data.
+- Prioritize new samples for people and portrait photos.
 - Keep the current filter engine, preview, thumbnail, and Adjust behavior unchanged.
 - Avoid new dependencies or UI changes.
 
@@ -1490,11 +1491,19 @@ Status: DONE
 - [x] Add preset filter entries to the built-in catalog.
 - [x] Add filter name string resources.
 - [x] Run focused catalog verification.
+- [x] Add people-prioritized preset entries to the built-in catalog.
+- [x] Add people-prioritized filter name string resources.
+- [x] Run focused catalog verification for the expanded batch.
 
 ### Notes
 
 - Use the existing preset-data model; no LUT, shader, or renderer changes needed.
 - Added 10 data-only presets: Clean Light, Soft Day, Rose Skin, Fresh Plate, Warm Table, Deep Teal, Fade Drama, Midnight City, Sunlit Forest, and Pearl Mono.
+- `git diff --check` passed.
+- `:filter:testDebugUnitTest` passed after rerunning Gradle outside the sandbox for wrapper network access.
+- `:app:compileDebugKotlin` passed after rerunning Gradle outside the sandbox for wrapper network access.
+- Reopened to add another people-prioritized preset batch.
+- Added 8 people-prioritized presets: Selfie Clear, Soft Portrait, Studio Skin, Golden Skin, Indoor Warm, Flash Soft, Low Light Skin, and Clean Face.
 - `git diff --check` passed.
 - `:filter:testDebugUnitTest` passed after rerunning Gradle outside the sandbox for wrapper network access.
 - `:app:compileDebugKotlin` passed after rerunning Gradle outside the sandbox for wrapper network access.
