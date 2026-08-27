@@ -1561,3 +1561,28 @@ Status: DONE
 - New order: Popular, Portrait, Natural, Food, Landscape, Night, Film, Cinematic, Vintage, Black & White, Warm, Cool, Aesthetic, Creative, Art.
 - `git diff --check` passed.
 - `:filter:testDebugUnitTest` passed after rerunning Gradle outside the sandbox for wrapper network access.
+
+## Task: Reduce non-Popular filter category overlap
+
+Status: DONE
+
+### Requirements
+
+- Optimize built-in filter category assignments outside `Popular`.
+- Keep existing filter ids, names, recipes, renderer behavior, and category list unchanged.
+- Keep intentional cross-listing only when a filter clearly belongs to two photo contexts.
+
+### Checklist
+
+- [x] Reduce broad non-Popular overlaps in `FilterCatalog`.
+- [x] Verify category coverage still stays useful.
+- [x] Run focused verification.
+
+### Notes
+
+- This is a catalog data-only change; no preset removal, shader, LUT, UI, or resource work needed.
+- Reduced non-Popular cross-listed filters from 55 to 9.
+- Remaining cross-listed filters are intentional: Portra, Noir, Retro Matte, Soft Mono, Neon, Blue Hour, Cyberpunk, Low Light Skin, and Pearl Mono.
+- Every category still has at least 5 filters after the overlap cleanup.
+- `git diff --check` passed.
+- `:filter:testDebugUnitTest` passed after rerunning Gradle outside the sandbox for wrapper network access.

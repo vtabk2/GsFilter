@@ -29,7 +29,7 @@ object FilterCatalog {
         ),
         FilterOption(
             id = "fresh",
-            categoryIds = setOf(POPULAR, NATURAL, PORTRAIT),
+            categoryIds = setOf(POPULAR, NATURAL),
             nameRes = R.string.gs_filter_fresh,
             recipe = FilterRecipe(
                 redShift = 4,
@@ -186,7 +186,7 @@ object FilterCatalog {
         ),
         FilterOption(
             id = "clear",
-            categoryIds = setOf(POPULAR, NATURAL, PORTRAIT),
+            categoryIds = setOf(POPULAR, NATURAL),
             nameRes = R.string.gs_filter_clear,
             recipe = FilterRecipe(
                 redShift = 2,
@@ -240,7 +240,7 @@ object FilterCatalog {
         ),
         FilterOption(
             id = "gold",
-            categoryIds = setOf(POPULAR, FILM, WARM),
+            categoryIds = setOf(POPULAR, FILM),
             nameRes = R.string.gs_filter_gold,
             recipe = FilterRecipe(
                 redShift = 16,
@@ -384,7 +384,7 @@ object FilterCatalog {
         ),
         FilterOption(
             id = "glow",
-            categoryIds = setOf(POPULAR, NATURAL, PORTRAIT),
+            categoryIds = setOf(POPULAR, PORTRAIT),
             nameRes = R.string.gs_filter_glow,
             recipe = FilterRecipe(
                 redShift = 8,
@@ -403,7 +403,7 @@ object FilterCatalog {
         ),
         FilterOption(
             id = "kodak",
-            categoryIds = setOf(FILM, VINTAGE),
+            categoryIds = setOf(FILM),
             nameRes = R.string.gs_filter_kodak,
             recipe = FilterRecipe(
                 redShift = 14,
@@ -441,7 +441,7 @@ object FilterCatalog {
         ),
         FilterOption(
             id = "mist",
-            categoryIds = setOf(COOL, NATURAL),
+            categoryIds = setOf(COOL),
             nameRes = R.string.gs_filter_mist,
             recipe = FilterRecipe(
                 redShift = -4,
@@ -460,7 +460,7 @@ object FilterCatalog {
         ),
         FilterOption(
             id = "cafe",
-            categoryIds = setOf(FOOD, WARM),
+            categoryIds = setOf(FOOD),
             nameRes = R.string.gs_filter_cafe,
             recipe = FilterRecipe(
                 redShift = 16,
@@ -539,7 +539,7 @@ object FilterCatalog {
         ),
         FilterOption(
             id = "arthouse",
-            categoryIds = setOf(CINEMATIC, VINTAGE),
+            categoryIds = setOf(CINEMATIC),
             nameRes = R.string.gs_filter_arthouse,
             recipe = FilterRecipe(
                 redShift = 4,
@@ -577,7 +577,7 @@ object FilterCatalog {
         ),
         FilterOption(
             id = "soft",
-            categoryIds = setOf(POPULAR, NATURAL, PORTRAIT),
+            categoryIds = setOf(POPULAR, PORTRAIT),
             nameRes = R.string.gs_filter_soft,
             recipe = FilterRecipe(
                 redShift = 6,
@@ -596,7 +596,7 @@ object FilterCatalog {
         ),
         FilterOption(
             id = "clear_day",
-            categoryIds = setOf(NATURAL, LANDSCAPE),
+            categoryIds = setOf(LANDSCAPE),
             nameRes = R.string.gs_filter_clear_day,
             recipe = FilterRecipe(
                 redShift = 2,
@@ -614,7 +614,7 @@ object FilterCatalog {
         ),
         FilterOption(
             id = "blush",
-            categoryIds = setOf(PORTRAIT, AESTHETIC),
+            categoryIds = setOf(PORTRAIT),
             nameRes = R.string.gs_filter_blush,
             recipe = FilterRecipe(
                 redShift = 14,
@@ -634,7 +634,7 @@ object FilterCatalog {
         ),
         FilterOption(
             id = "rosy",
-            categoryIds = setOf(PORTRAIT, AESTHETIC),
+            categoryIds = setOf(PORTRAIT),
             nameRes = R.string.gs_filter_rosy,
             recipe = FilterRecipe(
                 redShift = 16,
@@ -652,7 +652,7 @@ object FilterCatalog {
         ),
         FilterOption(
             id = "tan",
-            categoryIds = setOf(PORTRAIT, WARM),
+            categoryIds = setOf(PORTRAIT),
             nameRes = R.string.gs_filter_tan,
             recipe = FilterRecipe(
                 redShift = 18,
@@ -707,7 +707,7 @@ object FilterCatalog {
         ),
         FilterOption(
             id = "caramel",
-            categoryIds = setOf(WARM, AESTHETIC),
+            categoryIds = setOf(WARM),
             nameRes = R.string.gs_filter_caramel,
             recipe = FilterRecipe(
                 redShift = 20,
@@ -725,7 +725,7 @@ object FilterCatalog {
         ),
         FilterOption(
             id = "golden_hour",
-            categoryIds = setOf(POPULAR, WARM, LANDSCAPE),
+            categoryIds = setOf(POPULAR, LANDSCAPE),
             nameRes = R.string.gs_filter_golden_hour,
             recipe = FilterRecipe(
                 redShift = 26,
@@ -745,7 +745,7 @@ object FilterCatalog {
         ),
         FilterOption(
             id = "cozy",
-            categoryIds = setOf(WARM, AESTHETIC),
+            categoryIds = setOf(WARM),
             nameRes = R.string.gs_filter_cozy,
             recipe = FilterRecipe(
                 redShift = 18,
@@ -764,7 +764,7 @@ object FilterCatalog {
         ),
         FilterOption(
             id = "blue_mist",
-            categoryIds = setOf(COOL, NATURAL),
+            categoryIds = setOf(COOL),
             nameRes = R.string.gs_filter_blue_mist,
             recipe = FilterRecipe(
                 redShift = -8,
@@ -783,7 +783,7 @@ object FilterCatalog {
         ),
         FilterOption(
             id = "winter",
-            categoryIds = setOf(COOL, LANDSCAPE),
+            categoryIds = setOf(LANDSCAPE),
             nameRes = R.string.gs_filter_winter,
             recipe = FilterRecipe(
                 redShift = -12,
@@ -801,7 +801,7 @@ object FilterCatalog {
         ),
         FilterOption(
             id = "steel",
-            categoryIds = setOf(COOL, CINEMATIC),
+            categoryIds = setOf(COOL),
             nameRes = R.string.gs_filter_steel,
             recipe = FilterRecipe(
                 redShift = -8,
@@ -839,7 +839,7 @@ object FilterCatalog {
         ),
         FilterOption(
             id = "grain_film",
-            categoryIds = setOf(FILM, VINTAGE),
+            categoryIds = setOf(FILM),
             nameRes = R.string.gs_filter_grain_film,
             recipe = FilterRecipe(
                 redShift = 8,
@@ -858,7 +858,7 @@ object FilterCatalog {
         ),
         FilterOption(
             id = "fade",
-            categoryIds = setOf(VINTAGE, AESTHETIC),
+            categoryIds = setOf(VINTAGE),
             nameRes = R.string.gs_filter_fade,
             recipe = FilterRecipe(
                 redShift = 8,
@@ -917,7 +917,7 @@ object FilterCatalog {
         ),
         FilterOption(
             id = "nineties",
-            categoryIds = setOf(VINTAGE, AESTHETIC),
+            categoryIds = setOf(VINTAGE),
             nameRes = R.string.gs_filter_nineties,
             recipe = FilterRecipe(
                 redShift = 12,
@@ -954,7 +954,7 @@ object FilterCatalog {
         ),
         FilterOption(
             id = "bleach",
-            categoryIds = setOf(CINEMATIC, FILM),
+            categoryIds = setOf(CINEMATIC),
             nameRes = R.string.gs_filter_bleach,
             recipe = FilterRecipe(
                 redShift = 6,
@@ -1006,7 +1006,7 @@ object FilterCatalog {
         ),
         FilterOption(
             id = "warm_plate",
-            categoryIds = setOf(FOOD, WARM),
+            categoryIds = setOf(FOOD),
             nameRes = R.string.gs_filter_warm_plate,
             recipe = FilterRecipe(
                 redShift = 18,
@@ -1044,7 +1044,7 @@ object FilterCatalog {
         ),
         FilterOption(
             id = "ocean",
-            categoryIds = setOf(LANDSCAPE, COOL),
+            categoryIds = setOf(LANDSCAPE),
             nameRes = R.string.gs_filter_ocean,
             recipe = FilterRecipe(
                 redShift = -8,
@@ -1063,7 +1063,7 @@ object FilterCatalog {
         ),
         FilterOption(
             id = "sky",
-            categoryIds = setOf(LANDSCAPE, COOL),
+            categoryIds = setOf(LANDSCAPE),
             nameRes = R.string.gs_filter_sky,
             recipe = FilterRecipe(
                 redShift = -4,
@@ -1103,7 +1103,7 @@ object FilterCatalog {
         ),
         FilterOption(
             id = "beige",
-            categoryIds = setOf(AESTHETIC, PORTRAIT),
+            categoryIds = setOf(AESTHETIC),
             nameRes = R.string.gs_filter_beige,
             recipe = FilterRecipe(
                 redShift = 12,
@@ -1122,7 +1122,7 @@ object FilterCatalog {
         ),
         FilterOption(
             id = "latte",
-            categoryIds = setOf(AESTHETIC, WARM),
+            categoryIds = setOf(AESTHETIC),
             nameRes = R.string.gs_filter_latte,
             recipe = FilterRecipe(
                 redShift = 16,
@@ -1141,7 +1141,7 @@ object FilterCatalog {
         ),
         FilterOption(
             id = "pink",
-            categoryIds = setOf(AESTHETIC, PORTRAIT),
+            categoryIds = setOf(AESTHETIC),
             nameRes = R.string.gs_filter_pink,
             recipe = FilterRecipe(
                 redShift = 18,
@@ -1160,7 +1160,7 @@ object FilterCatalog {
         ),
         FilterOption(
             id = "dreamy",
-            categoryIds = setOf(AESTHETIC, NATURAL),
+            categoryIds = setOf(AESTHETIC),
             nameRes = R.string.gs_filter_dreamy,
             recipe = FilterRecipe(
                 redShift = 8,
@@ -1180,7 +1180,7 @@ object FilterCatalog {
         ),
         FilterOption(
             id = "minimal",
-            categoryIds = setOf(AESTHETIC, NATURAL),
+            categoryIds = setOf(AESTHETIC),
             nameRes = R.string.gs_filter_minimal,
             recipe = FilterRecipe(
                 redShift = 2,
@@ -1219,7 +1219,7 @@ object FilterCatalog {
         ),
         FilterOption(
             id = "city",
-            categoryIds = setOf(NIGHT, CINEMATIC),
+            categoryIds = setOf(NIGHT),
             nameRes = R.string.gs_filter_city,
             recipe = FilterRecipe(
                 redShift = 4,
@@ -1260,7 +1260,7 @@ object FilterCatalog {
         ),
         FilterOption(
             id = "blue_hour",
-            categoryIds = setOf(NIGHT, COOL, LANDSCAPE),
+            categoryIds = setOf(NIGHT, LANDSCAPE),
             nameRes = R.string.gs_filter_blue_hour,
             recipe = FilterRecipe(
                 redShift = -8,
@@ -1302,7 +1302,7 @@ object FilterCatalog {
         ),
         FilterOption(
             id = "purple",
-            categoryIds = setOf(CREATIVE, AESTHETIC),
+            categoryIds = setOf(CREATIVE),
             nameRes = R.string.gs_filter_purple,
             recipe = FilterRecipe(
                 redShift = 16,
@@ -1321,7 +1321,7 @@ object FilterCatalog {
         ),
         FilterOption(
             id = "dream",
-            categoryIds = setOf(CREATIVE, AESTHETIC),
+            categoryIds = setOf(CREATIVE),
             nameRes = R.string.gs_filter_dream,
             recipe = FilterRecipe(
                 redShift = 10,
@@ -1364,7 +1364,7 @@ object FilterCatalog {
         ),
         FilterOption(
             id = "clean_light",
-            categoryIds = setOf(POPULAR, NATURAL, PORTRAIT),
+            categoryIds = setOf(POPULAR, NATURAL),
             nameRes = R.string.gs_filter_clean_light,
             recipe = FilterRecipe(
                 redShift = 3,
@@ -1384,7 +1384,7 @@ object FilterCatalog {
         ),
         FilterOption(
             id = "soft_day",
-            categoryIds = setOf(NATURAL, PORTRAIT),
+            categoryIds = setOf(NATURAL),
             nameRes = R.string.gs_filter_soft_day,
             recipe = FilterRecipe(
                 redShift = 5,
@@ -1405,7 +1405,7 @@ object FilterCatalog {
         ),
         FilterOption(
             id = "selfie_clear",
-            categoryIds = setOf(POPULAR, NATURAL, PORTRAIT),
+            categoryIds = setOf(POPULAR, PORTRAIT),
             nameRes = R.string.gs_filter_selfie_clear,
             recipe = FilterRecipe(
                 redShift = 6,
@@ -1447,7 +1447,7 @@ object FilterCatalog {
         ),
         FilterOption(
             id = "studio_skin",
-            categoryIds = setOf(PORTRAIT, FILM),
+            categoryIds = setOf(PORTRAIT),
             nameRes = R.string.gs_filter_studio_skin,
             recipe = FilterRecipe(
                 redShift = 8,
@@ -1467,7 +1467,7 @@ object FilterCatalog {
         ),
         FilterOption(
             id = "golden_skin",
-            categoryIds = setOf(PORTRAIT, WARM),
+            categoryIds = setOf(PORTRAIT),
             nameRes = R.string.gs_filter_golden_skin,
             recipe = FilterRecipe(
                 redShift = 18,
@@ -1487,7 +1487,7 @@ object FilterCatalog {
         ),
         FilterOption(
             id = "indoor_warm",
-            categoryIds = setOf(PORTRAIT, WARM),
+            categoryIds = setOf(PORTRAIT),
             nameRes = R.string.gs_filter_indoor_warm,
             recipe = FilterRecipe(
                 redShift = 14,
@@ -1507,7 +1507,7 @@ object FilterCatalog {
         ),
         FilterOption(
             id = "flash_soft",
-            categoryIds = setOf(PORTRAIT, COOL),
+            categoryIds = setOf(PORTRAIT),
             nameRes = R.string.gs_filter_flash_soft,
             recipe = FilterRecipe(
                 redShift = 5,
@@ -1567,7 +1567,7 @@ object FilterCatalog {
         ),
         FilterOption(
             id = "warm_table",
-            categoryIds = setOf(FOOD, WARM),
+            categoryIds = setOf(FOOD),
             nameRes = R.string.gs_filter_warm_table,
             recipe = FilterRecipe(
                 redShift = 16,
@@ -1586,7 +1586,7 @@ object FilterCatalog {
         ),
         FilterOption(
             id = "deep_teal",
-            categoryIds = setOf(CINEMATIC, COOL),
+            categoryIds = setOf(CINEMATIC),
             nameRes = R.string.gs_filter_deep_teal,
             recipe = FilterRecipe(
                 redShift = -8,
@@ -1607,7 +1607,7 @@ object FilterCatalog {
         ),
         FilterOption(
             id = "fade_drama",
-            categoryIds = setOf(CINEMATIC, VINTAGE),
+            categoryIds = setOf(CINEMATIC),
             nameRes = R.string.gs_filter_fade_drama,
             recipe = FilterRecipe(
                 redShift = 8,
@@ -1628,7 +1628,7 @@ object FilterCatalog {
         ),
         FilterOption(
             id = "midnight_city",
-            categoryIds = setOf(NIGHT, CINEMATIC),
+            categoryIds = setOf(NIGHT),
             nameRes = R.string.gs_filter_midnight_city,
             recipe = FilterRecipe(
                 redShift = 4,
@@ -1650,7 +1650,7 @@ object FilterCatalog {
         ),
         FilterOption(
             id = "sunlit_forest",
-            categoryIds = setOf(LANDSCAPE, WARM),
+            categoryIds = setOf(LANDSCAPE),
             nameRes = R.string.gs_filter_sunlit_forest,
             recipe = FilterRecipe(
                 redShift = 10,
@@ -1670,7 +1670,7 @@ object FilterCatalog {
         ),
         FilterOption(
             id = "pearl_mono",
-            categoryIds = setOf(BLACK_WHITE, AESTHETIC, PORTRAIT),
+            categoryIds = setOf(BLACK_WHITE, PORTRAIT),
             nameRes = R.string.gs_filter_pearl_mono,
             recipe = FilterRecipe(
                 isMonochrome = true,
