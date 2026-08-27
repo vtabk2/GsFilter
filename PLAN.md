@@ -1538,3 +1538,26 @@ Status: DONE
 - `git diff --check` passed.
 - `:filter:testDebugUnitTest` passed after rerunning Gradle outside the sandbox for wrapper network access.
 - `:app:compileDebugKotlin` passed after rerunning Gradle outside the sandbox for wrapper network access.
+
+## Task: Reorder built-in filter categories for browsing
+
+Status: DONE
+
+### Requirements
+
+- Reorder existing built-in filter categories only.
+- Put people/common photo categories earlier.
+- Keep category ids, filters, renderer behavior, and resources unchanged.
+
+### Checklist
+
+- [x] Reorder `FilterCatalog.categories`.
+- [x] Add focused category order coverage.
+- [x] Run focused verification.
+
+### Notes
+
+- This is an ordering-only change; no new category, preset, shader, LUT, UI, or resource work needed.
+- New order: Popular, Portrait, Natural, Food, Landscape, Night, Film, Cinematic, Vintage, Black & White, Warm, Cool, Aesthetic, Creative, Art.
+- `git diff --check` passed.
+- `:filter:testDebugUnitTest` passed after rerunning Gradle outside the sandbox for wrapper network access.

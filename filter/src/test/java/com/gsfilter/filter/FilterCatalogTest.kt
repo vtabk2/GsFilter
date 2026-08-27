@@ -22,6 +22,30 @@ class FilterCatalogTest {
     }
 
     @Test
+    fun `categories are ordered for common photo browsing`() {
+        assertEquals(
+            listOf(
+                "popular",
+                "portrait",
+                "natural",
+                "food",
+                "landscape",
+                "night",
+                "film",
+                "cinematic",
+                "vintage",
+                "black_white",
+                "warm",
+                "cool",
+                "aesthetic",
+                "creative",
+                "art",
+            ),
+            FilterCatalog.categories.map { it.id },
+        )
+    }
+
+    @Test
     fun `filter ids are unique`() {
         val ids = FilterCatalog.options.map { it.id }
 
