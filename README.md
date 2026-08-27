@@ -185,6 +185,7 @@ Ghi chú:
 - Filter chỉ được áp dụng sau khi người dùng bấm vào từng filter item.
 - Bấm lại category đang hiển thị có thể đưa UI về category chứa filter đang chọn.
 - Tab Adjust được render trong cùng `FilterControlsView`; host nhận callback adjust và gửi `Adjustments` hiện tại lại bằng `setAdjustments()`.
+- Trong tab Adjust, hàng icon control nằm trên seekbar/value hiện tại; nút reset control và Reset All dùng trạng thái disabled khi không có gì để reset.
 - `gsFilterCompactTabs` kéo label/indicator của tab Filter và Adjust gần nhau hơn; `gsFilterTabSpacing` chỉnh khoảng cách giữa hai tab.
 - `gsFilterCloseIcon` đổi icon của `gs_filter_close_button`; app mẫu đang dùng `ic_gs_tick`.
 
@@ -345,12 +346,12 @@ Các XML attributes hiện có:
 | `gsFilterTabIndicatorMinWidth` | Chiều rộng indicator khi mode là `min`; mặc định theo `gs_filter_chip_min_width` |
 | `gsFilterShowIntensity` | Bật/tắt slider Intensity cho filter có recipe |
 | `gsFilterIntensityTextColor` | Màu label và value của slider Intensity |
-| `gsFilterIntensityProgressColor` | Màu progress của slider Intensity |
+| `gsFilterIntensityProgressColor` | Màu progress và thumb của slider Intensity |
 | `gsFilterIntensityTrackColor` | Màu track của slider Intensity |
 | `gsFilterCatalogAsset` | Asset path tùy chọn cho JSON filter pack |
-| `gsAdjustTextColor` | Màu text giá trị adjust và fallback thumb icon reset |
+| `gsAdjustTextColor` | Màu text giá trị adjust |
 | `gsAdjustSecondaryTextColor` | Màu icon/label adjust item chưa chọn |
-| `gsAdjustSelectedColor` | Màu adjust item đang chọn, seekbar progress, và changed-dot |
+| `gsAdjustSelectedColor` | Màu adjust item đang chọn, seekbar progress/thumb, và changed-dot |
 | `gsAdjustTrackColor` | Màu track của adjust seekbar |
 | `gsAdjustResetIcon` | Drawable icon reset control adjust hiện tại |
 | `gsAdjustResetIconPadding` | Override padding icon reset nếu cần; bỏ trống thì dùng default của `RippleImageView` |
