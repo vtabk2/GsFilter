@@ -1981,3 +1981,49 @@ Status: DONE
 - Adjust icons now render above the active seekbar/value row.
 - `git diff --check` passed.
 - `:app:compileDebugKotlin` passed after rerunning Gradle outside the sandbox for wrapper network access.
+
+## Task: Tint all seekbar thumbs with selected color
+
+Status: DONE
+
+### Requirements
+
+- Make every existing SeekBar thumb/dot use its selected/progress color.
+- Keep existing track colors, ranges, and drag behavior unchanged.
+
+### Checklist
+
+- [x] Update Adjust seekbar thumb tint.
+- [x] Update Filter intensity seekbar thumb tint.
+- [x] Run focused verification.
+
+### Notes
+
+- Existing SeekBars are `gs_adjust_seek_bar` and `gs_filter_intensity_seek_bar`.
+- Adjust seekbar thumb now uses `gsAdjustSelectedColor`.
+- Filter intensity seekbar thumb now uses `gsFilterIntensityProgressColor`.
+- `git diff --check` passed.
+- `:app:compileDebugKotlin` passed after rerunning Gradle outside the sandbox for wrapper network access.
+
+## Task: Keep adjust reset button visible but disabled
+
+Status: DONE
+
+### Requirements
+
+- Stop hiding/showing the current-adjust reset button.
+- Keep the reset button visible in the row and disable it when the selected adjust value is already default.
+- Preserve the existing reset behavior when enabled.
+
+### Checklist
+
+- [x] Set the initial reset button state to disabled in layout.
+- [x] Toggle `isEnabled` instead of `visibility` during adjust rendering.
+- [x] Run focused verification.
+
+### Notes
+
+- The current-adjust reset button id is `gs_adjust_reset`.
+- Reset button now stays in the seek row and uses disabled alpha when the selected adjust is at default.
+- `git diff --check` passed.
+- `:app:compileDebugKotlin` passed after rerunning Gradle outside the sandbox for wrapper network access.

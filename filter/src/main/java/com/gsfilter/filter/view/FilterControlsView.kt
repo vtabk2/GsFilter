@@ -356,7 +356,7 @@ class FilterControlsView @JvmOverloads constructor(
         filterIntensityValue?.setTextColor(style.intensityTextColor)
         filterIntensitySeekBar?.progressBackgroundTintList = ColorStateList.valueOf(style.intensityTrackColor)
         filterIntensitySeekBar?.progressTintList = ColorStateList.valueOf(style.intensityProgressColor)
-        filterIntensitySeekBar?.thumbTintList = ColorStateList.valueOf(style.intensityTextColor)
+        filterIntensitySeekBar?.thumbTintList = ColorStateList.valueOf(style.intensityProgressColor)
         filterIntensitySeekBar?.max = FILTER_INTENSITY_MAX
         filterIntensitySeekBar?.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
             override fun onProgressChanged(view: SeekBar, progress: Int, fromUser: Boolean) {

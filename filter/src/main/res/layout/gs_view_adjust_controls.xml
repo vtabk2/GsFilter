@@ -28,10 +28,9 @@
         android:orientation="horizontal">
 
         <com.core.gscore.view.RippleImageView
-            android:id="@+id/gs_adjust_reset_button"
+            android:id="@+id/gs_adjust_reset"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:visibility="invisible"/>
+            android:layout_height="wrap_content"/>
 
         <SeekBar
             android:id="@+id/gs_adjust_seek_bar"

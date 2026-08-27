@@ -40,7 +40,7 @@ internal class AdjustControlsView @JvmOverloads constructor(
     init {
         orientation = VERTICAL
         LayoutInflater.from(context).inflate(R.layout.gs_view_adjust_controls, this, true)
-        resetButton = findViewById(R.id.gs_adjust_reset_button)
+        resetButton = findViewById(R.id.gs_adjust_reset)
         seekBar = findViewById(R.id.gs_adjust_seek_bar)
         valueText = findViewById(R.id.gs_adjust_value)
         controlsContainer = findViewById(R.id.gs_adjust_controls_container)
@@ -67,7 +67,7 @@ internal class AdjustControlsView @JvmOverloads constructor(
         }
         seekBar?.progressBackgroundTintList = ColorStateList.valueOf(style.trackColor)
         seekBar?.progressTintList = ColorStateList.valueOf(style.selectedColor)
-        seekBar?.thumbTintList = ColorStateList.valueOf(style.textColor)
+        seekBar?.thumbTintList = ColorStateList.valueOf(style.selectedColor)
         seekBar?.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
             override fun onProgressChanged(view: SeekBar, progress: Int, fromUser: Boolean) {
                 if (fromUser && !isRendering) {
@@ -128,7 +128,7 @@ internal class AdjustControlsView @JvmOverloads constructor(
         val activeValue = selectedControl.valueIn(adjustments)
         val defaults = Adjustments()
         val defaultValue = selectedControl.valueIn(defaults)
-        resetButton?.visibility = if (activeValue == defaultValue) INVISIBLE else VISIBLE
+        resetButton?.isEnabled = activeValue != defaultValue
         seekBar?.max = selectedControl.progressMax
         seekBar?.progress = selectedControl.progressFrom(activeValue)
         valueText?.text = activeValue.toString()
@@ -191,7 +191,7 @@ internal class AdjustControlsView @JvmOverloads constructor(
             ),
             resetIconRes = array.getResourceId(
                 R.styleable.AdjustControlsView_gsAdjustResetIcon,
-                R.drawable.ic_gs_adjust_reset,
+                R.drawable.selector_ic_gs_adjust_reset,
             ),
             resetIconPadding = if (array.hasValue(R.styleable.AdjustControlsView_gsAdjustResetIconPadding)) {
                 array.getDimension(R.styleable.AdjustControlsView_gsAdjustResetIconPadding, 0f)
