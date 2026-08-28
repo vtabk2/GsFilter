@@ -21,25 +21,27 @@ internal object GlLutTexture {
     }
 
     private fun bitmap(lut: FilterLut): Bitmap =
-        bitmaps.getOrPut(lut) {
-            val output = FloatArray(CHANNELS)
-            val pixels = IntArray(TEXTURE_WIDTH * LUT_SIZE)
-            for (blue in 0 until LUT_SIZE) {
-                for (green in 0 until LUT_SIZE) {
-                    for (red in 0 until LUT_SIZE) {
-                        lut.apply(
-                            red = red / LUT_MAX,
-                            green = green / LUT_MAX,
-                            blue = blue / LUT_MAX,
-                            out = output,
-                        )
-                        val x = (blue * LUT_SIZE) + red
-                        val y = green
-                        pixels[(y * TEXTURE_WIDTH) + x] = argb(output[0], output[1], output[2])
+        synchronized(bitmapLock) {
+            bitmaps.getOrPut(lut) {
+                val output = FloatArray(CHANNELS)
+                val pixels = IntArray(TEXTURE_WIDTH * LUT_SIZE)
+                for (blue in 0 until LUT_SIZE) {
+                    for (green in 0 until LUT_SIZE) {
+                        for (red in 0 until LUT_SIZE) {
+                            lut.apply(
+                                red = red / LUT_MAX,
+                                green = green / LUT_MAX,
+                                blue = blue / LUT_MAX,
+                                out = output,
+                            )
+                            val x = (blue * LUT_SIZE) + red
+                            val y = green
+                            pixels[(y * TEXTURE_WIDTH) + x] = argb(output[0], output[1], output[2])
+                        }
                     }
                 }
+                Bitmap.createBitmap(pixels, TEXTURE_WIDTH, LUT_SIZE, Bitmap.Config.ARGB_8888)
             }
-            Bitmap.createBitmap(pixels, TEXTURE_WIDTH, LUT_SIZE, Bitmap.Config.ARGB_8888)
         }
 
     private fun argb(red: Float, green: Float, blue: Float): Int =
@@ -56,5 +58,6 @@ internal object GlLutTexture {
     private const val ALPHA = 0xFF shl 24
     private const val RED_SHIFT = 16
     private const val GREEN_SHIFT = 8
+    private val bitmapLock = Any()
     private val bitmaps = mutableMapOf<FilterLut, Bitmap>()
 }

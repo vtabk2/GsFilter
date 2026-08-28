@@ -25,7 +25,7 @@ object FilterGpuBitmapRenderer {
         maxHeight: Int? = null,
         scaleSource: Boolean = true,
         texelScale: Float = 1f,
-    ): Bitmap {
+    ): Bitmap = synchronized(renderLock) {
         val renderSize = FilterBitmapRenderer.targetSize(source.width, source.height, maxWidth, maxHeight)
         val renderSource =
             if (scaleSource) {
@@ -201,6 +201,8 @@ object FilterGpuBitmapRenderer {
 
     private const val BYTES_PER_PIXEL = 4
     private const val CHANNEL_MASK = 255
+    // ponytail: one offscreen GL render at a time; split locks if profiling proves parallel EGL helps.
+    private val renderLock = Any()
 
     private val CONFIG_ATTRIBUTES = intArrayOf(
         EGL14.EGL_RENDERABLE_TYPE,

@@ -2054,3 +2054,30 @@ Status: DONE
 - Added `FilterRenderer.getBitmap(...)` as the public GPU-first/CPU-fallback entry point.
 - `git diff --check` passed.
 - `:filter:testDebugUnitTest` passed after rerunning Gradle outside the sandbox for wrapper network access.
+
+## Task: Add batch filter rendering progress
+
+Status: DONE
+
+### Requirements
+
+- Keep changes limited to the `filter` module.
+- Optimize the public render path for a small list of images by processing one bitmap at a time.
+- Expose simple percent progress for callers rendering multiple images.
+- Avoid new dependencies and avoid a large batch/export framework.
+
+### Checklist
+
+- [x] Add a public batch render helper with progress callbacks.
+- [x] Keep offscreen GPU rendering and LUT cache safe when callers render from multiple threads.
+- [x] Add focused unit coverage for progress percent calculation.
+- [x] Run focused verification.
+
+### Notes
+
+- The module owns bitmap filtering only; URI decode, file output, overwrite policy, and MediaStore progress UI stay in the consuming app.
+- Added `FilterRenderer.renderBatch(...)` so consuming apps can render a small bitmap list one at a time and receive `FilterRenderProgress.percent`.
+- `FilterGpuBitmapRenderer` now serializes offscreen GPU renders to avoid accidental parallel EGL pressure.
+- `GlLutTexture` now protects its LUT bitmap cache from concurrent access.
+- `git diff --check` passed.
+- `:filter:testDebugUnitTest` passed after rerunning Gradle outside the sandbox for wrapper network access.

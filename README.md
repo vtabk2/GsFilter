@@ -4,7 +4,7 @@ GsFilter là demo filter ảnh Android nhỏ, đồng thời là module thư vi�
 
 Dự án gồm:
 
-- `:filter`: module tái sử dụng cho model filter, preview OpenGL, control Filter/Adjust, parse JSON filter pack, CPU/GPU bitmap render, và thumbnail qua Glide.
+- `:filter`: module tái sử dụng cho model filter, preview OpenGL, control Filter/Adjust, parse JSON filter pack, CPU/GPU bitmap render, batch render progress, và thumbnail qua Glide.
 - `:app`: app mẫu dùng MVVM, ảnh từ `assets`, và module `:filter`.
 
 Phạm vi hiện tại:
@@ -19,6 +19,7 @@ Phạm vi hiện tại:
 - Adjust controls là bộ cố định.
 - Thumbnail rail của filter được load bằng Glide với cache key ổn định.
 - LUT nội bộ dùng texture 33x33x33 sinh từ `FilterLut`, không cần ship file LUT ngoài.
+- Render nhiều bitmap nên đi qua `FilterRenderer.renderBatch()` để xử lý lần lượt và nhận progress %.
 
 ## Cài đặt thư viện
 
@@ -138,10 +139,10 @@ binding.filterPreview.setFilterState(selectedFilter.recipe, adjustments)
 
 ## Render bitmap không cần view
 
-Nếu host không dùng `FilterPreviewView`, có thể render bitmap kết quả trực tiếp bằng API trong module `:filter`:
+Nếu host không dùng `FilterPreviewView`, có thể render bitmap kết quả trực tiếp bằng API public trong module `:filter`:
 
 ```kotlin
-val resultBitmap = FilterBitmapRenderer.getBitmap(
+val resultBitmap = FilterRenderer.getBitmap(
     source = sourceBitmap,
     recipe = selectedFilter.recipe,
     adjustments = adjustments,
@@ -152,11 +153,11 @@ val resultBitmap = FilterBitmapRenderer.getBitmap(
 
 `maxWidth`/`maxHeight` là tùy chọn, renderer chỉ downscale để giữ aspect ratio và không upscale ảnh nhỏ.
 
-API CPU này không phụ thuộc UI view hay `GLSurfaceView`. Với ảnh lớn, gọi nó ngoài main thread:
+API này thử GPU offscreen trước và tự fallback CPU khi EGL không khả dụng. Với ảnh lớn, gọi nó ngoài main thread:
 
 ```kotlin
 val resultBitmap = withContext(Dispatchers.Default) {
-    FilterBitmapRenderer.getBitmap(
+    FilterRenderer.getBitmap(
         source = sourceBitmap,
         recipe = selectedFilter.recipe,
         adjustments = adjustments,
@@ -166,19 +167,29 @@ val resultBitmap = withContext(Dispatchers.Default) {
 }
 ```
 
-Nếu cần export nhanh hơn cho ảnh lớn, có thể dùng GPU offscreen renderer. API này tạo EGL pbuffer nội bộ, không cần gắn `FilterPreviewView` lên UI:
+Khi cần render nhiều ảnh, dùng `renderBatch()` để module xử lý từng bitmap một lượt. Cách này tránh giữ nhiều bitmap kết quả cùng lúc và trả progress sau mỗi ảnh:
 
 ```kotlin
-val resultBitmap = withContext(Dispatchers.Default) {
-    FilterGpuBitmapRenderer.getBitmap(
-        source = sourceBitmap,
+withContext(Dispatchers.Default) {
+    FilterRenderer.renderBatch(
+        sources = bitmaps,
         recipe = selectedFilter.recipe,
         adjustments = adjustments,
         maxWidth = 2048,
         maxHeight = 2048,
-    )
+        onProgress = { progress ->
+            updateProgress(progress.percent)
+        },
+    ) { _, bitmap ->
+        saveBitmap(bitmap)
+        bitmap.recycle()
+    }
 }
 ```
+
+`FilterRenderProgress.percent` trả `0..100`; batch rỗng được xem là `100`. Callback chạy trên thread gọi `renderBatch()`, nên chỉ cập nhật UI trực tiếp sau khi chuyển về main thread. Nếu `saveBitmap()` ghi file blocking, host nên tự chuyển phần lưu sang `Dispatchers.IO`.
+
+Host app vẫn chịu trách nhiệm decode URI, lưu file, lỗi từng ảnh, cancel job, và permission/MediaStore.
 
 Trong app mẫu, `FilterViewModel.renderFilteredBitmap(maxWidth, maxHeight, useGpu)` đã bọc sẵn việc chạy background.
 
