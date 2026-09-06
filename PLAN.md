@@ -2081,3 +2081,31 @@ Status: DONE
 - `GlLutTexture` now protects its LUT bitmap cache from concurrent access.
 - `git diff --check` passed.
 - `:filter:testDebugUnitTest` passed after rerunning Gradle outside the sandbox for wrapper network access.
+
+## Task: Save the filtered image to app storage
+
+Status: DONE
+Created: 2026-09-06
+Completed: 2026-09-06
+
+### Requirements
+
+- Add logic to save the currently filtered image.
+- Save only inside the app's private storage.
+- Keep API 24 compatibility.
+- Avoid new dependencies and storage permission complexity.
+
+### Checklist
+
+- [x] Wire the existing done/close action to save the current filtered bitmap.
+- [x] Write the rendered bitmap to app-private storage.
+- [x] Surface save success and failure.
+- [x] Run focused verification.
+
+### Notes
+
+- The tick action now renders the current filter state, saves a JPEG under `filesDir/filtered`, then finishes on success.
+- Uses app-private storage only, so no storage permission, picker, or MediaStore flow is needed.
+- `git diff --check` passed.
+- Static search found no `MediaStore`, document picker action, or storage permissions under `app/src/main` or `filter/src/main`.
+- `:app:compileDebugKotlin` could not run because Gradle fails to establish a loopback connection even with `--no-daemon`.

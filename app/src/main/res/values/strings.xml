@@ -10,6 +10,8 @@
     <string name="loading_image">Loading image</string>
     <string name="asset_load_failed">Could not load the sample image</string>
     <string name="filter_pack_load_failed">Could not load filter pack</string>
+    <string name="image_saved_to_app_storage">Filtered image saved in app storage</string>
+    <string name="image_save_failed">Could not save filtered image</string>
     <string name="image_original_content">Original asset image</string>
     <string name="image_result_content">Filtered image preview</string>
 </resources>

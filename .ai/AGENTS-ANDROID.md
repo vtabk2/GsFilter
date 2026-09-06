@@ -319,6 +319,7 @@ Before modifying any source code:
    - Create a new plan item if the request is unrelated to existing tasks.
    - Update the existing plan item if the request continues or expands an existing task.
    - Set the relevant task to `IN PROGRESS` before modifying source code.
+   - When creating a new plan item, add `Created: YYYY-MM-DD` using the current local date.
 
 5. Do not modify source code before `PLAN.md` has been created or updated for the current request.
 
@@ -331,6 +332,7 @@ Before modifying any source code:
    - Verify the changes according to the applicable Android rules and project requirements.
    - Update the plan with the actual implementation result.
    - Mark the task as `DONE` only after verification is complete.
+   - When marking a task `DONE`, add `Completed: YYYY-MM-DD` using the current local date.
 
 8. Keep completed tasks in `PLAN.md` as project history unless explicitly asked to remove them.
 
