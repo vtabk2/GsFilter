@@ -2140,3 +2140,31 @@ Completed: 2026-09-06
 - Updated the cap from 2048px to 4096px per follow-up request.
 - `:app:testDebugUnitTest :app:compileDebugKotlin` passed after the 4096px update.
 - `:app:assembleDebug` passed after the 4096px update.
+
+## Task: Use KSP for Glide processing
+
+Status: DONE
+Created: 2026-09-06
+Completed: 2026-09-06
+
+### Requirements
+
+- Use KSP in the app module.
+- Use Kotlin 2.2.21 with matching KSP 2.2.21-2.0.4.
+- Replace Glide Java annotation processing with Glide KSP processing.
+- Keep the diff small and avoid unrelated dependency changes.
+
+### Checklist
+
+- [x] Add the KSP Gradle plugin.
+- [x] Switch Glide processing dependency to KSP.
+- [x] Run focused verification.
+
+### Notes
+
+- Existing compile check failed before KSP because Kotlin plugin 2.1.10 could not read Kotlin stdlib 2.3.10 metadata from Coil 3.4.0.
+- No KSP plugin or `ksp(...)` dependency existed before this task.
+- First KSP run reached `:app:kspDebugKotlin` but failed with `OutOfMemoryError: Metaspace` under the default 384MiB metaspace.
+- Added Gradle JVM args to give KSP enough metaspace.
+- `:app:compileDebugKotlin` passed and generated Glide KSP sources.
+- `:app:testDebugUnitTest :filter:testDebugUnitTest :app:compileDebugKotlin :app:assembleDebug` passed after the KSP update.

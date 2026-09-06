@@ -1,6 +1,7 @@
 plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
+    id("com.google.devtools.ksp")
 }
 
 android {
@@ -37,7 +38,7 @@ dependencies {
     implementation("androidx.lifecycle:lifecycle-viewmodel-ktx:2.9.4")
 
     implementation("com.github.bumptech.glide:glide:5.0.7")
-    annotationProcessor("com.github.bumptech.glide:compiler:5.0.7")
+    ksp("com.github.bumptech.glide:ksp:5.0.7")
 
     implementation("io.coil-kt.coil3:coil:3.4.0")
     implementation("io.coil-kt.coil3:coil-svg:3.4.0")

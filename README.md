@@ -69,16 +69,20 @@ dependencies {
 
 Host app cần `minSdk >= 24`.
 
-Nếu dùng `FilterControlsView` và thumbnail rail, host app cần thêm Glide compiler để `AppGlideModule` được generate:
+Nếu dùng `FilterControlsView` và thumbnail rail, host app cần thêm Glide KSP processor để `AppGlideModule` được generate:
 
 ```kotlin
+plugins {
+    id("com.google.devtools.ksp")
+}
+
 dependencies {
     implementation("com.github.bumptech.glide:glide:5.0.7")
-    annotationProcessor("com.github.bumptech.glide:compiler:5.0.7")
+    ksp("com.github.bumptech.glide:ksp:5.0.7")
 }
 ```
 
-Với `AppGlideModule` viết bằng Kotlin, dùng `kapt("com.github.bumptech.glide:compiler:5.0.7")` thay cho `annotationProcessor`.
+Khai báo KSP plugin version khớp Kotlin, ví dụ Kotlin `2.2.21` dùng KSP `2.2.21-2.0.4`.
 
 Filter rail cần host app đăng ký thumbnail loader của thư viện trong `AppGlideModule`:
 
@@ -113,7 +117,7 @@ App mẫu dùng module local:
 dependencies {
     implementation(project(":filter"))
     implementation("com.github.bumptech.glide:glide:5.0.7")
-    annotationProcessor("com.github.bumptech.glide:compiler:5.0.7")
+    ksp("com.github.bumptech.glide:ksp:5.0.7")
 }
 ```
 
