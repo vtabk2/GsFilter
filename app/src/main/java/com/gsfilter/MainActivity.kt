@@ -157,9 +157,9 @@ class MainActivity : ComponentActivity() {
                 if (file == null) R.string.image_save_failed else R.string.image_saved_to_app_storage,
                 Toast.LENGTH_SHORT,
             ).show()
-            if (file != null) {
-                finish()
-            }
+//            if (file != null) {
+//                finish()
+//            }
         }
     }
 

@@ -3,18 +3,18 @@ package com.gsfilter
 import android.app.Application
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
+import android.util.Log
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
-import com.gsfilter.filter.Adjustments
 import com.gsfilter.filter.AdjustControl
-import com.gsfilter.filter.renderer.FilterBitmapRenderer
+import com.gsfilter.filter.Adjustments
 import com.gsfilter.filter.FilterCategory
-import com.gsfilter.filter.renderer.FilterGpuBitmapRenderer
 import com.gsfilter.filter.FilterOption
 import com.gsfilter.filter.FilterPack
 import com.gsfilter.filter.FilterRecipe
 import com.gsfilter.filter.FilterSourceKey
-import java.io.IOException
+import com.gsfilter.filter.renderer.FilterBitmapRenderer
+import com.gsfilter.filter.renderer.FilterGpuBitmapRenderer
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -23,6 +23,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import java.io.IOException
 
 class FilterViewModel(application: Application) : AndroidViewModel(application) {
 
@@ -140,6 +141,8 @@ class FilterViewModel(application: Application) : AndroidViewModel(application) 
             try {
                 val bitmap = withContext(Dispatchers.IO) { decodeSampleBitmap() }
                 _state.update {
+                    Log.d("TAG5", "loadSample: width = " + bitmap.width)
+                    Log.d("TAG5", "loadSample: height = " + bitmap.height)
                     it.copy(
                         sourceBitmap = bitmap,
                         filterThumbnailKey = FilterSourceKey.asset(SAMPLE_ASSET),
@@ -160,10 +163,27 @@ class FilterViewModel(application: Application) : AndroidViewModel(application) 
     }
 
     private fun decodeSampleBitmap(): Bitmap {
+        val application = getApplication<Application>()
+        val bounds = BitmapFactory.Options().apply {
+            inJustDecodeBounds = true
+        }
+        application.assets.open(SAMPLE_ASSET).use { input ->
+            BitmapFactory.decodeStream(input, null, bounds)
+        }
+        if (bounds.outWidth <= 0 || bounds.outHeight <= 0) {
+            throw IOException("Cannot decode asset bounds")
+        }
+        Log.d("TAG5", "decodeSampleBitmap: outWidth = " + bounds.outWidth)
+        Log.d("TAG5", "decodeSampleBitmap: outHeight = " + bounds.outHeight)
         val options = BitmapFactory.Options().apply {
             inPreferredConfig = Bitmap.Config.ARGB_8888
+            inSampleSize = sampleBitmapInSampleSize(
+                width = bounds.outWidth,
+                height = bounds.outHeight,
+                maxEdge = SAMPLE_BITMAP_MAX_EDGE,
+            )
         }
-        getApplication<Application>().assets.open(SAMPLE_ASSET).use { input ->
+        application.assets.open(SAMPLE_ASSET).use { input ->
             return BitmapFactory.decodeStream(input, null, options)
                 ?: throw IOException("Cannot decode asset")
         }
@@ -171,7 +191,19 @@ class FilterViewModel(application: Application) : AndroidViewModel(application) 
 
     private companion object {
         const val SAMPLE_ASSET = "sample.jpg"
+        const val SAMPLE_BITMAP_MAX_EDGE = 4096
         const val FILTER_INTENSITY_MIN = 0
         const val FILTER_INTENSITY_MAX = 100
     }
+}
+
+internal fun sampleBitmapInSampleSize(width: Int, height: Int, maxEdge: Int): Int {
+    require(width > 0 && height > 0) { "Source size must be positive." }
+    require(maxEdge > 0) { "maxEdge must be positive." }
+
+    var sampleSize = 1
+    while (maxOf(width, height) / sampleSize > maxEdge) {
+        sampleSize *= 2
+    }
+    return sampleSize
 }

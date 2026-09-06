@@ -2109,3 +2109,34 @@ Completed: 2026-09-06
 - `git diff --check` passed.
 - Static search found no `MediaStore`, document picker action, or storage permissions under `app/src/main` or `filter/src/main`.
 - `:app:compileDebugKotlin` could not run because Gradle fails to establish a loopback connection even with `--no-daemon`.
+
+## Task: Prevent oversized sample bitmap draw crash
+
+Status: DONE
+Created: 2026-09-06
+Completed: 2026-09-06
+
+### Requirements
+
+- Stop the sample image preview from crashing on very large bundled assets.
+- Cap the decoded sample image at a maximum 4K edge.
+- Keep API 24 compatibility.
+- Avoid new dependencies.
+
+### Checklist
+
+- [x] Decode the bundled sample at a drawable preview size.
+- [x] Verify focused build checks.
+
+### Notes
+
+- Crash: `Canvas: trying to draw too large(943718400bytes) bitmap`.
+- CodeGraph marker exists, but the local CLI reports no usable index, so source inspection uses `rg`.
+- Added bounds-first asset decoding with a 4096px max edge for the app sample.
+- Added pure unit coverage for the 15360x15360 sample-size calculation.
+- `git diff --check` passed.
+- `:app:testDebugUnitTest :app:compileDebugKotlin` passed after rerunning Gradle outside the sandbox for Gradle cache access.
+- `:app:assembleDebug` passed after rerunning Gradle outside the sandbox for Gradle cache access.
+- Updated the cap from 2048px to 4096px per follow-up request.
+- `:app:testDebugUnitTest :app:compileDebugKotlin` passed after the 4096px update.
+- `:app:assembleDebug` passed after the 4096px update.
