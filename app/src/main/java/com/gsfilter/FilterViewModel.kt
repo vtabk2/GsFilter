@@ -2,7 +2,6 @@ package com.gsfilter
 
 import android.app.Application
 import android.graphics.Bitmap
-import android.graphics.BitmapFactory
 import android.util.Log
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
@@ -15,6 +14,7 @@ import com.gsfilter.filter.FilterRecipe
 import com.gsfilter.filter.FilterSourceKey
 import com.gsfilter.filter.renderer.FilterBitmapRenderer
 import com.gsfilter.filter.renderer.FilterGpuBitmapRenderer
+import com.gsfilter.utils.LoadUtils
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -164,29 +164,11 @@ class FilterViewModel(application: Application) : AndroidViewModel(application) 
 
     private fun decodeSampleBitmap(): Bitmap {
         val application = getApplication<Application>()
-        val bounds = BitmapFactory.Options().apply {
-            inJustDecodeBounds = true
-        }
-        application.assets.open(SAMPLE_ASSET).use { input ->
-            BitmapFactory.decodeStream(input, null, bounds)
-        }
-        if (bounds.outWidth <= 0 || bounds.outHeight <= 0) {
-            throw IOException("Cannot decode asset bounds")
-        }
-        Log.d("TAG5", "decodeSampleBitmap: outWidth = " + bounds.outWidth)
-        Log.d("TAG5", "decodeSampleBitmap: outHeight = " + bounds.outHeight)
-        val options = BitmapFactory.Options().apply {
-            inPreferredConfig = Bitmap.Config.ARGB_8888
-            inSampleSize = sampleBitmapInSampleSize(
-                width = bounds.outWidth,
-                height = bounds.outHeight,
-                maxEdge = SAMPLE_BITMAP_MAX_EDGE,
-            )
-        }
-        application.assets.open(SAMPLE_ASSET).use { input ->
-            return BitmapFactory.decodeStream(input, null, options)
-                ?: throw IOException("Cannot decode asset")
-        }
+        return LoadUtils.getBitmapFromAsset(
+            context = application,
+            assetPath = SAMPLE_ASSET,
+            threshold = SAMPLE_BITMAP_MAX_EDGE,
+        )
     }
 
     private companion object {
@@ -195,15 +177,4 @@ class FilterViewModel(application: Application) : AndroidViewModel(application) 
         const val FILTER_INTENSITY_MIN = 0
         const val FILTER_INTENSITY_MAX = 100
     }
-}
-
-internal fun sampleBitmapInSampleSize(width: Int, height: Int, maxEdge: Int): Int {
-    require(width > 0 && height > 0) { "Source size must be positive." }
-    require(maxEdge > 0) { "maxEdge must be positive." }
-
-    var sampleSize = 1
-    while (maxOf(width, height) / sampleSize > maxEdge) {
-        sampleSize *= 2
-    }
-    return sampleSize
 }

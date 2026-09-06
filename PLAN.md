@@ -2112,9 +2112,8 @@ Completed: 2026-09-06
 
 ## Task: Prevent oversized sample bitmap draw crash
 
-Status: DONE
+Status: IN PROGRESS
 Created: 2026-09-06
-Completed: 2026-09-06
 
 ### Requirements
 
@@ -2140,6 +2139,7 @@ Completed: 2026-09-06
 - Updated the cap from 2048px to 4096px per follow-up request.
 - `:app:testDebugUnitTest :app:compileDebugKotlin` passed after the 4096px update.
 - `:app:assembleDebug` passed after the 4096px update.
+- Reopened because `FilterViewModel` was passing the RAM-based preview size to `LoadUtils.getBitmapFromAsset`, so the sample decode stayed near 1080px instead of 4K.
 
 ## Task: Use KSP for Glide processing
 
@@ -2168,3 +2168,33 @@ Completed: 2026-09-06
 - Added Gradle JVM args to give KSP enough metaspace.
 - `:app:compileDebugKotlin` passed and generated Glide KSP sources.
 - `:app:testDebugUnitTest :filter:testDebugUnitTest :app:compileDebugKotlin :app:assembleDebug` passed after the KSP update.
+
+## Task: Use LoadUtils for sample image loading
+
+Status: DONE
+Created: 2026-09-06
+Completed: 2026-09-06
+
+### Requirements
+
+- Use `LoadUtils` to load the sample image when it can replace the local decode logic.
+- Keep asset input support.
+- Keep API 24 compatibility.
+- Avoid new dependencies.
+
+### Checklist
+
+- [x] Add asset bitmap loading support to `LoadUtils`.
+- [x] Replace `FilterViewModel`'s local sample decode with `LoadUtils`.
+- [x] Update focused decode coverage.
+- [x] Run available focused verification.
+
+### Notes
+
+- Added `LoadUtils.getBitmapFromAsset(...)` for bundled asset images.
+- Reused `LoadUtils` sizing logic for path, resource, and asset bitmap loads.
+- `FilterViewModel` now loads `sample.jpg` through `LoadUtils` with `LoadUtils.calculatorImageSize(...)`.
+- Removed the ViewModel-local sample-size helper and pointed its unit coverage at `LoadUtils`.
+- Static search found no remaining `sampleBitmapInSampleSize`, `SAMPLE_BITMAP_MAX_EDGE`, or `BitmapFactory` usage in `FilterViewModel`.
+- `git diff --check` passed.
+- `:app:testDebugUnitTest :app:compileDebugKotlin` could not run because Gradle fails to establish a loopback connection before executing tasks.

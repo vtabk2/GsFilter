@@ -14,11 +14,37 @@ import coil3.request.ImageRequest
 import coil3.request.SuccessResult
 import coil3.request.allowHardware
 import coil3.svg.SvgDecoder
+import java.io.IOException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
 object LoadUtils {
+
+    fun getBitmapFromAsset(context: Context, assetPath: String, threshold: Int): Bitmap {
+        val bounds = BitmapFactory.Options().apply {
+            inJustDecodeBounds = true
+        }
+        context.assets.open(assetPath).use { input ->
+            BitmapFactory.decodeStream(input, null, bounds)
+        }
+        if (bounds.outWidth <= 0 || bounds.outHeight <= 0) {
+            throw IOException("Cannot decode asset bounds")
+        }
+
+        val options = BitmapFactory.Options().apply {
+            inPreferredConfig = Bitmap.Config.ARGB_8888
+            inSampleSize = bitmapInSampleSize(
+                width = bounds.outWidth,
+                height = bounds.outHeight,
+                threshold = threshold,
+            )
+        }
+        context.assets.open(assetPath).use { input ->
+            return BitmapFactory.decodeStream(input, null, options)
+                ?: throw IOException("Cannot decode asset")
+        }
+    }
 
     @OptIn(ExperimentalCoilApi::class)
     fun getBitmapFromPath(
@@ -30,18 +56,11 @@ object LoadUtils {
                 val bitmapOptions: BitmapFactory.Options = BitmapFactory.Options()
                 bitmapOptions.inJustDecodeBounds = true
                 BitmapFactory.decodeFile(cachePath, bitmapOptions)
-                val ratio = if (bitmapOptions.outWidth > bitmapOptions.outHeight) {
-                    bitmapOptions.outWidth / bitmapOptions.outHeight.toFloat()
-                } else {
-                    bitmapOptions.outHeight / bitmapOptions.outWidth.toFloat()
-                }
-
-                val max = (bitmapOptions.outWidth.coerceAtLeast(bitmapOptions.outHeight) / 2).coerceAtLeast(threshold)
-                val size = if (ratio > 3f) {
-                    max
-                } else {
-                    threshold.coerceAtMost(bitmapOptions.outWidth.coerceAtLeast(bitmapOptions.outHeight))
-                }
+                val size = bitmapRequestSize(
+                    width = bitmapOptions.outWidth,
+                    height = bitmapOptions.outHeight,
+                    threshold = threshold,
+                )
 
                 val loader = ImageLoader(activity)
 
@@ -92,18 +111,11 @@ object LoadUtils {
                 val bitmapOptions: BitmapFactory.Options = BitmapFactory.Options()
                 bitmapOptions.inJustDecodeBounds = true
                 BitmapFactory.decodeResource(activity.resources, resId, bitmapOptions)
-                val ratio = if (bitmapOptions.outWidth > bitmapOptions.outHeight) {
-                    bitmapOptions.outWidth / bitmapOptions.outHeight.toFloat()
-                } else {
-                    bitmapOptions.outHeight / bitmapOptions.outWidth.toFloat()
-                }
-
-                val max = (bitmapOptions.outWidth.coerceAtLeast(bitmapOptions.outHeight) / 2).coerceAtLeast(threshold)
-                val size = if (ratio > 3f) {
-                    max
-                } else {
-                    threshold.coerceAtMost(bitmapOptions.outWidth.coerceAtLeast(bitmapOptions.outHeight))
-                }
+                val size = bitmapRequestSize(
+                    width = bitmapOptions.outWidth,
+                    height = bitmapOptions.outHeight,
+                    threshold = threshold,
+                )
 
                 val loader = ImageLoader(activity)
 
@@ -161,5 +173,33 @@ object LoadUtils {
 
     fun Long.bytesToGb(): Float {
         return this.toFloat() / 1024 / 1024 / 1024
+    }
+
+    internal fun bitmapInSampleSize(width: Int, height: Int, threshold: Int): Int {
+        val size = bitmapRequestSize(width, height, threshold)
+        if (size <= 0) {
+            return 1
+        }
+
+        var sampleSize = 1
+        while (width.coerceAtLeast(height) / sampleSize > size) {
+            sampleSize *= 2
+        }
+        return sampleSize
+    }
+
+    private fun bitmapRequestSize(width: Int, height: Int, threshold: Int): Int {
+        if (width <= 0 || height <= 0 || threshold <= 0) {
+            return 0
+        }
+
+        val maxSide = width.coerceAtLeast(height)
+        val ratio = maxSide / width.coerceAtMost(height).toFloat()
+        val max = (maxSide / 2).coerceAtLeast(threshold)
+        return if (ratio > 3f) {
+            max
+        } else {
+            threshold.coerceAtMost(maxSide)
+        }
     }
 }
