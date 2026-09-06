@@ -39,5 +39,9 @@ dependencies {
     implementation("com.github.bumptech.glide:glide:5.0.7")
     annotationProcessor("com.github.bumptech.glide:compiler:5.0.7")
 
+    implementation("io.coil-kt.coil3:coil:3.4.0")
+    implementation("io.coil-kt.coil3:coil-svg:3.4.0")
+    implementation("com.caverock:androidsvg-aar:1.4")
+
     testImplementation("junit:junit:4.13.2")
 }
