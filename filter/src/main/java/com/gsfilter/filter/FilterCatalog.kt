@@ -674,6 +674,8 @@ object FilterCatalog {
             categoryIds = setOf(POPULAR, PORTRAIT),
             nameRes = R.string.gs_filter_beauty,
             recipe = FilterRecipe(
+                skinSmoothing = 72,
+                skinWhitening = 30,
                 redShift = 8,
                 greenShift = 4,
                 blueShift = -2,

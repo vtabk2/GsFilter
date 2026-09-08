@@ -50,6 +50,38 @@
         </LinearLayout>
 
         <LinearLayout
+            android:id="@+id/gs_filter_tab_beauty"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:clickable="true"
+            android:focusable="true"
+            android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/gs_filter_tab_beauty_label"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:ellipsize="end"
+                android:gravity="center"
+                android:includeFontPadding="false"
+                android:maxLines="1"
+                android:minHeight="@dimen/gs_filter_chip_min_height"
+                android:paddingStart="@dimen/gs_filter_chip_horizontal_padding"
+                android:paddingTop="@dimen/gs_filter_chip_vertical_padding"
+                android:paddingEnd="@dimen/gs_filter_chip_horizontal_padding"
+                android:paddingBottom="@dimen/gs_filter_chip_vertical_padding"
+                android:text="@string/gs_section_beauty"
+                android:textSize="14sp"/>
+
+            <View
+                android:id="@+id/gs_filter_tab_beauty_indicator"
+                android:layout_width="match_parent"
+                android:layout_height="@dimen/gs_filter_tab_indicator_height"
+                android:visibility="invisible"/>
+        </LinearLayout>
+
+        <LinearLayout
             android:id="@+id/gs_filter_tab_adjust"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
@@ -168,6 +200,84 @@
                 android:gravity="end"
                 android:textSize="13sp"/>
         </LinearLayout>
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/gs_beauty_container"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/gs_filter_category_top_spacing"
+        android:orientation="vertical"
+        android:visibility="gone">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:baselineAligned="false"
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
+
+            <TextView
+                android:id="@+id/gs_beauty_smoothing_label"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:maxLines="1"
+                android:text="@string/gs_beauty_smoothing"
+                android:textSize="13sp"/>
+
+            <SeekBar
+                android:id="@+id/gs_beauty_smoothing_seek_bar"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:max="100"/>
+
+            <TextView
+                android:id="@+id/gs_beauty_smoothing_value"
+                android:layout_width="@dimen/gs_adjust_value_width"
+                android:layout_height="wrap_content"
+                android:gravity="end"
+                android:textSize="13sp"/>
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:baselineAligned="false"
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
+
+            <TextView
+                android:id="@+id/gs_beauty_whitening_label"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:maxLines="1"
+                android:text="@string/gs_beauty_whitening"
+                android:textSize="13sp"/>
+
+            <SeekBar
+                android:id="@+id/gs_beauty_whitening_seek_bar"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:max="100"/>
+
+            <TextView
+                android:id="@+id/gs_beauty_whitening_value"
+                android:layout_width="@dimen/gs_adjust_value_width"
+                android:layout_height="wrap_content"
+                android:gravity="end"
+                android:textSize="13sp"/>
+        </LinearLayout>
+
+        <TextView
+            android:id="@+id/gs_beauty_reset_all"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:layout_marginTop="@dimen/gs_filter_category_top_spacing"
+            android:background="@drawable/gs_bg_adjust_reset_all"
+            android:textAllCaps="false"/>
     </LinearLayout>
 
     <FrameLayout

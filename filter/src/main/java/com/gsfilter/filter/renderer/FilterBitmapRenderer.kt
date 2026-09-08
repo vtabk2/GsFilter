@@ -128,6 +128,19 @@ object FilterBitmapRenderer {
         val sourceGray = gray(sourceRed, sourceGreen, sourceBlue)
         val sharpAmount = (params.sharpness * 0.65f) + (params.clarity * 0.35f)
 
+        val beautyMask = skinMask(sourceRed, sourceGreen, sourceBlue)
+        val beautySmoothAmount = params.skinSmoothing * beautyMask * (1f - smoothstep(0.18f, 0.55f, edgeAt(pixels, x, y, width, height)))
+        val blurredRed = average(red(left), red(right), red(up), red(down))
+        val blurredGreen = average(green(left), green(right), green(up), green(down))
+        val blurredBlue = average(blue(left), blue(right), blue(up), blue(down))
+        red = mix(red, blurredRed, beautySmoothAmount)
+        green = mix(green, blurredGreen, beautySmoothAmount)
+        blue = mix(blue, blurredBlue, beautySmoothAmount)
+        val beautyWhiteAmount = params.skinWhitening * beautyMask
+        red = mix(red, red + ((1f - red) * 0.18f), beautyWhiteAmount)
+        green = mix(green, green + ((1f - green) * 0.18f), beautyWhiteAmount)
+        blue = mix(blue, blue + ((1f - blue) * 0.18f), beautyWhiteAmount)
+
         red += (red - average(red(left), red(right), red(up), red(down))) * sharpAmount
         green += (green - average(green(left), green(right), green(up), green(down))) * sharpAmount
         blue += (blue - average(blue(left), blue(right), blue(up), blue(down))) * sharpAmount
@@ -321,6 +334,15 @@ object FilterBitmapRenderer {
     private fun smoothstep(edge0: Float, edge1: Float, value: Float): Float {
         val t = clamp((value - edge0) / (edge1 - edge0), 0f, 1f)
         return t * t * (3f - (2f * t))
+    }
+
+    private fun skinMask(red: Float, green: Float, blue: Float): Float {
+        val cb = 0.5f - (0.168736f * red) - (0.331264f * green) + (0.5f * blue)
+        val cr = 0.5f + (0.5f * red) - (0.418688f * green) - (0.081312f * blue)
+        val cbMask = 1f - smoothstep(0.08f, 0.18f, abs(cb - 0.40f))
+        val crMask = 1f - smoothstep(0.05f, 0.25f, abs(cr - 0.55f))
+        val redBias = smoothstep(0.01f, 0.14f, red - ((green + blue) * 0.5f))
+        return clamp(cbMask * crMask * redBias, 0f, 1f)
     }
 
     private fun clamp(value: Float, minValue: Float, maxValue: Float): Float = min(max(value, minValue), maxValue)

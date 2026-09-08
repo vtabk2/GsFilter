@@ -15,6 +15,8 @@ data class FilterUiState(
     val selectedCategory: FilterCategory = FilterCatalog.defaultCategory,
     val selectedFilter: FilterOption = FilterCatalog.default,
     val filterIntensities: Map<String, Int> = emptyMap(),
+    val skinSmoothing: Int = FilterCatalog.default.recipe.skinSmoothing,
+    val skinWhitening: Int = FilterCatalog.default.recipe.skinWhitening,
     val adjustments: Adjustments = Adjustments(),
     val isLoading: Boolean = false,
     val error: FilterError? = null,
@@ -24,11 +26,20 @@ data class FilterUiState(
 
     val selectedRecipe: FilterRecipe
         get() {
+            val recipe = selectedFilter.recipe
             val intensity = selectedFilterIntensity
-            return if (intensity != selectedFilter.recipe.intensity) {
-                selectedFilter.recipe.copy(intensity = intensity)
+            return if (
+                intensity != recipe.intensity ||
+                skinSmoothing != recipe.skinSmoothing ||
+                skinWhitening != recipe.skinWhitening
+            ) {
+                recipe.copy(
+                    intensity = intensity,
+                    skinSmoothing = skinSmoothing,
+                    skinWhitening = skinWhitening,
+                )
             } else {
-                selectedFilter.recipe
+                recipe
             }
         }
 }

@@ -55,6 +55,8 @@ object FilterPackJson {
             lut = FilterLut.fromJsonName(optString("lut")),
             lutStrength = optInt("lutStrength", LUT_STRENGTH_DEFAULT).coerceIn(EFFECT_MIN, EFFECT_MAX),
             intensity = optInt("intensity", INTENSITY_DEFAULT).coerceIn(EFFECT_MIN, EFFECT_MAX),
+            skinSmoothing = optInt("skinSmoothing", 0).coerceIn(EFFECT_MIN, EFFECT_MAX),
+            skinWhitening = optInt("skinWhitening", 0).coerceIn(EFFECT_MIN, EFFECT_MAX),
             isMonochrome = optBoolean("isMonochrome", false),
             redShift = optInt("redShift", 0).coerceIn(COLOR_SHIFT_MIN, COLOR_SHIFT_MAX),
             greenShift = optInt("greenShift", 0).coerceIn(COLOR_SHIFT_MIN, COLOR_SHIFT_MAX),

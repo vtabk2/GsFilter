@@ -57,6 +57,8 @@ internal object GlFilterProgram {
             texture = GLES20.glGetUniformLocation(program, U_TEXTURE),
             lutTexture = GLES20.glGetUniformLocation(program, U_LUT_TEXTURE),
             lutStrength = GLES20.glGetUniformLocation(program, U_LUT_STRENGTH),
+            skinSmoothing = GLES20.glGetUniformLocation(program, U_SKIN_SMOOTHING),
+            skinWhitening = GLES20.glGetUniformLocation(program, U_SKIN_WHITENING),
             effect = GLES20.glGetUniformLocation(program, U_EFFECT),
             effectStrength = GLES20.glGetUniformLocation(program, U_EFFECT_STRENGTH),
             effectThreshold = GLES20.glGetUniformLocation(program, U_EFFECT_THRESHOLD),
@@ -118,6 +120,8 @@ internal object GlFilterProgram {
             GLES20.glUniform1i(handles.lutTexture, 1)
         }
         GLES20.glUniform1f(handles.lutStrength, lutStrength)
+        GLES20.glUniform1f(handles.skinSmoothing, params.skinSmoothing)
+        GLES20.glUniform1f(handles.skinWhitening, params.skinWhitening)
         GLES20.glUniform1f(handles.effect, params.effect.shaderValue)
         GLES20.glUniform1f(handles.effectStrength, params.effectStrength)
         GLES20.glUniform1f(handles.effectThreshold, params.effectThreshold)
@@ -166,6 +170,8 @@ internal object GlFilterProgram {
         val texture: Int,
         val lutTexture: Int,
         val lutStrength: Int,
+        val skinSmoothing: Int,
+        val skinWhitening: Int,
         val effect: Int,
         val effectStrength: Int,
         val effectThreshold: Int,
@@ -207,6 +213,8 @@ internal object GlFilterProgram {
     private const val U_TEXTURE = "uTexture"
     private const val U_LUT_TEXTURE = "uLutTexture"
     private const val U_LUT_STRENGTH = "uLutStrength"
+    private const val U_SKIN_SMOOTHING = "uSkinSmoothing"
+    private const val U_SKIN_WHITENING = "uSkinWhitening"
     private const val U_EFFECT = "uEffect"
     private const val U_EFFECT_STRENGTH = "uEffectStrength"
     private const val U_EFFECT_THRESHOLD = "uEffectThreshold"
@@ -248,6 +256,8 @@ internal object GlFilterProgram {
         uniform sampler2D uTexture;
         uniform sampler2D uLutTexture;
         uniform float uLutStrength;
+        uniform float uSkinSmoothing;
+        uniform float uSkinWhitening;
         uniform float uEffect;
         uniform float uEffectStrength;
         uniform float uEffectThreshold;
@@ -301,6 +311,15 @@ internal object GlFilterProgram {
             return smoothstep(threshold - softness, threshold + softness, edge) * uEffectStrength;
         }
 
+        float skinMask(vec3 rgb) {
+            float cb = 0.5 - (0.168736 * rgb.r) - (0.331264 * rgb.g) + (0.5 * rgb.b);
+            float cr = 0.5 + (0.5 * rgb.r) - (0.418688 * rgb.g) - (0.081312 * rgb.b);
+            float cbMask = 1.0 - smoothstep(0.08, 0.18, abs(cb - 0.40));
+            float crMask = 1.0 - smoothstep(0.05, 0.25, abs(cr - 0.55));
+            float redBias = smoothstep(0.01, 0.14, rgb.r - ((rgb.g + rgb.b) * 0.5));
+            return clamp(cbMask * crMask * redBias, 0.0, 1.0);
+        }
+
         float stripe(float value) {
             return 1.0 - smoothstep(0.0, 0.055, abs(fract(value) - 0.5));
         }
@@ -329,7 +348,12 @@ internal object GlFilterProgram {
             vec3 up = texture2D(uTexture, vTexCoord - vec2(0.0, uTexelSize.y)).rgb;
             vec3 down = texture2D(uTexture, vTexCoord + vec2(0.0, uTexelSize.y)).rgb;
             vec3 blur = (left + right + up + down) * 0.25;
-            vec3 rgb = color.rgb + (color.rgb - blur) * ((uSharpness * 0.65) + (uClarity * 0.35));
+            float beautyMask = skinMask(color.rgb);
+            float beautyEdge = edgeAt(vTexCoord);
+            float smoothAmount = uSkinSmoothing * beautyMask * (1.0 - smoothstep(0.18, 0.55, beautyEdge));
+            vec3 rgb = mix(color.rgb, blur, smoothAmount);
+            rgb = rgb + (rgb - blur) * ((uSharpness * 0.65) + (uClarity * 0.35));
+            rgb = mix(rgb, rgb + ((vec3(1.0) - rgb) * 0.18), uSkinWhitening * beautyMask);
 
             rgb = rgb + uRgbShift;
             float gray = dot(rgb, vec3(0.299, 0.587, 0.114));

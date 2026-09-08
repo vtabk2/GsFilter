@@ -57,12 +57,15 @@ class FilterControlsView @JvmOverloads constructor(
     private var thumbnailGenerationId = 0
     private var lastPreloadKey: String? = null
     private var isRenderingFilterIntensity = false
+    private var isRenderingBeauty = false
 
     var onCloseClick: (() -> Unit)? = null
     var onControlTabSelected: ((ControlTab) -> Unit)? = null
     var onCategorySelected: ((FilterCategory) -> Unit)? = null
     var onFilterSelected: ((FilterOption) -> Unit)? = null
     var onFilterIntensityChanged: ((Int) -> Unit)? = null
+    var onBeautyChanged: ((BeautyControl, Int) -> Unit)? = null
+    var onResetBeautyClick: (() -> Unit)? = null
     var onAdjustmentChanged: ((AdjustControl, Int) -> Unit)? = null
     var onResetAllAdjustClick: (() -> Unit)? = null
     var onCatalogLoaded: ((FilterPack) -> Unit)? = null
@@ -71,6 +74,7 @@ class FilterControlsView @JvmOverloads constructor(
     private val categoryChips = mutableMapOf<String, TextView>()
     private val filterAdapter = FilterAdapter(::selectFilter)
     private val tabFilter: LinearLayout?
+    private val tabBeauty: LinearLayout?
     private val tabAdjust: LinearLayout?
     private val buttonClose: RippleImageView?
     private val buttonOriginalFilter: RippleImageView?
@@ -81,6 +85,14 @@ class FilterControlsView @JvmOverloads constructor(
     private val filterIntensityValue: TextView?
     private val filterIntensityRow: View?
     private val filterContent: LinearLayout?
+    private val beautyContainer: LinearLayout?
+    private val beautySmoothingLabel: TextView?
+    private val beautySmoothingSeekBar: SeekBar?
+    private val beautySmoothingValue: TextView?
+    private val beautyWhiteningLabel: TextView?
+    private val beautyWhiteningSeekBar: SeekBar?
+    private val beautyWhiteningValue: TextView?
+    private val beautyResetAll: TextView?
     private val adjustContainer: FrameLayout?
     private val adjustContent: AdjustControlsView
 
@@ -89,6 +101,7 @@ class FilterControlsView @JvmOverloads constructor(
         LayoutInflater.from(context).inflate(R.layout.gs_view_filter_controls, this, true)
 
         tabFilter = findViewById(R.id.gs_filter_tab_filter)
+        tabBeauty = findViewById(R.id.gs_filter_tab_beauty)
         tabAdjust = findViewById(R.id.gs_filter_tab_adjust)
         buttonClose = findViewById(R.id.gs_filter_close_button)
         buttonOriginalFilter = findViewById(R.id.gs_filter_original)
@@ -99,6 +112,14 @@ class FilterControlsView @JvmOverloads constructor(
         filterIntensityValue = findViewById(R.id.gs_filter_intensity_value)
         filterIntensityRow = findViewById(R.id.gs_filter_intensity_row)
         filterContent = findViewById(R.id.gs_filter_content)
+        beautyContainer = findViewById(R.id.gs_beauty_container)
+        beautySmoothingLabel = findViewById(R.id.gs_beauty_smoothing_label)
+        beautySmoothingSeekBar = findViewById(R.id.gs_beauty_smoothing_seek_bar)
+        beautySmoothingValue = findViewById(R.id.gs_beauty_smoothing_value)
+        beautyWhiteningLabel = findViewById(R.id.gs_beauty_whitening_label)
+        beautyWhiteningSeekBar = findViewById(R.id.gs_beauty_whitening_seek_bar)
+        beautyWhiteningValue = findViewById(R.id.gs_beauty_whitening_value)
+        beautyResetAll = findViewById(R.id.gs_beauty_reset_all)
         adjustContainer = findViewById(R.id.gs_adjust_container)
         adjustContent = AdjustControlsView(context, attrs)
         adjustContainer?.addView(
@@ -108,6 +129,7 @@ class FilterControlsView @JvmOverloads constructor(
 
         bindHeader()
         bindFilterContent()
+        bindBeautyContent()
         bindAdjustContent()
         setCatalog(catalog)
         setSelectedTab(ControlTab.Filter)
@@ -115,11 +137,12 @@ class FilterControlsView @JvmOverloads constructor(
     }
 
     fun setSelectedTab(tab: ControlTab) {
-        val isFilterSelected = tab == ControlTab.Filter
-        renderTab(tabFilter, isFilterSelected)
-        renderTab(tabAdjust, !isFilterSelected)
-        filterContent?.visibility = if (isFilterSelected) VISIBLE else GONE
-        adjustContainer?.visibility = if (isFilterSelected) GONE else VISIBLE
+        renderTab(tabFilter, tab == ControlTab.Filter)
+        renderTab(tabBeauty, tab == ControlTab.Beauty)
+        renderTab(tabAdjust, tab == ControlTab.Adjust)
+        filterContent?.visibility = if (tab == ControlTab.Filter) VISIBLE else GONE
+        beautyContainer?.visibility = if (tab == ControlTab.Beauty) VISIBLE else GONE
+        adjustContainer?.visibility = if (tab == ControlTab.Adjust) VISIBLE else GONE
     }
 
     fun setCatalog(catalog: FilterPack) {
@@ -207,6 +230,7 @@ class FilterControlsView @JvmOverloads constructor(
             renderState()
         } else {
             renderFilterIntensity()
+            renderBeauty()
         }
     }
 
@@ -223,6 +247,7 @@ class FilterControlsView @JvmOverloads constructor(
         renderOriginalAction()
         renderCategories(selectedCategory)
         renderFilterIntensity()
+        renderBeauty()
         val items = catalog.filtersForCategory(selectedCategory.id).map { filter ->
             FilterItem(
                 filter = filter,
@@ -273,6 +298,8 @@ class FilterControlsView @JvmOverloads constructor(
     private fun bindHeader() {
         val filterLabel: TextView? = findViewById(R.id.gs_filter_tab_filter_label)
         val filterIndicator: View? = findViewById(R.id.gs_filter_tab_filter_indicator)
+        val beautyLabel: TextView? = findViewById(R.id.gs_filter_tab_beauty_label)
+        val beautyIndicator: View? = findViewById(R.id.gs_filter_tab_beauty_indicator)
         val adjustLabel: TextView? = findViewById(R.id.gs_filter_tab_adjust_label)
         val adjustIndicator: View? = findViewById(R.id.gs_filter_tab_adjust_indicator)
         val filterParts = TabParts(
@@ -280,15 +307,21 @@ class FilterControlsView @JvmOverloads constructor(
             indicator = filterIndicator,
             compactGravity = Gravity.END,
         )
+        val beautyParts = TabParts(
+            label = beautyLabel,
+            indicator = beautyIndicator,
+            compactGravity = Gravity.CENTER,
+        )
         val adjustParts = TabParts(
             label = adjustLabel,
             indicator = adjustIndicator,
             compactGravity = Gravity.START,
         )
         tabFilter?.tag = filterParts
+        tabBeauty?.tag = beautyParts
         tabAdjust?.tag = adjustParts
-        bindTabLayout(filterParts, adjustParts)
-        listOf(filterParts, adjustParts).forEach { parts ->
+        bindTabLayout(filterParts, beautyParts, adjustParts)
+        listOf(filterParts, beautyParts, adjustParts).forEach { parts ->
             val indicator = parts.indicator ?: return@forEach
             indicator.background = style.tabIndicatorColor.toDrawable()
             indicator.layoutParams?.let { params ->
@@ -316,6 +349,10 @@ class FilterControlsView @JvmOverloads constructor(
             setSelectedTab(ControlTab.Filter)
             onControlTabSelected?.invoke(ControlTab.Filter)
         }
+        tabBeauty?.setOnClickListener {
+            setSelectedTab(ControlTab.Beauty)
+            onControlTabSelected?.invoke(ControlTab.Beauty)
+        }
         tabAdjust?.setOnClickListener {
             setSelectedTab(ControlTab.Adjust)
             onControlTabSelected?.invoke(ControlTab.Adjust)
@@ -325,15 +362,18 @@ class FilterControlsView @JvmOverloads constructor(
         buttonClose?.setOnClickListener { onCloseClick?.invoke() }
     }
 
-    private fun bindTabLayout(filterParts: TabParts, adjustParts: TabParts) {
-        (tabAdjust?.layoutParams as? LinearLayout.LayoutParams)?.let { params ->
-            params.marginStart = style.tabSpacing
-            tabAdjust?.layoutParams = params
+    private fun bindTabLayout(filterParts: TabParts, beautyParts: TabParts, adjustParts: TabParts) {
+        listOf(tabBeauty, tabAdjust).forEach { tab ->
+            (tab?.layoutParams as? LinearLayout.LayoutParams)?.let { params ->
+                params.marginStart = style.tabSpacing
+                tab.layoutParams = params
+            }
         }
         if (!style.compactTabs) {
             return
         }
         compactTab(tabFilter, filterParts)
+        compactTab(tabBeauty, beautyParts)
         compactTab(tabAdjust, adjustParts)
     }
 
@@ -369,6 +409,38 @@ class FilterControlsView @JvmOverloads constructor(
 
             override fun onStopTrackingTouch(view: SeekBar) = Unit
         })
+    }
+
+    private fun bindBeautyContent() {
+        listOf(
+            beautySmoothingSeekBar to BeautyControl.Smoothing,
+            beautyWhiteningSeekBar to BeautyControl.Whitening,
+        ).forEach { (seekBar, control) ->
+            seekBar?.max = BEAUTY_MAX
+            seekBar?.progressBackgroundTintList = ColorStateList.valueOf(style.intensityTrackColor)
+            seekBar?.progressTintList = ColorStateList.valueOf(style.intensityProgressColor)
+            seekBar?.thumbTintList = ColorStateList.valueOf(style.intensityProgressColor)
+            seekBar?.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
+                override fun onProgressChanged(view: SeekBar, progress: Int, fromUser: Boolean) {
+                    if (fromUser && !isRenderingBeauty) {
+                        onBeautyChanged?.invoke(control, progress)
+                    }
+                }
+
+                override fun onStartTrackingTouch(view: SeekBar) = Unit
+
+                override fun onStopTrackingTouch(view: SeekBar) = Unit
+            })
+        }
+        listOf(
+            beautySmoothingLabel,
+            beautySmoothingValue,
+            beautyWhiteningLabel,
+            beautyWhiteningValue,
+        ).forEach { it?.setTextColor(style.intensityTextColor) }
+        beautyResetAll?.text = context.getString(R.string.gs_action_reset_beauty)
+        beautyResetAll?.setTextColor(style.intensityTextColor)
+        beautyResetAll?.setOnClickListener { onResetBeautyClick?.invoke() }
     }
 
     private fun bindAdjustContent() {
@@ -437,6 +509,19 @@ class FilterControlsView @JvmOverloads constructor(
         isRenderingFilterIntensity = false
     }
 
+    private fun renderBeauty() {
+        val smoothing = selectedRecipe.skinSmoothing.coerceIn(0, BEAUTY_MAX)
+        val whitening = selectedRecipe.skinWhitening.coerceIn(0, BEAUTY_MAX)
+        isRenderingBeauty = true
+        beautySmoothingSeekBar?.progress = smoothing
+        beautySmoothingValue?.text = smoothing.toString()
+        beautyWhiteningSeekBar?.progress = whitening
+        beautyWhiteningValue?.text = whitening.toString()
+        beautyResetAll?.isEnabled =
+            smoothing != selectedFilter.recipe.skinSmoothing || whitening != selectedFilter.recipe.skinWhitening
+        isRenderingBeauty = false
+    }
+
     private fun renderTab(tab: LinearLayout?, isSelected: Boolean) {
         tab?.isSelected = isSelected
         if (style.useTabBackground) {
@@ -493,6 +578,7 @@ class FilterControlsView @JvmOverloads constructor(
     private companion object {
         val CATALOG_EXECUTOR = Executors.newSingleThreadExecutor()
         const val FILTER_INTENSITY_MAX = 100
+        const val BEAUTY_MAX = 100
         const val TAB_INDICATOR_WIDTH_FULL = 0
         const val TAB_INDICATOR_WIDTH_MIN = 1
         const val TAB_INDICATOR_WIDTH_TEXT = 2
@@ -500,7 +586,13 @@ class FilterControlsView @JvmOverloads constructor(
 
     enum class ControlTab {
         Filter,
+        Beauty,
         Adjust,
+    }
+
+    enum class BeautyControl {
+        Smoothing,
+        Whitening,
     }
 
     private data class TabParts(

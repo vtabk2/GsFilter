@@ -2198,3 +2198,39 @@ Completed: 2026-09-06
 - Static search found no remaining `sampleBitmapInSampleSize`, `SAMPLE_BITMAP_MAX_EDGE`, or `BitmapFactory` usage in `FilterViewModel`.
 - `git diff --check` passed.
 - `:app:testDebugUnitTest :app:compileDebugKotlin` could not run because Gradle fails to establish a loopback connection before executing tasks.
+
+## Task: Add shader-based beauty smoothing and whitening without GPUPixel
+
+Status: IN PROGRESS
+Created: 2026-09-08
+
+### Requirements
+
+- Add a lightweight beauty effect to the existing OpenGL ES renderer.
+- Expose beauty controls in a dedicated `Beauty` tab separate from `Adjust`.
+- Support skin smoothing and whitening without GPUPixel, JNI, or a new native dependency.
+- Keep the existing filter and adjustment behavior unchanged when beauty is disabled.
+
+### Approach
+
+- Reuse the existing single-pass GPU shader and parameter pipeline.
+- Use a conservative color-based skin mask so non-skin pixels are affected less.
+- Apply a small neighborhood blur for smoothing and a restrained lift for whitening.
+- Keep face landmarks, face reshaping, and makeup out of this first pass; they require a separate detector and a larger pipeline change.
+- Reuse the existing tab and slider patterns; keep the first Beauty tab to smoothing and whitening only.
+
+### Checklist
+
+- [x] Add beauty parameters to the existing recipe/parameter mapping.
+- [x] Add shader uniforms and GPU beauty math.
+- [x] Keep CPU fallback behavior consistent.
+- [x] Add focused unit coverage for parameter mapping and CPU behavior.
+- [x] Add a dedicated Beauty tab with smoothing and whitening controls.
+- [x] Persist Beauty values in the existing ViewModel state and render recipe.
+- [ ] Run affected tests and debug build.
+
+### Verification notes
+
+- `git diff --check` passed.
+- Beauty layout XML parsed successfully and its 30 view IDs are unique.
+- Gradle verification is blocked because this environment has no JDK (`java`/`kotlinc` unavailable); rerun `:filter:testDebugUnitTest :app:compileDebugKotlin` on a machine with JDK 17.

@@ -35,6 +35,7 @@ class MainActivity : ComponentActivity() {
         setContentView(binding.root)
 
         bindFilterControls()
+        bindBeautyControls()
         bindAdjustControls()
         bindFilterPackToggle()
         collectState()
@@ -76,6 +77,16 @@ class MainActivity : ComponentActivity() {
     private fun bindAdjustControls() {
         binding.filterControls.onAdjustmentChanged = viewModel::setAdjustment
         binding.filterControls.onResetAllAdjustClick = viewModel::resetAdjustments
+    }
+
+    private fun bindBeautyControls() {
+        binding.filterControls.onBeautyChanged = { control, value ->
+            when (control) {
+                FilterControlsView.BeautyControl.Smoothing -> viewModel.setSkinSmoothing(value)
+                FilterControlsView.BeautyControl.Whitening -> viewModel.setSkinWhitening(value)
+            }
+        }
+        binding.filterControls.onResetBeautyClick = viewModel::resetBeauty
     }
 
     private fun bindFilterPackToggle() {

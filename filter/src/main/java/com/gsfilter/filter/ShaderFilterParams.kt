@@ -10,6 +10,8 @@ data class ShaderFilterParams(
     val lut: FilterLut,
     val lutStrength: Float,
     val intensity: Float,
+    val skinSmoothing: Float,
+    val skinWhitening: Float,
     val isMonochrome: Float,
     val redShift: Float,
     val greenShift: Float,
@@ -47,6 +49,8 @@ data class ShaderFilterParams(
                             amount(recipe.lutStrength, PERCENT_MAX) * linearIntensity
                         },
                     intensity = intensity,
+                    skinSmoothing = amount(recipe.skinSmoothing, PERCENT_MAX) * intensity,
+                    skinWhitening = amount(recipe.skinWhitening, PERCENT_MAX) * intensity,
                     isMonochrome = if (recipe.isMonochrome) intensity else 0f,
                     redShift = recipe.redShift.scaledBy(intensity) / COLOR_CHANNEL_MAX,
                     greenShift = recipe.greenShift.scaledBy(intensity) / COLOR_CHANNEL_MAX,

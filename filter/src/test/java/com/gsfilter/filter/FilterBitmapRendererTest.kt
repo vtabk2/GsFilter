@@ -38,6 +38,24 @@ class FilterBitmapRendererTest {
     }
 
     @Test
+    fun `beauty whitening affects skin tones but leaves neutral pixels unchanged`() {
+        val skin = 0xffbf8c66.toInt()
+        val neutral = 0xff808080.toInt()
+        val output = FilterBitmapRenderer.renderPixels(
+            pixels = intArrayOf(skin, neutral),
+            width = 2,
+            height = 1,
+            params = ShaderFilterParams.from(
+                recipe = FilterRecipe(skinWhitening = 100),
+                adjustments = Adjustments(),
+            ),
+        )
+
+        assertNotEquals(skin, output[0])
+        assertEquals(neutral, output[1])
+    }
+
+    @Test
     fun `sketch effect draws dark edge lines`() {
         val white = 0xffffffff.toInt()
         val black = 0xff000000.toInt()

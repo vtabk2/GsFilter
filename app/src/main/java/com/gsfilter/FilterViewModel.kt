@@ -36,16 +36,25 @@ class FilterViewModel(application: Application) : AndroidViewModel(application) 
 
     fun setCatalog(catalog: FilterPack) {
         _state.update { state ->
+            val selectedFilter = catalog.filterById(state.selectedFilter.id) ?: catalog.defaultFilter
             state.copy(
                 catalog = catalog,
                 selectedCategory = catalog.categoryById(state.selectedCategory.id) ?: catalog.defaultCategory,
-                selectedFilter = catalog.filterById(state.selectedFilter.id) ?: catalog.defaultFilter,
+                selectedFilter = selectedFilter,
+                skinSmoothing = selectedFilter.recipe.skinSmoothing,
+                skinWhitening = selectedFilter.recipe.skinWhitening,
             )
         }
     }
 
     fun selectFilter(filter: FilterOption) {
-        _state.update { it.copy(selectedFilter = filter) }
+        _state.update {
+            it.copy(
+                selectedFilter = filter,
+                skinSmoothing = filter.recipe.skinSmoothing,
+                skinWhitening = filter.recipe.skinWhitening,
+            )
+        }
     }
 
     fun selectCategory(category: FilterCategory) {
@@ -93,6 +102,23 @@ class FilterViewModel(application: Application) : AndroidViewModel(application) 
                         },
                 )
             }
+        }
+    }
+
+    fun setSkinSmoothing(value: Int) {
+        _state.update { it.copy(skinSmoothing = value.coerceIn(BEAUTY_MIN, BEAUTY_MAX)) }
+    }
+
+    fun setSkinWhitening(value: Int) {
+        _state.update { it.copy(skinWhitening = value.coerceIn(BEAUTY_MIN, BEAUTY_MAX)) }
+    }
+
+    fun resetBeauty() {
+        _state.update {
+            it.copy(
+                skinSmoothing = it.selectedFilter.recipe.skinSmoothing,
+                skinWhitening = it.selectedFilter.recipe.skinWhitening,
+            )
         }
     }
 
@@ -176,5 +202,7 @@ class FilterViewModel(application: Application) : AndroidViewModel(application) 
         const val SAMPLE_BITMAP_MAX_EDGE = 4096
         const val FILTER_INTENSITY_MIN = 0
         const val FILTER_INTENSITY_MAX = 100
+        const val BEAUTY_MIN = 0
+        const val BEAUTY_MAX = 100
     }
 }
