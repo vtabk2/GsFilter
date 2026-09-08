@@ -9,6 +9,7 @@ import android.util.AttributeSet
 import com.gsfilter.filter.Adjustments
 import com.gsfilter.filter.FilterLut
 import com.gsfilter.filter.FilterRecipe
+import com.gsfilter.filter.MakeupFeatures
 import com.gsfilter.filter.ShaderFilterParams
 import com.gsfilter.filter.gl.GlFilterProgram
 import com.gsfilter.filter.gl.GlLutTexture
@@ -39,8 +40,12 @@ class FilterPreviewView @JvmOverloads constructor(
         }
     }
 
-    fun setFilterState(recipe: FilterRecipe, adjustments: Adjustments) {
-        val params = ShaderFilterParams.from(recipe, adjustments)
+    fun setFilterState(
+        recipe: FilterRecipe,
+        adjustments: Adjustments,
+        makeupFeatures: MakeupFeatures? = null,
+    ) {
+        val params = ShaderFilterParams.from(recipe, adjustments, makeupFeatures)
         if (params == lastFilterParams) {
             return
         }

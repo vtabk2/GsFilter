@@ -270,6 +270,66 @@
                 android:textSize="13sp"/>
         </LinearLayout>
 
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:baselineAligned="false"
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
+
+            <TextView
+                android:id="@+id/gs_beauty_blush_label"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:maxLines="1"
+                android:text="@string/gs_beauty_blush"
+                android:textSize="13sp"/>
+
+            <SeekBar
+                android:id="@+id/gs_beauty_blush_seek_bar"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:max="100"/>
+
+            <TextView
+                android:id="@+id/gs_beauty_blush_value"
+                android:layout_width="@dimen/gs_adjust_value_width"
+                android:layout_height="wrap_content"
+                android:gravity="end"
+                android:textSize="13sp"/>
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:baselineAligned="false"
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
+
+            <TextView
+                android:id="@+id/gs_beauty_lipstick_label"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:maxLines="1"
+                android:text="@string/gs_beauty_lipstick"
+                android:textSize="13sp"/>
+
+            <SeekBar
+                android:id="@+id/gs_beauty_lipstick_seek_bar"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:max="100"/>
+
+            <TextView
+                android:id="@+id/gs_beauty_lipstick_value"
+                android:layout_width="@dimen/gs_adjust_value_width"
+                android:layout_height="wrap_content"
+                android:gravity="end"
+                android:textSize="13sp"/>
+        </LinearLayout>
+
         <TextView
             android:id="@+id/gs_beauty_reset_all"
             android:layout_width="wrap_content"

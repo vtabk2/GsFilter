@@ -5,8 +5,11 @@ import androidx.core.graphics.scale
 import com.gsfilter.filter.Adjustments
 import com.gsfilter.filter.FilterEffect
 import com.gsfilter.filter.FilterRecipe
+import com.gsfilter.filter.MakeupFeatures
+import com.gsfilter.filter.NormalizedPoint
 import com.gsfilter.filter.ShaderFilterParams
 import kotlin.math.abs
+import kotlin.math.cos
 import kotlin.math.floor
 import kotlin.math.max
 import kotlin.math.min
@@ -23,6 +26,7 @@ object FilterBitmapRenderer {
         adjustments: Adjustments = Adjustments(),
         maxWidth: Int? = null,
         maxHeight: Int? = null,
+        makeupFeatures: MakeupFeatures? = null,
     ): Bitmap {
         val renderSource = scaledSource(source, maxWidth, maxHeight)
         val width = renderSource.width
@@ -35,7 +39,7 @@ object FilterBitmapRenderer {
                 pixels = pixels,
                 width = width,
                 height = height,
-                params = ShaderFilterParams.from(recipe, adjustments),
+                params = ShaderFilterParams.from(recipe, adjustments, makeupFeatures),
             )
             Bitmap.createBitmap(output, width, height, Bitmap.Config.ARGB_8888)
         } finally {
@@ -140,6 +144,57 @@ object FilterBitmapRenderer {
         red = mix(red, red + ((1f - red) * 0.18f), beautyWhiteAmount)
         green = mix(green, green + ((1f - green) * 0.18f), beautyWhiteAmount)
         blue = mix(blue, blue + ((1f - blue) * 0.18f), beautyWhiteAmount)
+        params.makeupFeatures?.let { features ->
+            val textureX = (x + 0.5f) / width
+            val textureY = (y + 0.5f) / height
+            val blushMask = max(
+                ellipseMask(
+                    textureX,
+                    textureY,
+                    features.leftCheekX,
+                    features.leftCheekY,
+                    features.cheekRadiusX,
+                    features.cheekRadiusY,
+                    features.rotationRadians,
+                    innerEdge = 0.55f,
+                    outerEdge = 1.35f,
+                ) * features.leftCheekStrength,
+                ellipseMask(
+                    textureX,
+                    textureY,
+                    features.rightCheekX,
+                    features.rightCheekY,
+                    features.cheekRadiusX,
+                    features.cheekRadiusY,
+                    features.rotationRadians,
+                    innerEdge = 0.55f,
+                    outerEdge = 1.35f,
+                ) * features.rightCheekStrength,
+            )
+            val blushAmount = params.blush * blushMask * 0.22f
+            red = mix(red, 0.95f, blushAmount)
+            green = mix(green, 0.38f, blushAmount)
+            blue = mix(blue, 0.42f, blushAmount)
+            val lipstickMask = if (features.lipContour.size >= 3) {
+                polygonMask(textureX, textureY, features.lipContour)
+            } else {
+                ellipseMask(
+                    textureX,
+                    textureY,
+                    features.lipCenterX,
+                    features.lipCenterY,
+                    features.lipRadiusX,
+                    features.lipRadiusY,
+                    features.rotationRadians,
+                    innerEdge = 0.75f,
+                    outerEdge = 1.05f,
+                )
+            }
+            val lipstickAmount = params.lipstick * lipstickMask * 0.40f
+            red = mix(red, 0.70f, lipstickAmount)
+            green = mix(green, 0.16f, lipstickAmount)
+            blue = mix(blue, 0.22f, lipstickAmount)
+        }
 
         red += (red - average(red(left), red(right), red(up), red(down))) * sharpAmount
         green += (green - average(green(left), green(right), green(up), green(down))) * sharpAmount
@@ -343,6 +398,64 @@ object FilterBitmapRenderer {
         val crMask = 1f - smoothstep(0.05f, 0.25f, abs(cr - 0.55f))
         val redBias = smoothstep(0.01f, 0.14f, red - ((green + blue) * 0.5f))
         return clamp(cbMask * crMask * redBias, 0f, 1f)
+    }
+
+    private fun ellipseMask(
+        x: Float,
+        y: Float,
+        centerX: Float,
+        centerY: Float,
+        radiusX: Float,
+        radiusY: Float,
+        rotationRadians: Float = 0f,
+        innerEdge: Float = 0.45f,
+        outerEdge: Float = 1f,
+    ): Float {
+        val sine = sin(rotationRadians)
+        val cosine = cos(rotationRadians)
+        val deltaX = (x - centerX) * cosine + (y - centerY) * sine
+        val deltaY = -(x - centerX) * sine + (y - centerY) * cosine
+        val distance = sqrt(
+            ((deltaX / radiusX.coerceAtLeast(0.0001f)).pow(2f)) +
+                ((deltaY / radiusY.coerceAtLeast(0.0001f)).pow(2f)),
+        )
+        return 1f - smoothstep(innerEdge, outerEdge, distance)
+    }
+
+    private fun polygonMask(x: Float, y: Float, points: List<NormalizedPoint>): Float {
+        var inside = false
+        var edgeDistance = 1f
+        points.forEachIndexed { index, start ->
+            val end = points[(index + 1) % points.size]
+            edgeDistance = min(edgeDistance, pointSegmentDistance(x, y, start, end))
+            if ((start.y > y) != (end.y > y)) {
+                val intersectionX = start.x + ((y - start.y) * (end.x - start.x) / (end.y - start.y))
+                if (x < intersectionX) {
+                    inside = !inside
+                }
+            }
+        }
+        val signedDistance = if (inside) edgeDistance else -edgeDistance
+        return smoothstep(-0.008f, 0.008f, signedDistance)
+    }
+
+    private fun pointSegmentDistance(
+        x: Float,
+        y: Float,
+        start: NormalizedPoint,
+        end: NormalizedPoint,
+    ): Float {
+        val segmentX = end.x - start.x
+        val segmentY = end.y - start.y
+        val lengthSquared = max((segmentX * segmentX) + (segmentY * segmentY), 0.000001f)
+        val projection = clamp(
+            (((x - start.x) * segmentX) + ((y - start.y) * segmentY)) / lengthSquared,
+            0f,
+            1f,
+        )
+        val closestX = start.x + (segmentX * projection)
+        val closestY = start.y + (segmentY * projection)
+        return sqrt(((x - closestX).pow(2f)) + ((y - closestY).pow(2f)))
     }
 
     private fun clamp(value: Float, minValue: Float, maxValue: Float): Float = min(max(value, minValue), maxValue)

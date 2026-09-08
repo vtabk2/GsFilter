@@ -7,6 +7,7 @@ import com.gsfilter.filter.FilterCatalog
 import com.gsfilter.filter.FilterOption
 import com.gsfilter.filter.FilterPack
 import com.gsfilter.filter.FilterRecipe
+import com.gsfilter.filter.MakeupFeatures
 
 data class FilterUiState(
     val sourceBitmap: Bitmap? = null,
@@ -17,6 +18,9 @@ data class FilterUiState(
     val filterIntensities: Map<String, Int> = emptyMap(),
     val skinSmoothing: Int = FilterCatalog.default.recipe.skinSmoothing,
     val skinWhitening: Int = FilterCatalog.default.recipe.skinWhitening,
+    val blush: Int = FilterCatalog.default.recipe.blush,
+    val lipstick: Int = FilterCatalog.default.recipe.lipstick,
+    val makeupFeatures: MakeupFeatures? = null,
     val adjustments: Adjustments = Adjustments(),
     val isLoading: Boolean = false,
     val error: FilterError? = null,
@@ -31,12 +35,16 @@ data class FilterUiState(
             return if (
                 intensity != recipe.intensity ||
                 skinSmoothing != recipe.skinSmoothing ||
-                skinWhitening != recipe.skinWhitening
+                skinWhitening != recipe.skinWhitening ||
+                blush != recipe.blush ||
+                lipstick != recipe.lipstick
             ) {
                 recipe.copy(
                     intensity = intensity,
                     skinSmoothing = skinSmoothing,
                     skinWhitening = skinWhitening,
+                    blush = blush,
+                    lipstick = lipstick,
                 )
             } else {
                 recipe

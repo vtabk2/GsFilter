@@ -12,6 +12,9 @@ data class ShaderFilterParams(
     val intensity: Float,
     val skinSmoothing: Float,
     val skinWhitening: Float,
+    val blush: Float,
+    val lipstick: Float,
+    val makeupFeatures: MakeupFeatures?,
     val isMonochrome: Float,
     val redShift: Float,
     val greenShift: Float,
@@ -32,7 +35,11 @@ data class ShaderFilterParams(
     val grain: Float,
 ) {
     companion object {
-        fun from(recipe: FilterRecipe, adjustments: Adjustments): ShaderFilterParams {
+        fun from(
+            recipe: FilterRecipe,
+            adjustments: Adjustments,
+            makeupFeatures: MakeupFeatures? = null,
+        ): ShaderFilterParams {
             val linearIntensity = amount(recipe.intensity, PERCENT_MAX)
             val intensity = intensityAmount(linearIntensity)
             return combineAdjustments(recipe.adjustments.scaledBy(intensity), adjustments).let { combined ->
@@ -51,6 +58,9 @@ data class ShaderFilterParams(
                     intensity = intensity,
                     skinSmoothing = amount(recipe.skinSmoothing, PERCENT_MAX) * intensity,
                     skinWhitening = amount(recipe.skinWhitening, PERCENT_MAX) * intensity,
+                    blush = amount(recipe.blush, PERCENT_MAX) * intensity,
+                    lipstick = amount(recipe.lipstick, PERCENT_MAX) * intensity,
+                    makeupFeatures = makeupFeatures,
                     isMonochrome = if (recipe.isMonochrome) intensity else 0f,
                     redShift = recipe.redShift.scaledBy(intensity) / COLOR_CHANNEL_MAX,
                     greenShift = recipe.greenShift.scaledBy(intensity) / COLOR_CHANNEL_MAX,

@@ -676,6 +676,8 @@ object FilterCatalog {
             recipe = FilterRecipe(
                 skinSmoothing = 72,
                 skinWhitening = 30,
+                blush = 12,
+                lipstick = 10,
                 redShift = 8,
                 greenShift = 4,
                 blueShift = -2,

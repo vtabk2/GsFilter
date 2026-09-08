@@ -84,6 +84,8 @@ class MainActivity : ComponentActivity() {
             when (control) {
                 FilterControlsView.BeautyControl.Smoothing -> viewModel.setSkinSmoothing(value)
                 FilterControlsView.BeautyControl.Whitening -> viewModel.setSkinWhitening(value)
+                FilterControlsView.BeautyControl.Blush -> viewModel.setBlush(value)
+                FilterControlsView.BeautyControl.Lipstick -> viewModel.setLipstick(value)
             }
         }
         binding.filterControls.onResetBeautyClick = viewModel::resetBeauty
@@ -123,6 +125,7 @@ class MainActivity : ComponentActivity() {
         binding.filterPreview.setFilterState(
             recipe = state.selectedRecipe,
             adjustments = state.adjustments,
+            makeupFeatures = state.makeupFeatures,
         )
         binding.filterControls.setState(
             selectedCategory = state.selectedCategory,

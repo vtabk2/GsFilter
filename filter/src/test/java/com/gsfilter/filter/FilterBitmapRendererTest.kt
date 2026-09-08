@@ -5,6 +5,7 @@ import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test
+import kotlin.math.PI
 
 class FilterBitmapRendererTest {
 
@@ -53,6 +54,130 @@ class FilterBitmapRendererTest {
 
         assertNotEquals(skin, output[0])
         assertEquals(neutral, output[1])
+    }
+
+    @Test
+    fun `lipstick changes only the detected lip region`() {
+        val original = 0xff996633.toInt()
+        val output = FilterBitmapRenderer.renderPixels(
+            pixels = intArrayOf(original),
+            width = 1,
+            height = 1,
+            params = ShaderFilterParams.from(
+                recipe = FilterRecipe(lipstick = 100),
+                adjustments = Adjustments(),
+                makeupFeatures = MakeupFeatures(
+                    leftCheekX = 0f,
+                    leftCheekY = 0f,
+                    rightCheekX = 0f,
+                    rightCheekY = 0f,
+                    cheekRadiusX = 0f,
+                    cheekRadiusY = 0f,
+                    lipCenterX = 0.5f,
+                    lipCenterY = 0.5f,
+                    lipRadiusX = 1f,
+                    lipRadiusY = 1f,
+                ),
+            ),
+        )
+
+        assertNotEquals(original, output.single())
+    }
+
+    @Test
+    fun `lip contour keeps lipstick inside the angled mouth shape`() {
+        val original = 0xff996633.toInt()
+        val output = FilterBitmapRenderer.renderPixels(
+            pixels = IntArray(5 * 5) { original },
+            width = 5,
+            height = 5,
+            params = ShaderFilterParams.from(
+                recipe = FilterRecipe(lipstick = 100),
+                adjustments = Adjustments(),
+                makeupFeatures = MakeupFeatures(
+                    leftCheekX = 0f,
+                    leftCheekY = 0f,
+                    rightCheekX = 0f,
+                    rightCheekY = 0f,
+                    cheekRadiusX = 0f,
+                    cheekRadiusY = 0f,
+                    lipCenterX = 0.5f,
+                    lipCenterY = 0.5f,
+                    lipRadiusX = 0.2f,
+                    lipRadiusY = 0.1f,
+                    lipContour = listOf(
+                        NormalizedPoint(0.5f, 0.25f),
+                        NormalizedPoint(0.75f, 0.5f),
+                        NormalizedPoint(0.5f, 0.75f),
+                        NormalizedPoint(0.25f, 0.5f),
+                    ),
+                ),
+            ),
+        )
+
+        assertNotEquals(original, output[12])
+        assertEquals(original, output[0])
+    }
+
+    @Test
+    fun `rotated lip region follows face roll`() {
+        val original = 0xff996633.toInt()
+        val features = MakeupFeatures(
+            leftCheekX = 0f,
+            leftCheekY = 0f,
+            rightCheekX = 0f,
+            rightCheekY = 0f,
+            cheekRadiusX = 0f,
+            cheekRadiusY = 0f,
+            lipCenterX = 0.5f,
+            lipCenterY = 0.5f,
+            lipRadiusX = 0.35f,
+            lipRadiusY = 0.1f,
+            rotationRadians = (PI / 4).toFloat(),
+        )
+        val output = FilterBitmapRenderer.renderPixels(
+            pixels = IntArray(25) { original },
+            width = 5,
+            height = 5,
+            params = ShaderFilterParams.from(
+                recipe = FilterRecipe(lipstick = 100),
+                adjustments = Adjustments(),
+                makeupFeatures = features,
+            ),
+        )
+
+        assertNotEquals(original, output[18])
+    }
+
+    @Test
+    fun `hidden cheek strength prevents makeup on the hidden side`() {
+        val original = 0xff996633.toInt()
+        val output = FilterBitmapRenderer.renderPixels(
+            pixels = IntArray(4) { original },
+            width = 4,
+            height = 1,
+            params = ShaderFilterParams.from(
+                recipe = FilterRecipe(blush = 100),
+                adjustments = Adjustments(),
+                makeupFeatures = MakeupFeatures(
+                    leftCheekX = 0.125f,
+                    leftCheekY = 0.5f,
+                    rightCheekX = 0.875f,
+                    rightCheekY = 0.5f,
+                    cheekRadiusX = 0.15f,
+                    cheekRadiusY = 0.5f,
+                    leftCheekStrength = 0f,
+                    rightCheekStrength = 1f,
+                    lipCenterX = 0f,
+                    lipCenterY = 0f,
+                    lipRadiusX = 0f,
+                    lipRadiusY = 0f,
+                ),
+            ),
+        )
+
+        assertEquals(original, output[0])
+        assertNotEquals(original, output[3])
     }
 
     @Test

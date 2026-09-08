@@ -29,6 +29,7 @@ class FilterViewModel(application: Application) : AndroidViewModel(application) 
 
     private val _state = MutableStateFlow(FilterUiState())
     val state: StateFlow<FilterUiState> = _state.asStateFlow()
+    private val faceMakeupDetector = FaceMakeupDetector()
 
     init {
         loadSample()
@@ -43,6 +44,8 @@ class FilterViewModel(application: Application) : AndroidViewModel(application) 
                 selectedFilter = selectedFilter,
                 skinSmoothing = selectedFilter.recipe.skinSmoothing,
                 skinWhitening = selectedFilter.recipe.skinWhitening,
+                blush = selectedFilter.recipe.blush,
+                lipstick = selectedFilter.recipe.lipstick,
             )
         }
     }
@@ -53,6 +56,8 @@ class FilterViewModel(application: Application) : AndroidViewModel(application) 
                 selectedFilter = filter,
                 skinSmoothing = filter.recipe.skinSmoothing,
                 skinWhitening = filter.recipe.skinWhitening,
+                blush = filter.recipe.blush,
+                lipstick = filter.recipe.lipstick,
             )
         }
     }
@@ -113,11 +118,21 @@ class FilterViewModel(application: Application) : AndroidViewModel(application) 
         _state.update { it.copy(skinWhitening = value.coerceIn(BEAUTY_MIN, BEAUTY_MAX)) }
     }
 
+    fun setBlush(value: Int) {
+        _state.update { it.copy(blush = value.coerceIn(BEAUTY_MIN, BEAUTY_MAX)) }
+    }
+
+    fun setLipstick(value: Int) {
+        _state.update { it.copy(lipstick = value.coerceIn(BEAUTY_MIN, BEAUTY_MAX)) }
+    }
+
     fun resetBeauty() {
         _state.update {
             it.copy(
                 skinSmoothing = it.selectedFilter.recipe.skinSmoothing,
                 skinWhitening = it.selectedFilter.recipe.skinWhitening,
+                blush = it.selectedFilter.recipe.blush,
+                lipstick = it.selectedFilter.recipe.lipstick,
             )
         }
     }
@@ -136,6 +151,7 @@ class FilterViewModel(application: Application) : AndroidViewModel(application) 
                     source = source,
                     recipe = recipe,
                     adjustments = state.adjustments,
+                    makeupFeatures = state.makeupFeatures,
                     maxWidth = maxWidth,
                     maxHeight = maxHeight,
                 )
@@ -149,6 +165,7 @@ class FilterViewModel(application: Application) : AndroidViewModel(application) 
                     source = source,
                     recipe = recipe,
                     adjustments = state.adjustments,
+                    makeupFeatures = state.makeupFeatures,
                     maxWidth = maxWidth,
                     maxHeight = maxHeight,
                 )
@@ -176,12 +193,26 @@ class FilterViewModel(application: Application) : AndroidViewModel(application) 
                         error = null,
                     )
                 }
+                faceMakeupDetector.detect(bitmap) { makeupFeatures ->
+                    _state.update { state ->
+                        if (state.sourceBitmap === bitmap) {
+                            state.copy(makeupFeatures = makeupFeatures)
+                        } else {
+                            state
+                        }
+                    }
+                }
             } catch (_: IOException) {
                 _state.update {
                     it.copy(isLoading = false, error = FilterError.AssetLoadFailed)
                 }
             }
         }
+    }
+
+    override fun onCleared() {
+        faceMakeupDetector.close()
+        super.onCleared()
     }
 
     private fun updateAdjustments(update: (Adjustments) -> Adjustments) {

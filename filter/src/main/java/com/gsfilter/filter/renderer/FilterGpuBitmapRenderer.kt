@@ -10,6 +10,7 @@ import android.opengl.GLES20
 import android.opengl.GLUtils
 import com.gsfilter.filter.Adjustments
 import com.gsfilter.filter.FilterRecipe
+import com.gsfilter.filter.MakeupFeatures
 import com.gsfilter.filter.ShaderFilterParams
 import com.gsfilter.filter.gl.GlFilterProgram
 import com.gsfilter.filter.gl.GlLutTexture
@@ -25,6 +26,7 @@ object FilterGpuBitmapRenderer {
         maxHeight: Int? = null,
         scaleSource: Boolean = true,
         texelScale: Float = 1f,
+        makeupFeatures: MakeupFeatures? = null,
     ): Bitmap = synchronized(renderLock) {
         val renderSize = FilterBitmapRenderer.targetSize(source.width, source.height, maxWidth, maxHeight)
         val renderSource =
@@ -36,7 +38,7 @@ object FilterGpuBitmapRenderer {
         val width = if (scaleSource) renderSource.width else renderSize.width
         val height = if (scaleSource) renderSource.height else renderSize.height
         val egl = EglPbuffer(width, height)
-        val params = ShaderFilterParams.from(recipe, adjustments)
+        val params = ShaderFilterParams.from(recipe, adjustments, makeupFeatures)
         var program = 0
         var textureId = 0
         var lutTextureId = 0

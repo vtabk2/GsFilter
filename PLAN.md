@@ -2208,7 +2208,8 @@ Created: 2026-09-08
 
 - Add a lightweight beauty effect to the existing OpenGL ES renderer.
 - Expose beauty controls in a dedicated `Beauty` tab separate from `Adjust`.
-- Support skin smoothing and whitening without GPUPixel, JNI, or a new native dependency.
+- Add lightweight blush and lipstick overlays driven by face contours.
+- Support beauty rendering without GPUPixel, JNI, or a native rendering dependency.
 - Keep the existing filter and adjustment behavior unchanged when beauty is disabled.
 
 ### Approach
@@ -2216,8 +2217,8 @@ Created: 2026-09-08
 - Reuse the existing single-pass GPU shader and parameter pipeline.
 - Use a conservative color-based skin mask so non-skin pixels are affected less.
 - Apply a small neighborhood blur for smoothing and a restrained lift for whitening.
-- Keep face landmarks, face reshaping, and makeup out of this first pass; they require a separate detector and a larger pipeline change.
-- Reuse the existing tab and slider patterns; keep the first Beauty tab to smoothing and whitening only.
+- Use ML Kit cheek landmarks and lip contours to map makeup regions into compact normalized features; keep rendering in the existing GPU/CPU pipeline.
+- Reuse the existing tab and slider patterns so Beauty stays separate from Adjust.
 
 ### Checklist
 
@@ -2227,10 +2228,22 @@ Created: 2026-09-08
 - [x] Add focused unit coverage for parameter mapping and CPU behavior.
 - [x] Add a dedicated Beauty tab with smoothing and whitening controls.
 - [x] Persist Beauty values in the existing ViewModel state and render recipe.
+- [x] Add face-contour detection and normalized makeup features.
+- [x] Add blush/lipstick recipe, shader, CPU fallback, and Beauty controls.
+- [x] Rotate makeup masks with the detected eye-line angle for tilted faces.
+- [x] Soften and reduce makeup masks so maximum slider values remain natural.
+- [x] Suppress the hidden cheek mask for faces turned strongly to one side.
+- [x] Improve lip center and size calculation for angled mouths.
+- [x] Use the detected outer lip contour as the lipstick mask for non-frontal faces.
 - [ ] Run affected tests and debug build.
 
 ### Verification notes
 
 - `git diff --check` passed.
-- Beauty layout XML parsed successfully and its 30 view IDs are unique.
+- Beauty layout XML parsed successfully and its view IDs are unique.
+- ML Kit contour detection is bundled so makeup works without a first-run model download; no GPUPixel or JNI was added.
+- Cheek placement now prefers ML Kit cheek landmarks instead of the first cheek contour point; lip masks still use the lip contour bounds.
+- Strong yaw now fades the hidden cheek instead of painting two unreliable cheek points.
+- Lip placement now uses the contour centroid and mouth-corner midpoint when available, instead of only an axis-aligned bounding-box midpoint.
+- Tilt handling derives roll from the two eye contours and rotates cheek/lip masks in both render paths.
 - Gradle verification is blocked because this environment has no JDK (`java`/`kotlinc` unavailable); rerun `:filter:testDebugUnitTest :app:compileDebugKotlin` on a machine with JDK 17.

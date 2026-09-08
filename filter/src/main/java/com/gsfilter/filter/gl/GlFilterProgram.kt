@@ -59,6 +59,15 @@ internal object GlFilterProgram {
             lutStrength = GLES20.glGetUniformLocation(program, U_LUT_STRENGTH),
             skinSmoothing = GLES20.glGetUniformLocation(program, U_SKIN_SMOOTHING),
             skinWhitening = GLES20.glGetUniformLocation(program, U_SKIN_WHITENING),
+            blush = GLES20.glGetUniformLocation(program, U_BLUSH),
+            lipstick = GLES20.glGetUniformLocation(program, U_LIPSTICK),
+            blushLeft = GLES20.glGetUniformLocation(program, U_BLUSH_LEFT),
+            blushRight = GLES20.glGetUniformLocation(program, U_BLUSH_RIGHT),
+            blushStrengths = GLES20.glGetUniformLocation(program, U_BLUSH_STRENGTHS),
+            lipArea = GLES20.glGetUniformLocation(program, U_LIP_AREA),
+            lipPoints = GLES20.glGetUniformLocation(program, U_LIP_POINTS),
+            lipPointCount = GLES20.glGetUniformLocation(program, U_LIP_POINT_COUNT),
+            makeupRotation = GLES20.glGetUniformLocation(program, U_MAKEUP_ROTATION),
             effect = GLES20.glGetUniformLocation(program, U_EFFECT),
             effectStrength = GLES20.glGetUniformLocation(program, U_EFFECT_STRENGTH),
             effectThreshold = GLES20.glGetUniformLocation(program, U_EFFECT_THRESHOLD),
@@ -122,6 +131,52 @@ internal object GlFilterProgram {
         GLES20.glUniform1f(handles.lutStrength, lutStrength)
         GLES20.glUniform1f(handles.skinSmoothing, params.skinSmoothing)
         GLES20.glUniform1f(handles.skinWhitening, params.skinWhitening)
+        GLES20.glUniform1f(handles.blush, params.blush)
+        GLES20.glUniform1f(handles.lipstick, params.lipstick)
+        GLES20.glUniform1f(handles.makeupRotation, params.makeupFeatures?.rotationRadians ?: 0f)
+        params.makeupFeatures?.let { features ->
+            GLES20.glUniform4f(
+                handles.blushLeft,
+                features.leftCheekX,
+                features.leftCheekY,
+                features.cheekRadiusX,
+                features.cheekRadiusY,
+            )
+            GLES20.glUniform4f(
+                handles.blushRight,
+                features.rightCheekX,
+                features.rightCheekY,
+                features.cheekRadiusX,
+                features.cheekRadiusY,
+            )
+            GLES20.glUniform2f(
+                handles.blushStrengths,
+                features.leftCheekStrength,
+                features.rightCheekStrength,
+            )
+            GLES20.glUniform4f(
+                handles.lipArea,
+                features.lipCenterX,
+                features.lipCenterY,
+                features.lipRadiusX,
+                features.lipRadiusY,
+            )
+            val lipPointValues = FloatArray(MAX_LIP_POINTS * 2)
+            val lipPointCount = features.lipContour.size.coerceAtMost(MAX_LIP_POINTS)
+            features.lipContour.take(MAX_LIP_POINTS).forEachIndexed { index, point ->
+                lipPointValues[index * 2] = point.x
+                lipPointValues[(index * 2) + 1] = point.y
+            }
+            GLES20.glUniform2fv(handles.lipPoints, MAX_LIP_POINTS, lipPointValues, 0)
+            GLES20.glUniform1i(handles.lipPointCount, lipPointCount)
+        } ?: run {
+            GLES20.glUniform4f(handles.blushLeft, 0f, 0f, 0f, 0f)
+            GLES20.glUniform4f(handles.blushRight, 0f, 0f, 0f, 0f)
+            GLES20.glUniform2f(handles.blushStrengths, 0f, 0f)
+            GLES20.glUniform4f(handles.lipArea, 0f, 0f, 0f, 0f)
+            GLES20.glUniform2fv(handles.lipPoints, MAX_LIP_POINTS, FloatArray(MAX_LIP_POINTS * 2), 0)
+            GLES20.glUniform1i(handles.lipPointCount, 0)
+        }
         GLES20.glUniform1f(handles.effect, params.effect.shaderValue)
         GLES20.glUniform1f(handles.effectStrength, params.effectStrength)
         GLES20.glUniform1f(handles.effectThreshold, params.effectThreshold)
@@ -172,6 +227,15 @@ internal object GlFilterProgram {
         val lutStrength: Int,
         val skinSmoothing: Int,
         val skinWhitening: Int,
+        val blush: Int,
+        val lipstick: Int,
+        val blushLeft: Int,
+        val blushRight: Int,
+        val blushStrengths: Int,
+        val lipArea: Int,
+        val lipPoints: Int,
+        val lipPointCount: Int,
+        val makeupRotation: Int,
         val effect: Int,
         val effectStrength: Int,
         val effectThreshold: Int,
@@ -215,6 +279,16 @@ internal object GlFilterProgram {
     private const val U_LUT_STRENGTH = "uLutStrength"
     private const val U_SKIN_SMOOTHING = "uSkinSmoothing"
     private const val U_SKIN_WHITENING = "uSkinWhitening"
+    private const val U_BLUSH = "uBlush"
+    private const val U_LIPSTICK = "uLipstick"
+    private const val U_BLUSH_LEFT = "uBlushLeft"
+    private const val U_BLUSH_RIGHT = "uBlushRight"
+    private const val U_BLUSH_STRENGTHS = "uBlushStrengths"
+    private const val U_LIP_AREA = "uLipArea"
+    private const val U_LIP_POINTS = "uLipPoints[0]"
+    private const val U_LIP_POINT_COUNT = "uLipPointCount"
+    private const val U_MAKEUP_ROTATION = "uMakeupRotation"
+    private const val MAX_LIP_POINTS = 32
     private const val U_EFFECT = "uEffect"
     private const val U_EFFECT_STRENGTH = "uEffectStrength"
     private const val U_EFFECT_THRESHOLD = "uEffectThreshold"
@@ -258,6 +332,15 @@ internal object GlFilterProgram {
         uniform float uLutStrength;
         uniform float uSkinSmoothing;
         uniform float uSkinWhitening;
+        uniform float uBlush;
+        uniform float uLipstick;
+        uniform vec4 uBlushLeft;
+        uniform vec4 uBlushRight;
+        uniform vec2 uBlushStrengths;
+        uniform vec4 uLipArea;
+        uniform vec2 uLipPoints[32];
+        uniform int uLipPointCount;
+        uniform float uMakeupRotation;
         uniform float uEffect;
         uniform float uEffectStrength;
         uniform float uEffectThreshold;
@@ -320,6 +403,55 @@ internal object GlFilterProgram {
             return clamp(cbMask * crMask * redBias, 0.0, 1.0);
         }
 
+        float ellipseMask(vec2 coord, vec4 area, float rotation, float innerEdge, float outerEdge) {
+            vec2 radius = max(area.zw, vec2(0.0001));
+            vec2 delta = (coord - area.xy) / radius;
+            float sine = sin(rotation);
+            float cosine = cos(rotation);
+            vec2 rotated = vec2(
+                (delta.x * cosine) + (delta.y * sine),
+                (-delta.x * sine) + (delta.y * cosine)
+            );
+            return 1.0 - smoothstep(innerEdge, outerEdge, length(rotated));
+        }
+
+        float pointSegmentDistance(vec2 point, vec2 start, vec2 end) {
+            vec2 segment = end - start;
+            float lengthSquared = max(dot(segment, segment), 0.000001);
+            float projection = clamp(dot(point - start, segment) / lengthSquared, 0.0, 1.0);
+            return distance(point, start + (segment * projection));
+        }
+
+        float lipContourMask(vec2 coord) {
+            if (uLipPointCount < 3) {
+                return ellipseMask(coord, uLipArea, uMakeupRotation, 0.75, 1.05);
+            }
+
+            bool inside = false;
+            float edgeDistance = 1.0;
+            for (int index = 0; index < 32; index++) {
+                if (index >= uLipPointCount) {
+                    break;
+                }
+                int nextIndex = index + 1;
+                if (nextIndex >= uLipPointCount) {
+                    nextIndex = 0;
+                }
+                vec2 start = uLipPoints[index];
+                vec2 end = uLipPoints[nextIndex];
+                edgeDistance = min(edgeDistance, pointSegmentDistance(coord, start, end));
+                if ((start.y > coord.y) != (end.y > coord.y)) {
+                    float intersectionX = start.x +
+                        ((coord.y - start.y) * (end.x - start.x) / (end.y - start.y));
+                    if (coord.x < intersectionX) {
+                        inside = !inside;
+                    }
+                }
+            }
+            float signedDistance = inside ? edgeDistance : -edgeDistance;
+            return smoothstep(-0.008, 0.008, signedDistance);
+        }
+
         float stripe(float value) {
             return 1.0 - smoothstep(0.0, 0.055, abs(fract(value) - 0.5));
         }
@@ -354,6 +486,14 @@ internal object GlFilterProgram {
             vec3 rgb = mix(color.rgb, blur, smoothAmount);
             rgb = rgb + (rgb - blur) * ((uSharpness * 0.65) + (uClarity * 0.35));
             rgb = mix(rgb, rgb + ((vec3(1.0) - rgb) * 0.18), uSkinWhitening * beautyMask);
+            float blushMask = max(
+                ellipseMask(vTexCoord, uBlushLeft, uMakeupRotation, 0.55, 1.35) * uBlushStrengths.x,
+                ellipseMask(vTexCoord, uBlushRight, uMakeupRotation, 0.55, 1.35) * uBlushStrengths.y
+            );
+            float blushAmount = uBlush * blushMask * 0.22;
+            rgb = mix(rgb, vec3(0.95, 0.38, 0.42), blushAmount);
+            float lipstickAmount = uLipstick * lipContourMask(vTexCoord) * 0.40;
+            rgb = mix(rgb, vec3(0.70, 0.16, 0.22), lipstickAmount);
 
             rgb = rgb + uRgbShift;
             float gray = dot(rgb, vec3(0.299, 0.587, 0.114));

@@ -92,6 +92,12 @@ class FilterControlsView @JvmOverloads constructor(
     private val beautyWhiteningLabel: TextView?
     private val beautyWhiteningSeekBar: SeekBar?
     private val beautyWhiteningValue: TextView?
+    private val beautyBlushLabel: TextView?
+    private val beautyBlushSeekBar: SeekBar?
+    private val beautyBlushValue: TextView?
+    private val beautyLipstickLabel: TextView?
+    private val beautyLipstickSeekBar: SeekBar?
+    private val beautyLipstickValue: TextView?
     private val beautyResetAll: TextView?
     private val adjustContainer: FrameLayout?
     private val adjustContent: AdjustControlsView
@@ -119,6 +125,12 @@ class FilterControlsView @JvmOverloads constructor(
         beautyWhiteningLabel = findViewById(R.id.gs_beauty_whitening_label)
         beautyWhiteningSeekBar = findViewById(R.id.gs_beauty_whitening_seek_bar)
         beautyWhiteningValue = findViewById(R.id.gs_beauty_whitening_value)
+        beautyBlushLabel = findViewById(R.id.gs_beauty_blush_label)
+        beautyBlushSeekBar = findViewById(R.id.gs_beauty_blush_seek_bar)
+        beautyBlushValue = findViewById(R.id.gs_beauty_blush_value)
+        beautyLipstickLabel = findViewById(R.id.gs_beauty_lipstick_label)
+        beautyLipstickSeekBar = findViewById(R.id.gs_beauty_lipstick_seek_bar)
+        beautyLipstickValue = findViewById(R.id.gs_beauty_lipstick_value)
         beautyResetAll = findViewById(R.id.gs_beauty_reset_all)
         adjustContainer = findViewById(R.id.gs_adjust_container)
         adjustContent = AdjustControlsView(context, attrs)
@@ -415,6 +427,8 @@ class FilterControlsView @JvmOverloads constructor(
         listOf(
             beautySmoothingSeekBar to BeautyControl.Smoothing,
             beautyWhiteningSeekBar to BeautyControl.Whitening,
+            beautyBlushSeekBar to BeautyControl.Blush,
+            beautyLipstickSeekBar to BeautyControl.Lipstick,
         ).forEach { (seekBar, control) ->
             seekBar?.max = BEAUTY_MAX
             seekBar?.progressBackgroundTintList = ColorStateList.valueOf(style.intensityTrackColor)
@@ -437,6 +451,10 @@ class FilterControlsView @JvmOverloads constructor(
             beautySmoothingValue,
             beautyWhiteningLabel,
             beautyWhiteningValue,
+            beautyBlushLabel,
+            beautyBlushValue,
+            beautyLipstickLabel,
+            beautyLipstickValue,
         ).forEach { it?.setTextColor(style.intensityTextColor) }
         beautyResetAll?.text = context.getString(R.string.gs_action_reset_beauty)
         beautyResetAll?.setTextColor(style.intensityTextColor)
@@ -512,13 +530,22 @@ class FilterControlsView @JvmOverloads constructor(
     private fun renderBeauty() {
         val smoothing = selectedRecipe.skinSmoothing.coerceIn(0, BEAUTY_MAX)
         val whitening = selectedRecipe.skinWhitening.coerceIn(0, BEAUTY_MAX)
+        val blush = selectedRecipe.blush.coerceIn(0, BEAUTY_MAX)
+        val lipstick = selectedRecipe.lipstick.coerceIn(0, BEAUTY_MAX)
         isRenderingBeauty = true
         beautySmoothingSeekBar?.progress = smoothing
         beautySmoothingValue?.text = smoothing.toString()
         beautyWhiteningSeekBar?.progress = whitening
         beautyWhiteningValue?.text = whitening.toString()
+        beautyBlushSeekBar?.progress = blush
+        beautyBlushValue?.text = blush.toString()
+        beautyLipstickSeekBar?.progress = lipstick
+        beautyLipstickValue?.text = lipstick.toString()
         beautyResetAll?.isEnabled =
-            smoothing != selectedFilter.recipe.skinSmoothing || whitening != selectedFilter.recipe.skinWhitening
+            smoothing != selectedFilter.recipe.skinSmoothing ||
+                whitening != selectedFilter.recipe.skinWhitening ||
+                blush != selectedFilter.recipe.blush ||
+                lipstick != selectedFilter.recipe.lipstick
         isRenderingBeauty = false
     }
 
@@ -593,6 +620,8 @@ class FilterControlsView @JvmOverloads constructor(
     enum class BeautyControl {
         Smoothing,
         Whitening,
+        Blush,
+        Lipstick,
     }
 
     private data class TabParts(

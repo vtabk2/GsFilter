@@ -15,6 +15,8 @@ class ShaderFilterParamsTest {
                 effectTone = 60,
                 skinSmoothing = 80,
                 skinWhitening = 40,
+                blush = 30,
+                lipstick = 70,
                 isMonochrome = true,
                 redShift = 10,
                 greenShift = -5,
@@ -44,6 +46,8 @@ class ShaderFilterParamsTest {
         assertEquals(0.6f, params.effectTone, DELTA)
         assertEquals(0.8f, params.skinSmoothing, DELTA)
         assertEquals(0.4f, params.skinWhitening, DELTA)
+        assertEquals(0.3f, params.blush, DELTA)
+        assertEquals(0.7f, params.lipstick, DELTA)
         assertEquals(FilterLut.None, params.lut)
         assertEquals(0f, params.lutStrength, DELTA)
         assertEquals(1f, params.isMonochrome, DELTA)

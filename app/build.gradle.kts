@@ -43,6 +43,7 @@ dependencies {
     implementation("io.coil-kt.coil3:coil:3.4.0")
     implementation("io.coil-kt.coil3:coil-svg:3.4.0")
     implementation("com.caverock:androidsvg-aar:1.4")
+    implementation("com.google.mlkit:face-detection:16.1.7")
 
     testImplementation("junit:junit:4.13.2")
 }
