@@ -2532,3 +2532,106 @@ Completed: 2026-09-09
 
 - Eyebrow enhancement uses separate ML Kit upper/lower eyebrow contour polygons, so the effect follows tilted and three-quarter faces without a guessed oval region.
 - `:filter:testDebugUnitTest :app:testDebugUnitTest :app:compileDebugKotlin :app:installDebug` passed on Samsung A56 (`SM-A566B`); the app launched without shader or runtime errors in logcat.
+
+## Task: Keep the initial Result unchanged
+
+Status: DONE
+Created: 2026-09-09
+Completed: 2026-09-09
+
+### Requirements
+
+- Start with the built-in `original` filter so Result matches the source before any user action.
+- Keep the JSON filter-pack switch available for explicit testing.
+
+### Checklist
+
+- [x] Disable JSON pack by default in the sample screen.
+- [x] Run focused build/test checks and install Debug.
+
+### Notes
+
+- The JSON pack remains opt-in; its first filter is `Fresh Air`, so loading it at startup was the reason Result differed before any user action.
+- `:filter:testDebugUnitTest :app:testDebugUnitTest :app:compileDebugKotlin :app:installDebug` passed, and UIAutomator confirmed `filterPackSwitch checked=false` after launch.
+
+## Task: Match Original and Result when no edits are active
+
+Status: SUPERSEDED
+Created: 2026-09-09
+Completed: 2026-09-09
+
+### Requirements
+
+- Make Result visually identical to Original when the recipe and adjustments are at defaults.
+- Keep the GPU preview for any active filter, Beauty, or Adjust change.
+
+### Checklist
+
+- [ ] Add an identity Result view using the same ImageView rendering path as Original.
+- [ ] Toggle GPU preview only when an edit is active.
+- [x] Run tests/build, install Debug, and compare the sample screenshot.
+
+### Notes
+
+- Reverted the extra identity ImageView and one-pixel preview balancing after deciding the existing preview path is sufficient.
+
+## Task: Keep JSON pack at None by default
+
+Status: DONE
+Created: 2026-09-09
+Completed: 2026-09-09
+
+### Requirements
+
+- Enabling the JSON pack must leave the editor at None/Original.
+- Do not preselect or apply the first JSON filter.
+
+### Checklist
+
+- [x] Add the JSON pack's Original option as the default without displaying it as a category tile.
+- [x] Add a parser regression test for an uncategorized Original option.
+- [x] Run focused tests and compile/install Debug.
+
+### Notes
+
+- JSON pack now declares `defaultFilterId: "original"`; its Original option has no category, so no filter tile is selected or displayed by default.
+- `:filter:testDebugUnitTest :app:testDebugUnitTest :app:compileDebugKotlin :app:installDebug` passed and Debug was installed on Samsung A56 (`SM-A566B`).
+
+## Task: Add bitmap equality diagnostic
+
+Status: DONE
+Created: 2026-09-09
+Completed: 2026-09-09
+
+### Requirements
+
+- Compare the source bitmap with the rendered bitmap without adding another preview view.
+
+### Checklist
+
+- [x] Use Android's native pixel comparison and log the result when saving.
+- [x] Compile the app after removing the identity ImageView.
+
+### Notes
+
+- The diagnostic checks nullability and dimensions before calling `Bitmap.sameAs`; it does not compare layout scaling or screenshot pixels.
+
+## Task: Preserve identity bitmap output without an extra ImageView
+
+Status: DONE
+Created: 2026-09-09
+Completed: 2026-09-09
+
+### Requirements
+
+- When no filter, Beauty, or Adjust value is active, keep the rendered bitmap pixel-identical to the source.
+- Do not add a second preview ImageView.
+
+### Checklist
+
+- [x] Return a copied source bitmap for the identity export path.
+- [x] Compile and install the Debug app.
+
+### Notes
+
+- The previous `false` comparison came from running the identity image through GPU texture sampling; the identity path now avoids that rounding.

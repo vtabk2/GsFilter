@@ -1,5 +1,6 @@
 {
   "defaultCategoryId": "json_cinematic",
+  "defaultFilterId": "original",
   "categories": [
     { "id": "json_popular", "name": "JSON Popular" },
     { "id": "json_cinematic", "name": "JSON Cinematic" },
@@ -7,6 +8,11 @@
     { "id": "json_art", "name": "JSON Art" }
   ],
   "filters": [
+    {
+      "id": "original",
+      "name": "Original",
+      "categoryIds": []
+    },
     {
       "id": "json_fresh_air",
       "name": "Fresh Air",

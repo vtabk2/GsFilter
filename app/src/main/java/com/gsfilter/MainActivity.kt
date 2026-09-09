@@ -158,6 +158,7 @@ class MainActivity : ComponentActivity() {
                 if (bitmap == null) {
                     null
                 } else {
+                    Log.d("BitmapCompare", "source/result same=${areBitmapsEqual(viewModel.state.value.sourceBitmap, bitmap)}")
                     try {
                         withContext(Dispatchers.IO) { saveToAppStorage(bitmap) }
                     } finally {
@@ -190,6 +191,14 @@ class MainActivity : ComponentActivity() {
         isSaving = saving
         binding.progressBar.isVisible = viewModel.state.value.isLoading || saving
     }
+
+    private fun areBitmapsEqual(first: Bitmap?, second: Bitmap?): Boolean =
+        when {
+            first === second -> true
+            first == null || second == null -> false
+            first.width != second.width || first.height != second.height -> false
+            else -> first.sameAs(second)
+        }
 
     private fun saveToAppStorage(bitmap: Bitmap): File {
         Log.d("TAG5", "saveToAppStorage: bitmap.width = " + bitmap.width)

@@ -207,6 +207,10 @@ class FilterViewModel(application: Application) : AndroidViewModel(application) 
         val source = state.sourceBitmap ?: return null
         val recipe = state.selectedRecipe
         return withContext(Dispatchers.Default) {
+            if (recipe == FilterRecipe() && state.adjustments == Adjustments()) {
+                return@withContext source.copy(source.config ?: Bitmap.Config.ARGB_8888, true)
+            }
+
             fun renderCpu() =
                 FilterBitmapRenderer.getBitmap(
                     source = source,

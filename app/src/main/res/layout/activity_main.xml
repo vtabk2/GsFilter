@@ -33,7 +33,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="@dimen/item_spacing"
-                android:checked="true"
+                android:checked="false"
                 android:text="@string/test_filter_pack_toggle"
                 android:textColor="@color/text_secondary"
                 android:textSize="13sp"/>

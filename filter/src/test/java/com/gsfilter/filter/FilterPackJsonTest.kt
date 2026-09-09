@@ -97,4 +97,25 @@ class FilterPackJsonTest {
 
         assertEquals("teal", pack.defaultFilter.id)
     }
+
+    @Test
+    fun `json pack can use uncategorized original as default`() {
+        val pack = FilterPackJson.parse(
+            """
+            {
+              "defaultFilterId": "original",
+              "categories": [
+                {"id": "cinematic", "name": "Cinematic"}
+              ],
+              "filters": [
+                {"id": "original", "name": "Original", "categoryIds": []},
+                {"id": "teal", "name": "Teal", "categoryIds": ["cinematic"]}
+              ]
+            }
+            """.trimIndent(),
+        )
+
+        assertEquals("original", pack.defaultFilter.id)
+        assertTrue(pack.filtersForCategory("cinematic").none { it.id == "original" })
+    }
 }

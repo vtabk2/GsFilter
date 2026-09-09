@@ -15,9 +15,10 @@ object FilterPackJson {
         }
         val categoryIds = categories.map { it.id }.toSet()
         val filters = root.getJSONArray("filters").mapObjects { item ->
+            val filterId = item.getString("id")
             val filterCategoryIds = item.categoryIds()
-            require(filterCategoryIds.isNotEmpty()) {
-                "Filter '${item.getString("id")}' must define categoryIds."
+            require(filterCategoryIds.isNotEmpty() || filterId == ORIGINAL_FILTER_ID) {
+                "Filter '$filterId' must define categoryIds."
             }
             require(filterCategoryIds.all { it in categoryIds }) {
                 "Filter '${item.getString("id")}' references an unknown category."
@@ -123,4 +124,5 @@ object FilterPackJson {
     private const val EFFECT_TONE_DEFAULT = 20
     private const val LUT_STRENGTH_DEFAULT = 100
     private const val INTENSITY_DEFAULT = 100
+    private const val ORIGINAL_FILTER_ID = "original"
 }
