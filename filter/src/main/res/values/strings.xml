@@ -2,7 +2,7 @@
     <string name="gs_action_original">Original</string>
     <string name="gs_action_close">Close</string>
     <string name="gs_action_reset_adjust">Reset Selected Adjust</string>
-    <string name="gs_action_reset_all_adjust">Reset All</string>
+    <string name="gs_action_reset_all_adjust">Reset All Adjustments</string>
     <string name="gs_section_filter">Filter</string>
     <string name="gs_section_beauty">Beauty</string>
     <string name="gs_section_adjust">Adjust</string>
@@ -13,7 +13,7 @@
     <string name="gs_beauty_lipstick">Lipstick</string>
     <string name="gs_beauty_under_eye">Under-eye</string>
     <string name="gs_beauty_teeth_whitening">Teeth</string>
-    <string name="gs_action_reset_beauty">Reset Beauty</string>
+    <string name="gs_action_reset_beauty">Reset All Beauty</string>
     <string name="gs_filter_mono">B&amp;W</string>
     <string name="gs_filter_fresh">Fresh</string>
     <string name="gs_filter_portra">Portra</string>

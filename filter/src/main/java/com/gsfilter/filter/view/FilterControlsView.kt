@@ -643,12 +643,12 @@ class FilterControlsView @JvmOverloads constructor(
         val labelRes: Int,
         val iconRes: Int,
     ) {
-        Smoothing(R.string.gs_beauty_smoothing, R.drawable.ic_gs_adjust_clarity),
-        Whitening(R.string.gs_beauty_whitening, R.drawable.ic_gs_adjust_highlights),
-        Blush(R.string.gs_beauty_blush, R.drawable.ic_gs_adjust_tint),
-        Lipstick(R.string.gs_beauty_lipstick, R.drawable.ic_gs_adjust_saturation),
-        UnderEye(R.string.gs_beauty_under_eye, R.drawable.ic_gs_adjust_shadows),
-        TeethWhitening(R.string.gs_beauty_teeth_whitening, R.drawable.ic_gs_adjust_brightness),
+        Smoothing(R.string.gs_beauty_smoothing, R.drawable.ic_gs_beauty_smoothing),
+        Whitening(R.string.gs_beauty_whitening, R.drawable.ic_gs_beauty_whitening),
+        Blush(R.string.gs_beauty_blush, R.drawable.ic_gs_beauty_blush),
+        Lipstick(R.string.gs_beauty_lipstick, R.drawable.ic_gs_beauty_lipstick),
+        UnderEye(R.string.gs_beauty_under_eye, R.drawable.ic_gs_beauty_under_eye),
+        TeethWhitening(R.string.gs_beauty_teeth_whitening, R.drawable.ic_gs_beauty_teeth),
     }
 
     private data class TabParts(

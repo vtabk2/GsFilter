@@ -2255,9 +2255,8 @@ Created: 2026-09-08
 
 ## Next Task: Finish Beauty accuracy and add practical makeup features
 
-Status: DONE
+Status: IN PROGRESS
 Created: 2026-09-09
-Completed: 2026-09-09
 
 ### Goal
 
@@ -2372,8 +2371,9 @@ Completed: 2026-09-09
 
 ## Task: Add teeth whitening control
 
-Status: IN PROGRESS
+Status: DONE
 Created: 2026-09-09
+Completed: 2026-09-09
 
 ### Requirements
 
@@ -2396,8 +2396,9 @@ Created: 2026-09-09
 
 ## Task: Match Beauty controls to the Adjust selector UI
 
-Status: IN PROGRESS
+Status: DONE
 Created: 2026-09-09
+Completed: 2026-09-09
 
 ### Requirements
 
@@ -2417,3 +2418,36 @@ Created: 2026-09-09
 - Beauty now follows the Adjust interaction: select Smoothing, Whitening, Blush, Lipstick, Under-eye, or Teeth from a horizontal rail, then edit the selected value with one shared `0..100` SeekBar.
 - Existing recipe values and callbacks remain unchanged; the UI only changes how controls are presented.
 - `:filter:testDebugUnitTest :app:testDebugUnitTest :app:compileDebugKotlin` and `:app:installDebug` passed.
+
+## Task: Label Adjust reset and add Beauty icons
+
+Status: DONE
+Created: 2026-09-09
+Completed: 2026-09-09
+
+### Requirements
+
+- Rename the Adjust all-controls reset action to `Reset All Adjustments`.
+- Give each Beauty control its own dedicated vector icon.
+- Keep existing behavior and the `0..100` Beauty SeekBar range unchanged.
+
+### Checklist
+
+- [x] Update the reset string.
+- [x] Add and wire six Beauty vector icons.
+- [x] Run focused resource/build checks and review the final diff.
+
+### Notes
+
+- Adjust now uses `Reset All Adjustments` for the bottom action.
+- Beauty controls use dedicated smoothing, whitening, blush, lipstick, under-eye, and teeth icons instead of reusing Adjust icons.
+- `:filter:testDebugUnitTest :app:testDebugUnitTest :app:compileDebugKotlin :app:installDebug` passed.
+
+### Follow-up
+
+- [x] Rename the Beauty all-controls reset action to `Reset All Beauty`.
+
+### Follow-up notes
+
+- The Beauty reset label now matches the Adjust wording pattern.
+- `:filter:testDebugUnitTest :app:testDebugUnitTest :app:compileDebugKotlin :app:installDebug` passed after the label update.
