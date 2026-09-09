@@ -4,7 +4,7 @@ GsFilter là demo filter ảnh Android nhỏ, đồng thời là module thư vi�
 
 Dự án gồm:
 
-- `:filter`: module tái sử dụng cho model filter, preview OpenGL, control Filter/Adjust, parse JSON filter pack, CPU/GPU bitmap render, batch render progress, và thumbnail qua Glide.
+- `:filter`: module tái sử dụng cho model filter, preview OpenGL, control Filter/Beauty/Adjust, parse JSON filter pack, CPU/GPU bitmap render, batch render progress, và thumbnail qua Glide.
 - `:app`: app mẫu dùng MVVM, ảnh từ `assets`, và module `:filter`.
 
 Phạm vi hiện tại:
@@ -17,9 +17,23 @@ Phạm vi hiện tại:
 - Preview GPU qua `FilterPreviewView`.
 - Filter preset là data recipe, gồm color/effect/LUT.
 - Adjust controls là bộ cố định.
+- Beauty controls nằm ở tab riêng, gồm Smoothing, Whitening, Blush, Lipstick, Under-eye, Teeth Whitening, Eye Shadow, Eyeliner, Eyebrow, Face Slimming và Eye Enlargement; tất cả dùng range `0..100`.
 - Thumbnail rail của filter được load bằng Glide với cache key ổn định.
 - LUT nội bộ dùng texture 33x33x33 sinh từ `FilterLut`, không cần ship file LUT ngoài.
 - Render nhiều bitmap nên đi qua `FilterRenderer.renderBatch()` để xử lý lần lượt và nhận progress %.
+
+## Chạy app mẫu
+
+Mở project bằng Android Studio, chọn configuration `app`, rồi chạy trên emulator hoặc thiết bị Android API 24+.
+
+Build, test và cài Debug trên Windows:
+
+```powershell
+$env:JAVA_HOME = "<Android Studio>\jbr"
+.\gradlew.bat --no-daemon :filter:testDebugUnitTest :app:testDebugUnitTest :app:compileDebugKotlin :app:installDebug
+```
+
+Ảnh demo được tải từ `app/src/main/assets`. Nút `Next image` chuyển lần lượt qua các ảnh được hỗ trợ trong thư mục assets.
 
 ## Cài đặt thư viện
 
@@ -199,7 +213,7 @@ Trong app mẫu, `FilterViewModel.renderFilteredBitmap(maxWidth, maxHeight, useG
 
 ## Cách dùng controls
 
-`FilterControlsView` tự render UI category/filter và tab Adjust. Host vẫn giữ app state, preview rendering, save/export, và navigation.
+`FilterControlsView` tự render UI category/filter và các tab Beauty/Adjust. Host vẫn giữ app state, preview rendering, save/export, và navigation.
 
 ```xml
 <com.gsfilter.filter.view.FilterControlsView
@@ -264,14 +278,60 @@ Ghi chú:
 - `gsFilterCloseIcon` đổi icon của `gs_filter_close_button`; app mẫu đang dùng `ic_gs_tick`.
 - `gsAdjustResetIcon` mặc định dùng selector có disabled/pressed state.
 
+### Beauty
+
+Beauty là tab chỉnh khuôn mặt và makeup riêng, tách khỏi `Adjust`. Người dùng chọn một control trên thanh icon ngang rồi kéo SeekBar chung ở dưới; tất cả control dùng range `0..100`.
+
+Các control hiện có:
+
+- `Smoothing`: làm mịn da, có bảo vệ cạnh để giữ chi tiết khuôn mặt.
+- `Whitening`: nâng sáng và giảm nhẹ độ bão hòa vùng da, không phủ trắng toàn ảnh.
+- `Blush`: thêm má hồng theo hai vùng má được phát hiện, có hỗ trợ mặt nghiêng.
+- `Lipstick`: tô môi theo contour môi, giới hạn màu trong vùng môi.
+- `Under-eye`: làm sáng vùng dưới mắt.
+- `Teeth Whitening`: làm sáng vùng răng trong khu vực miệng.
+- `Eye Shadow`: thêm màu mắt theo vùng mí và góc mặt.
+- `Eyeliner`: thêm đường viền mắt theo vùng mắt.
+- `Eyebrow`: tăng màu theo contour lông mày.
+- `Face Slimming`: thu gọn khuôn mặt bằng warp giới hạn trong vùng mặt.
+- `Eye Enlargement`: phóng to mắt bằng warp theo vùng mắt và góc nghiêng.
+
+Beauty state được giữ trong `FilterRecipe`, render bằng GPU và có CPU fallback. Nút `Reset Beauty` đưa control đang chọn về giá trị của filter hiện tại; `Reset All Beauty` đưa toàn bộ Beauty về giá trị mặc định của filter. Khi đang ở `Original`, các giá trị mặc định đều là `0`.
+
+Host app nhận thay đổi Beauty qua callback:
+
+```kotlin
+binding.filterControls.onBeautyChanged = { control, value ->
+    when (control) {
+        FilterControlsView.BeautyControl.Smoothing -> viewModel.setSkinSmoothing(value)
+        FilterControlsView.BeautyControl.Whitening -> viewModel.setSkinWhitening(value)
+        FilterControlsView.BeautyControl.Blush -> viewModel.setBlush(value)
+        FilterControlsView.BeautyControl.Lipstick -> viewModel.setLipstick(value)
+        FilterControlsView.BeautyControl.UnderEye -> viewModel.setUnderEye(value)
+        FilterControlsView.BeautyControl.TeethWhitening -> viewModel.setTeethWhitening(value)
+        FilterControlsView.BeautyControl.EyeShadow -> viewModel.setEyeShadow(value)
+        FilterControlsView.BeautyControl.Eyeliner -> viewModel.setEyeliner(value)
+        FilterControlsView.BeautyControl.Eyebrow -> viewModel.setEyebrow(value)
+        FilterControlsView.BeautyControl.FaceSlimming -> viewModel.setFaceSlimming(value)
+        FilterControlsView.BeautyControl.EyeEnlargement -> viewModel.setEyeEnlargement(value)
+    }
+}
+binding.filterControls.onResetBeautyClick = {
+    viewModel.resetBeauty()
+}
+```
+
+Host có thể map từng `BeautyControl` vào state riêng như app mẫu.
+
 ## Test JSON pack trong app mẫu
 
 App mẫu có `app/src/main/assets/filter_pack.json` để test flow mở rộng filter bằng JSON.
 
-Switch `JSON pack` ở góc phải trên cùng đang bật mặc định:
+Switch `JSON pack` ở góc phải trên cùng đang tắt mặc định:
 
 - Bật: `MainActivity` gọi `binding.filterControls.loadCatalogFromAssets("filter_pack.json")`.
 - Tắt: app quay lại built-in `FilterCatalog.pack`.
+- Khi bật pack, filter mặc định là `Original/None`; app không tự áp dụng filter đầu tiên trong JSON.
 
 `MainActivity` cũng gửi `FilterPack` đã load vào `FilterViewModel`, vì ViewModel cần dùng đúng catalog hiện tại khi xử lý category/filter state.
 
@@ -385,7 +445,22 @@ Range của adjust:
 - Control dạng signed: `-100..100`.
 - Control dạng intensity: `sharpness`, `fade`, `vignette`, `grain` dùng `0..100`.
 
-JSON pack không nên khai báo `Original`; view đã tự render nó thành none action cố định.
+JSON pack có thể khai báo `Original/None` bằng filter có `id` là `original`, `name` tùy chọn, và `categoryIds` rỗng. Nếu muốn pack bắt đầu ở trạng thái không áp filter, đặt thêm `defaultFilterId` là `original`.
+
+Ví dụ:
+
+```json
+{
+  "defaultFilterId": "original",
+  "categories": [{ "id": "cinematic", "name": "Cinematic" }],
+  "filters": [
+    { "id": "original", "name": "Original", "categoryIds": [] },
+    { "id": "teal", "name": "Teal", "categoryIds": ["cinematic"] }
+  ]
+}
+```
+
+Trong app mẫu, khi không có thay đổi filter, Beauty hoặc Adjust, đường export dùng bản sao pixel-identical của bitmap gốc thay vì chạy bitmap qua GPU shader. Để kiểm tra lúc bấm lưu, xem log tag `BitmapCompare` trong Logcat.
 
 ## Styling `FilterControlsView`
 

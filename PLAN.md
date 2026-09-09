@@ -2635,3 +2635,15 @@ Completed: 2026-09-09
 ### Notes
 
 - The previous `false` comparison came from running the identity image through GPU texture sampling; the identity path now avoids that rounding.
+
+## Task: Update README for current sample app
+
+Status: DONE
+Created: 2026-09-09
+Completed: 2026-09-09
+
+### Checklist
+
+- [x] Document Beauty controls and the assets-based Next Image flow.
+- [x] Document Windows build/test/install commands.
+- [x] Document JSON pack default Original/None and identity bitmap export.
