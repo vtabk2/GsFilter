@@ -2347,8 +2347,9 @@ Created: 2026-09-09
 
 ## Task: Add under-eye brightening control
 
-Status: IN PROGRESS
+Status: DONE
 Created: 2026-09-09
+Completed: 2026-09-09
 
 ### Requirements
 
@@ -2383,7 +2384,36 @@ Created: 2026-09-09
 
 ### Checklist
 
-- [ ] Add the recipe, state, ViewModel, UI, and JSON mapping.
-- [ ] Add the mouth/teeth color mask to CPU and GPU rendering.
-- [ ] Add a regression test for bright teeth versus lips/skin.
+- [x] Add the recipe, state, ViewModel, UI, and JSON mapping.
+- [x] Add the mouth/teeth color mask to CPU and GPU rendering.
+- [x] Add a regression test for bright teeth versus lips/skin.
 - [ ] Run unit tests, compile, install Debug, and manually check an image with visible teeth.
+
+### Notes
+
+- Unit tests, compile, and Debug installation passed on 2026-09-09.
+- Manual verification is pending an unlocked device and an asset with visible teeth; the current bundled photos have closed/partly closed mouths.
+
+## Task: Match Beauty controls to the Adjust selector UI
+
+Status: IN PROGRESS
+Created: 2026-09-09
+
+### Requirements
+
+- Keep Beauty values and SeekBar range at `0..100`.
+- Present Beauty controls as a horizontal selectable rail like Adjust.
+- Use one shared SeekBar for the selected Beauty control.
+- Preserve existing Beauty state, recipe values, reset behavior, and callbacks.
+
+### Checklist
+
+- [x] Replace the repeated Beauty slider rows with a selector rail and shared SeekBar.
+- [x] Reuse existing icon, color, and reset styling where possible.
+- [x] Run layout/build/unit checks and review the final diff.
+
+### Notes
+
+- Beauty now follows the Adjust interaction: select Smoothing, Whitening, Blush, Lipstick, Under-eye, or Teeth from a horizontal rail, then edit the selected value with one shared `0..100` SeekBar.
+- Existing recipe values and callbacks remain unchanged; the UI only changes how controls are presented.
+- `:filter:testDebugUnitTest :app:testDebugUnitTest :app:compileDebugKotlin` and `:app:installDebug` passed.

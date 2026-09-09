@@ -86,27 +86,17 @@ class FilterControlsView @JvmOverloads constructor(
     private val filterIntensityRow: View?
     private val filterContent: LinearLayout?
     private val beautyContainer: LinearLayout?
-    private val beautySmoothingLabel: TextView?
-    private val beautySmoothingSeekBar: SeekBar?
-    private val beautySmoothingValue: TextView?
-    private val beautyWhiteningLabel: TextView?
-    private val beautyWhiteningSeekBar: SeekBar?
-    private val beautyWhiteningValue: TextView?
-    private val beautyBlushLabel: TextView?
-    private val beautyBlushSeekBar: SeekBar?
-    private val beautyBlushValue: TextView?
-    private val beautyLipstickLabel: TextView?
-    private val beautyLipstickSeekBar: SeekBar?
-    private val beautyLipstickValue: TextView?
-    private val beautyUnderEyeLabel: TextView?
-    private val beautyUnderEyeSeekBar: SeekBar?
-    private val beautyUnderEyeValue: TextView?
-    private val beautyTeethWhiteningLabel: TextView?
-    private val beautyTeethWhiteningSeekBar: SeekBar?
-    private val beautyTeethWhiteningValue: TextView?
+    private val beautyControlsContainer: LinearLayout?
+    private val beautyResetButton: RippleImageView?
+    private val beautySeekBar: SeekBar?
+    private val beautyValueText: TextView?
     private val beautyResetAll: TextView?
     private val adjustContainer: FrameLayout?
     private val adjustContent: AdjustControlsView
+    private val beautyLabels = mutableMapOf<BeautyControl, TextView>()
+    private val beautyIcons = mutableMapOf<BeautyControl, ImageView>()
+    private val beautyDots = mutableMapOf<BeautyControl, View>()
+    private var selectedBeautyControl = BeautyControl.Smoothing
 
     init {
         orientation = VERTICAL
@@ -125,24 +115,10 @@ class FilterControlsView @JvmOverloads constructor(
         filterIntensityRow = findViewById(R.id.gs_filter_intensity_row)
         filterContent = findViewById(R.id.gs_filter_content)
         beautyContainer = findViewById(R.id.gs_beauty_container)
-        beautySmoothingLabel = findViewById(R.id.gs_beauty_smoothing_label)
-        beautySmoothingSeekBar = findViewById(R.id.gs_beauty_smoothing_seek_bar)
-        beautySmoothingValue = findViewById(R.id.gs_beauty_smoothing_value)
-        beautyWhiteningLabel = findViewById(R.id.gs_beauty_whitening_label)
-        beautyWhiteningSeekBar = findViewById(R.id.gs_beauty_whitening_seek_bar)
-        beautyWhiteningValue = findViewById(R.id.gs_beauty_whitening_value)
-        beautyBlushLabel = findViewById(R.id.gs_beauty_blush_label)
-        beautyBlushSeekBar = findViewById(R.id.gs_beauty_blush_seek_bar)
-        beautyBlushValue = findViewById(R.id.gs_beauty_blush_value)
-        beautyLipstickLabel = findViewById(R.id.gs_beauty_lipstick_label)
-        beautyLipstickSeekBar = findViewById(R.id.gs_beauty_lipstick_seek_bar)
-        beautyLipstickValue = findViewById(R.id.gs_beauty_lipstick_value)
-        beautyUnderEyeLabel = findViewById(R.id.gs_beauty_under_eye_label)
-        beautyUnderEyeSeekBar = findViewById(R.id.gs_beauty_under_eye_seek_bar)
-        beautyUnderEyeValue = findViewById(R.id.gs_beauty_under_eye_value)
-        beautyTeethWhiteningLabel = findViewById(R.id.gs_beauty_teeth_whitening_label)
-        beautyTeethWhiteningSeekBar = findViewById(R.id.gs_beauty_teeth_whitening_seek_bar)
-        beautyTeethWhiteningValue = findViewById(R.id.gs_beauty_teeth_whitening_value)
+        beautyControlsContainer = findViewById(R.id.gs_beauty_controls_container)
+        beautyResetButton = findViewById(R.id.gs_beauty_reset)
+        beautySeekBar = findViewById(R.id.gs_beauty_seek_bar)
+        beautyValueText = findViewById(R.id.gs_beauty_value)
         beautyResetAll = findViewById(R.id.gs_beauty_reset_all)
         adjustContainer = findViewById(R.id.gs_adjust_container)
         adjustContent = AdjustControlsView(context, attrs)
@@ -436,47 +412,64 @@ class FilterControlsView @JvmOverloads constructor(
     }
 
     private fun bindBeautyContent() {
-        listOf(
-            beautySmoothingSeekBar to BeautyControl.Smoothing,
-            beautyWhiteningSeekBar to BeautyControl.Whitening,
-            beautyBlushSeekBar to BeautyControl.Blush,
-            beautyLipstickSeekBar to BeautyControl.Lipstick,
-            beautyUnderEyeSeekBar to BeautyControl.UnderEye,
-            beautyTeethWhiteningSeekBar to BeautyControl.TeethWhitening,
-        ).forEach { (seekBar, control) ->
-            seekBar?.max = BEAUTY_MAX
-            seekBar?.progressBackgroundTintList = ColorStateList.valueOf(style.intensityTrackColor)
-            seekBar?.progressTintList = ColorStateList.valueOf(style.intensityProgressColor)
-            seekBar?.thumbTintList = ColorStateList.valueOf(style.intensityProgressColor)
-            seekBar?.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
-                override fun onProgressChanged(view: SeekBar, progress: Int, fromUser: Boolean) {
-                    if (fromUser && !isRenderingBeauty) {
-                        onBeautyChanged?.invoke(control, progress)
-                    }
-                }
-
-                override fun onStartTrackingTouch(view: SeekBar) = Unit
-
-                override fun onStopTrackingTouch(view: SeekBar) = Unit
-            })
+        beautyControlsContainer?.let { container ->
+            BeautyControl.entries.forEachIndexed { index, control ->
+                container.addView(createBeautyControlItem(index, control, container))
+            }
         }
-        listOf(
-            beautySmoothingLabel,
-            beautySmoothingValue,
-            beautyWhiteningLabel,
-            beautyWhiteningValue,
-            beautyBlushLabel,
-            beautyBlushValue,
-            beautyLipstickLabel,
-            beautyLipstickValue,
-            beautyUnderEyeLabel,
-            beautyUnderEyeValue,
-            beautyTeethWhiteningLabel,
-            beautyTeethWhiteningValue,
-        ).forEach { it?.setTextColor(style.intensityTextColor) }
+        beautyResetButton?.iconRippleRes = R.drawable.selector_ic_gs_adjust_reset
+        style.iconPadding?.let { beautyResetButton?.paddingRipple = it }
+        beautyResetButton?.setOnClickListener {
+            onBeautyChanged?.invoke(
+                selectedBeautyControl,
+                beautyValue(selectedBeautyControl, selectedFilter.recipe),
+            )
+        }
+        beautySeekBar?.max = BEAUTY_MAX
+        beautySeekBar?.progressBackgroundTintList = ColorStateList.valueOf(style.intensityTrackColor)
+        beautySeekBar?.progressTintList = ColorStateList.valueOf(style.intensityProgressColor)
+        beautySeekBar?.thumbTintList = ColorStateList.valueOf(style.intensityProgressColor)
+        beautySeekBar?.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
+            override fun onProgressChanged(view: SeekBar, progress: Int, fromUser: Boolean) {
+                if (fromUser && !isRenderingBeauty) {
+                    onBeautyChanged?.invoke(selectedBeautyControl, progress)
+                }
+            }
+
+            override fun onStartTrackingTouch(view: SeekBar) = Unit
+
+            override fun onStopTrackingTouch(view: SeekBar) = Unit
+        })
+        beautyValueText?.setTextColor(style.intensityTextColor)
         beautyResetAll?.text = context.getString(R.string.gs_action_reset_beauty)
         beautyResetAll?.setTextColor(style.intensityTextColor)
         beautyResetAll?.setOnClickListener { onResetBeautyClick?.invoke() }
+    }
+
+    private fun createBeautyControlItem(index: Int, control: BeautyControl, parent: LinearLayout): View {
+        val item = LayoutInflater.from(context).inflate(
+            R.layout.gs_item_beauty_control,
+            parent,
+            false,
+        )
+        val label: TextView = item.findViewById(R.id.gs_beauty_item_label)
+        val icon: ImageView = item.findViewById(R.id.gs_beauty_item_icon)
+        val dot: View = item.findViewById(R.id.gs_beauty_changed_dot)
+        beautyLabels[control] = label
+        beautyIcons[control] = icon
+        beautyDots[control] = dot
+        return item.apply {
+            setOnClickListener {
+                selectedBeautyControl = control
+                renderBeauty()
+            }
+            if (index > 0) {
+                (layoutParams as? LayoutParams)?.marginStart = itemSpacing()
+            }
+            dot.backgroundTintList = ColorStateList.valueOf(style.intensityProgressColor)
+            icon.setImageResource(control.iconRes)
+            label.setText(control.labelRes)
+        }
     }
 
     private fun bindAdjustContent() {
@@ -546,34 +539,37 @@ class FilterControlsView @JvmOverloads constructor(
     }
 
     private fun renderBeauty() {
-        val smoothing = selectedRecipe.skinSmoothing.coerceIn(0, BEAUTY_MAX)
-        val whitening = selectedRecipe.skinWhitening.coerceIn(0, BEAUTY_MAX)
-        val blush = selectedRecipe.blush.coerceIn(0, BEAUTY_MAX)
-        val lipstick = selectedRecipe.lipstick.coerceIn(0, BEAUTY_MAX)
-        val underEye = selectedRecipe.underEye.coerceIn(0, BEAUTY_MAX)
-        val teethWhitening = selectedRecipe.teethWhitening.coerceIn(0, BEAUTY_MAX)
+        val activeValue = beautyValue(selectedBeautyControl, selectedRecipe).coerceIn(0, BEAUTY_MAX)
+        val defaultValue = beautyValue(selectedBeautyControl, selectedFilter.recipe).coerceIn(0, BEAUTY_MAX)
         isRenderingBeauty = true
-        beautySmoothingSeekBar?.progress = smoothing
-        beautySmoothingValue?.text = smoothing.toString()
-        beautyWhiteningSeekBar?.progress = whitening
-        beautyWhiteningValue?.text = whitening.toString()
-        beautyBlushSeekBar?.progress = blush
-        beautyBlushValue?.text = blush.toString()
-        beautyLipstickSeekBar?.progress = lipstick
-        beautyLipstickValue?.text = lipstick.toString()
-        beautyUnderEyeSeekBar?.progress = underEye
-        beautyUnderEyeValue?.text = underEye.toString()
-        beautyTeethWhiteningSeekBar?.progress = teethWhitening
-        beautyTeethWhiteningValue?.text = teethWhitening.toString()
-        beautyResetAll?.isEnabled =
-            smoothing != selectedFilter.recipe.skinSmoothing ||
-                whitening != selectedFilter.recipe.skinWhitening ||
-                blush != selectedFilter.recipe.blush ||
-                lipstick != selectedFilter.recipe.lipstick ||
-                underEye != selectedFilter.recipe.underEye ||
-                teethWhitening != selectedFilter.recipe.teethWhitening
+        beautySeekBar?.max = BEAUTY_MAX
+        beautySeekBar?.progress = activeValue
+        beautyValueText?.text = activeValue.toString()
+        beautyResetButton?.isEnabled = activeValue != defaultValue
+
+        var hasChangedValue = false
+        BeautyControl.entries.forEach { control ->
+            val isSelected = control == selectedBeautyControl
+            val hasChanged = beautyValue(control, selectedRecipe) != beautyValue(control, selectedFilter.recipe)
+            hasChangedValue = hasChangedValue || hasChanged
+            val textColor = if (isSelected) style.intensityProgressColor else style.intensityTextColor
+            beautyDots[control]?.visibility = if (hasChanged) VISIBLE else INVISIBLE
+            beautyIcons[control]?.setColorFilter(textColor)
+            beautyLabels[control]?.setTextColor(textColor)
+        }
+        beautyResetAll?.isEnabled = hasChangedValue
         isRenderingBeauty = false
     }
+
+    private fun beautyValue(control: BeautyControl, recipe: FilterRecipe): Int =
+        when (control) {
+            BeautyControl.Smoothing -> recipe.skinSmoothing
+            BeautyControl.Whitening -> recipe.skinWhitening
+            BeautyControl.Blush -> recipe.blush
+            BeautyControl.Lipstick -> recipe.lipstick
+            BeautyControl.UnderEye -> recipe.underEye
+            BeautyControl.TeethWhitening -> recipe.teethWhitening
+        }
 
     private fun renderTab(tab: LinearLayout?, isSelected: Boolean) {
         tab?.isSelected = isSelected
@@ -643,13 +639,16 @@ class FilterControlsView @JvmOverloads constructor(
         Adjust,
     }
 
-    enum class BeautyControl {
-        Smoothing,
-        Whitening,
-        Blush,
-        Lipstick,
-        UnderEye,
-        TeethWhitening,
+    enum class BeautyControl(
+        val labelRes: Int,
+        val iconRes: Int,
+    ) {
+        Smoothing(R.string.gs_beauty_smoothing, R.drawable.ic_gs_adjust_clarity),
+        Whitening(R.string.gs_beauty_whitening, R.drawable.ic_gs_adjust_highlights),
+        Blush(R.string.gs_beauty_blush, R.drawable.ic_gs_adjust_tint),
+        Lipstick(R.string.gs_beauty_lipstick, R.drawable.ic_gs_adjust_saturation),
+        UnderEye(R.string.gs_beauty_under_eye, R.drawable.ic_gs_adjust_shadows),
+        TeethWhitening(R.string.gs_beauty_teeth_whitening, R.drawable.ic_gs_adjust_brightness),
     }
 
     private data class TabParts(
