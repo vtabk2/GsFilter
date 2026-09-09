@@ -53,10 +53,15 @@ internal class FaceMakeupDetector {
         if (lipPoints.isEmpty()) {
             return null
         }
-        val outerLipPoints = (
-            getContour(FaceContour.UPPER_LIP_TOP)?.points.orEmpty() +
-                getContour(FaceContour.LOWER_LIP_BOTTOM)?.points.orEmpty().asReversed()
-            ).takeIf { it.size >= 3 } ?: lipPoints
+        val upperLipPoints = lipContourPolygon(
+            FaceContour.UPPER_LIP_TOP,
+            FaceContour.UPPER_LIP_BOTTOM,
+        )
+        val lowerLipPoints = lipContourPolygon(
+            FaceContour.LOWER_LIP_TOP,
+            FaceContour.LOWER_LIP_BOTTOM,
+        )
+        val outerLipPoints = (upperLipPoints + lowerLipPoints).takeIf { it.size >= 3 } ?: lipPoints
 
         val lipContourCenter = lipPoints.center() ?: return null
         val mouthLeft = getLandmark(FaceLandmark.MOUTH_LEFT)?.position
@@ -94,14 +99,25 @@ internal class FaceMakeupDetector {
             lipRadiusY = (lipPoints.maxOf { abs(it.y - lipCenterY) } / height * 1.12f)
                 .coerceAtLeast(0.006f),
             rotationRadians = rotationRadians,
-            lipContour = outerLipPoints.map {
-                NormalizedPoint(
-                    x = (it.x / width).coerceIn(0f, 1f),
-                    y = (it.y / height).coerceIn(0f, 1f),
-                )
-            },
+            lipContour = normalize(outerLipPoints, width, height),
+            upperLipContour = normalize(upperLipPoints, width, height),
+            lowerLipContour = normalize(lowerLipPoints, width, height),
         )
     }
+
+    private fun Face.lipContourPolygon(outerType: Int, innerType: Int): List<PointF> =
+        (getContour(outerType)?.points.orEmpty() +
+            getContour(innerType)?.points.orEmpty().asReversed())
+            .takeIf { it.size >= 3 }
+            .orEmpty()
+
+    private fun normalize(points: List<PointF>, width: Int, height: Int): List<NormalizedPoint> =
+        points.map {
+            NormalizedPoint(
+                x = (it.x / width).coerceIn(0f, 1f),
+                y = (it.y / height).coerceIn(0f, 1f),
+            )
+        }
 
     private fun Face.cheekStrengths(leftCheek: PointF, rightCheek: PointF): Pair<Float, Float> {
         val yaw = abs(headEulerAngleY)

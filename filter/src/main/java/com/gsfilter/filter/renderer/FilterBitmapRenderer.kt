@@ -175,10 +175,21 @@ object FilterBitmapRenderer {
             red = mix(red, 0.95f, blushAmount)
             green = mix(green, 0.38f, blushAmount)
             blue = mix(blue, 0.42f, blushAmount)
-            val lipstickMask = if (features.lipContour.size >= 3) {
-                polygonMask(textureX, textureY, features.lipContour)
-            } else {
-                ellipseMask(
+            val lipstickMask = when {
+                features.upperLipContour.size >= 3 || features.lowerLipContour.size >= 3 -> max(
+                    if (features.upperLipContour.size >= 3) {
+                        polygonMask(textureX, textureY, features.upperLipContour)
+                    } else {
+                        0f
+                    },
+                    if (features.lowerLipContour.size >= 3) {
+                        polygonMask(textureX, textureY, features.lowerLipContour)
+                    } else {
+                        0f
+                    },
+                )
+                features.lipContour.size >= 3 -> polygonMask(textureX, textureY, features.lipContour)
+                else -> ellipseMask(
                     textureX,
                     textureY,
                     features.lipCenterX,
@@ -190,7 +201,7 @@ object FilterBitmapRenderer {
                     outerEdge = 1.05f,
                 )
             }
-            val lipstickAmount = params.lipstick * lipstickMask * 0.40f
+            val lipstickAmount = params.lipstick * lipstickMask * lipColorMask(red, green, blue) * 0.40f
             red = mix(red, 0.70f, lipstickAmount)
             green = mix(green, 0.16f, lipstickAmount)
             blue = mix(blue, 0.22f, lipstickAmount)
@@ -435,8 +446,7 @@ object FilterBitmapRenderer {
                 }
             }
         }
-        val signedDistance = if (inside) edgeDistance else -edgeDistance
-        return smoothstep(-0.008f, 0.008f, signedDistance)
+        return if (inside && edgeDistance > 0.004f) 1f else 0f
     }
 
     private fun pointSegmentDistance(
@@ -456,6 +466,12 @@ object FilterBitmapRenderer {
         val closestX = start.x + (segmentX * projection)
         val closestY = start.y + (segmentY * projection)
         return sqrt(((x - closestX).pow(2f)) + ((y - closestY).pow(2f)))
+    }
+
+    private fun lipColorMask(red: Float, green: Float, blue: Float): Float {
+        val saturation = maxOf(red, green, blue) - minOf(red, green, blue)
+        val redness = red - ((green + blue) * 0.5f)
+        return smoothstep(0.20f, 0.34f, saturation) * smoothstep(0.16f, 0.26f, redness)
     }
 
     private fun clamp(value: Float, minValue: Float, maxValue: Float): Float = min(max(value, minValue), maxValue)

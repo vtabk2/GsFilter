@@ -67,6 +67,10 @@ internal object GlFilterProgram {
             lipArea = GLES20.glGetUniformLocation(program, U_LIP_AREA),
             lipPoints = GLES20.glGetUniformLocation(program, U_LIP_POINTS),
             lipPointCount = GLES20.glGetUniformLocation(program, U_LIP_POINT_COUNT),
+            upperLipPoints = GLES20.glGetUniformLocation(program, U_UPPER_LIP_POINTS),
+            upperLipPointCount = GLES20.glGetUniformLocation(program, U_UPPER_LIP_POINT_COUNT),
+            lowerLipPoints = GLES20.glGetUniformLocation(program, U_LOWER_LIP_POINTS),
+            lowerLipPointCount = GLES20.glGetUniformLocation(program, U_LOWER_LIP_POINT_COUNT),
             makeupRotation = GLES20.glGetUniformLocation(program, U_MAKEUP_ROTATION),
             effect = GLES20.glGetUniformLocation(program, U_EFFECT),
             effectStrength = GLES20.glGetUniformLocation(program, U_EFFECT_STRENGTH),
@@ -169,6 +173,22 @@ internal object GlFilterProgram {
             }
             GLES20.glUniform2fv(handles.lipPoints, MAX_LIP_POINTS, lipPointValues, 0)
             GLES20.glUniform1i(handles.lipPointCount, lipPointCount)
+            val upperLipPointValues = FloatArray(MAX_LIP_POINTS * 2)
+            val upperLipPointCount = features.upperLipContour.size.coerceAtMost(MAX_LIP_POINTS)
+            features.upperLipContour.take(MAX_LIP_POINTS).forEachIndexed { index, point ->
+                upperLipPointValues[index * 2] = point.x
+                upperLipPointValues[(index * 2) + 1] = point.y
+            }
+            GLES20.glUniform2fv(handles.upperLipPoints, MAX_LIP_POINTS, upperLipPointValues, 0)
+            GLES20.glUniform1i(handles.upperLipPointCount, upperLipPointCount)
+            val lowerLipPointValues = FloatArray(MAX_LIP_POINTS * 2)
+            val lowerLipPointCount = features.lowerLipContour.size.coerceAtMost(MAX_LIP_POINTS)
+            features.lowerLipContour.take(MAX_LIP_POINTS).forEachIndexed { index, point ->
+                lowerLipPointValues[index * 2] = point.x
+                lowerLipPointValues[(index * 2) + 1] = point.y
+            }
+            GLES20.glUniform2fv(handles.lowerLipPoints, MAX_LIP_POINTS, lowerLipPointValues, 0)
+            GLES20.glUniform1i(handles.lowerLipPointCount, lowerLipPointCount)
         } ?: run {
             GLES20.glUniform4f(handles.blushLeft, 0f, 0f, 0f, 0f)
             GLES20.glUniform4f(handles.blushRight, 0f, 0f, 0f, 0f)
@@ -176,6 +196,10 @@ internal object GlFilterProgram {
             GLES20.glUniform4f(handles.lipArea, 0f, 0f, 0f, 0f)
             GLES20.glUniform2fv(handles.lipPoints, MAX_LIP_POINTS, FloatArray(MAX_LIP_POINTS * 2), 0)
             GLES20.glUniform1i(handles.lipPointCount, 0)
+            GLES20.glUniform2fv(handles.upperLipPoints, MAX_LIP_POINTS, FloatArray(MAX_LIP_POINTS * 2), 0)
+            GLES20.glUniform1i(handles.upperLipPointCount, 0)
+            GLES20.glUniform2fv(handles.lowerLipPoints, MAX_LIP_POINTS, FloatArray(MAX_LIP_POINTS * 2), 0)
+            GLES20.glUniform1i(handles.lowerLipPointCount, 0)
         }
         GLES20.glUniform1f(handles.effect, params.effect.shaderValue)
         GLES20.glUniform1f(handles.effectStrength, params.effectStrength)
@@ -235,6 +259,10 @@ internal object GlFilterProgram {
         val lipArea: Int,
         val lipPoints: Int,
         val lipPointCount: Int,
+        val upperLipPoints: Int,
+        val upperLipPointCount: Int,
+        val lowerLipPoints: Int,
+        val lowerLipPointCount: Int,
         val makeupRotation: Int,
         val effect: Int,
         val effectStrength: Int,
@@ -287,6 +315,10 @@ internal object GlFilterProgram {
     private const val U_LIP_AREA = "uLipArea"
     private const val U_LIP_POINTS = "uLipPoints[0]"
     private const val U_LIP_POINT_COUNT = "uLipPointCount"
+    private const val U_UPPER_LIP_POINTS = "uUpperLipPoints[0]"
+    private const val U_UPPER_LIP_POINT_COUNT = "uUpperLipPointCount"
+    private const val U_LOWER_LIP_POINTS = "uLowerLipPoints[0]"
+    private const val U_LOWER_LIP_POINT_COUNT = "uLowerLipPointCount"
     private const val U_MAKEUP_ROTATION = "uMakeupRotation"
     private const val MAX_LIP_POINTS = 32
     private const val U_EFFECT = "uEffect"
@@ -340,6 +372,10 @@ internal object GlFilterProgram {
         uniform vec4 uLipArea;
         uniform vec2 uLipPoints[32];
         uniform int uLipPointCount;
+        uniform vec2 uUpperLipPoints[32];
+        uniform int uUpperLipPointCount;
+        uniform vec2 uLowerLipPoints[32];
+        uniform int uLowerLipPointCount;
         uniform float uMakeupRotation;
         uniform float uEffect;
         uniform float uEffectStrength;
@@ -422,7 +458,65 @@ internal object GlFilterProgram {
             return distance(point, start + (segment * projection));
         }
 
+        float lipColorMask(vec3 rgb) {
+            float saturation = max(max(rgb.r, rgb.g), rgb.b) - min(min(rgb.r, rgb.g), rgb.b);
+            float redness = rgb.r - ((rgb.g + rgb.b) * 0.5);
+            return smoothstep(0.20, 0.34, saturation) * smoothstep(0.16, 0.26, redness);
+        }
+
         float lipContourMask(vec2 coord) {
+            if (uUpperLipPointCount >= 3 || uLowerLipPointCount >= 3) {
+                float mask = 0.0;
+                if (uUpperLipPointCount >= 3) {
+                    bool upperInside = false;
+                    for (int index = 0; index < 32; index++) {
+                        if (index >= uUpperLipPointCount) {
+                            break;
+                        }
+                        int nextIndex = index + 1;
+                        if (nextIndex >= uUpperLipPointCount) {
+                            nextIndex = 0;
+                        }
+                        vec2 start = uUpperLipPoints[index];
+                        vec2 end = uUpperLipPoints[nextIndex];
+                        if ((start.y > coord.y) != (end.y > coord.y)) {
+                            float intersectionX = start.x +
+                                ((coord.y - start.y) * (end.x - start.x) / (end.y - start.y));
+                            if (coord.x < intersectionX) {
+                                upperInside = !upperInside;
+                            }
+                        }
+                    }
+                    if (upperInside) {
+                        mask = 1.0;
+                    }
+                }
+                if (uLowerLipPointCount >= 3) {
+                    bool lowerInside = false;
+                    for (int index = 0; index < 32; index++) {
+                        if (index >= uLowerLipPointCount) {
+                            break;
+                        }
+                        int nextIndex = index + 1;
+                        if (nextIndex >= uLowerLipPointCount) {
+                            nextIndex = 0;
+                        }
+                        vec2 start = uLowerLipPoints[index];
+                        vec2 end = uLowerLipPoints[nextIndex];
+                        if ((start.y > coord.y) != (end.y > coord.y)) {
+                            float intersectionX = start.x +
+                                ((coord.y - start.y) * (end.x - start.x) / (end.y - start.y));
+                            if (coord.x < intersectionX) {
+                                lowerInside = !lowerInside;
+                            }
+                        }
+                    }
+                    if (lowerInside) {
+                        mask = 1.0;
+                    }
+                }
+                return mask;
+            }
             if (uLipPointCount < 3) {
                 return ellipseMask(coord, uLipArea, uMakeupRotation, 0.75, 1.05);
             }
@@ -448,8 +542,7 @@ internal object GlFilterProgram {
                     }
                 }
             }
-            float signedDistance = inside ? edgeDistance : -edgeDistance;
-            return smoothstep(-0.008, 0.008, signedDistance);
+            return (inside && edgeDistance > 0.004) ? 1.0 : 0.0;
         }
 
         float stripe(float value) {
@@ -492,7 +585,7 @@ internal object GlFilterProgram {
             );
             float blushAmount = uBlush * blushMask * 0.22;
             rgb = mix(rgb, vec3(0.95, 0.38, 0.42), blushAmount);
-            float lipstickAmount = uLipstick * lipContourMask(vTexCoord) * 0.40;
+            float lipstickAmount = uLipstick * lipContourMask(vTexCoord) * lipColorMask(color.rgb) * 0.40;
             rgb = mix(rgb, vec3(0.70, 0.16, 0.22), lipstickAmount);
 
             rgb = rgb + uRgbShift;

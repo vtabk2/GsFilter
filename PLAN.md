@@ -2112,7 +2112,7 @@ Completed: 2026-09-06
 
 ## Task: Prevent oversized sample bitmap draw crash
 
-Status: IN PROGRESS
+Status: COMPLETE
 Created: 2026-09-06
 
 ### Requirements
@@ -2201,7 +2201,7 @@ Completed: 2026-09-06
 
 ## Task: Add shader-based beauty smoothing and whitening without GPUPixel
 
-Status: IN PROGRESS
+Status: DONE
 Created: 2026-09-08
 
 ### Requirements
@@ -2235,15 +2235,19 @@ Created: 2026-09-08
 - [x] Suppress the hidden cheek mask for faces turned strongly to one side.
 - [x] Improve lip center and size calculation for angled mouths.
 - [x] Use the detected outer lip contour as the lipstick mask for non-frontal faces.
-- [ ] Run affected tests and debug build.
+- [x] Split upper/lower lip contours so skin between and below the lips is excluded.
+- [x] Run affected tests and debug build.
 
 ### Verification notes
 
 - `git diff --check` passed.
 - Beauty layout XML parsed successfully and its view IDs are unique.
 - ML Kit contour detection is bundled so makeup works without a first-run model download; no GPUPixel or JNI was added.
-- Cheek placement now prefers ML Kit cheek landmarks instead of the first cheek contour point; lip masks still use the lip contour bounds.
+- Cheek placement now prefers ML Kit cheek landmarks instead of the first cheek contour point; lipstick uses the detected outer lip polygon.
 - Strong yaw now fades the hidden cheek instead of painting two unreliable cheek points.
 - Lip placement now uses the contour centroid and mouth-corner midpoint when available, instead of only an axis-aligned bounding-box midpoint.
 - Tilt handling derives roll from the two eye contours and rotates cheek/lip masks in both render paths.
-- Gradle verification is blocked because this environment has no JDK (`java`/`kotlinc` unavailable); rerun `:filter:testDebugUnitTest :app:compileDebugKotlin` on a machine with JDK 17.
+- `:filter:testDebugUnitTest :app:compileDebugKotlin` passed with Android Studio JBR 21 using a short `C:\jtmp` TEMP path to avoid the Windows Java loopback issue.
+- `:app:installDebug` passed and the app was tested on Samsung A56 (`SM-A566B`); Lip 100 changed only the mouth region in the captured result.
+- Upper and lower ML Kit lip contours now render as separate hard polygon masks; the CPU path has regression coverage for the gap and skin below the lips.
+- Lipstick now also requires source-pixel saturation and red dominance, preventing warm skin inside an imperfect contour from being colored.

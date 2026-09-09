@@ -21,4 +21,6 @@ data class MakeupFeatures(
     val lipRadiusY: Float,
     val rotationRadians: Float = 0f,
     val lipContour: List<NormalizedPoint> = emptyList(),
+    val upperLipContour: List<NormalizedPoint> = emptyList(),
+    val lowerLipContour: List<NormalizedPoint> = emptyList(),
 )

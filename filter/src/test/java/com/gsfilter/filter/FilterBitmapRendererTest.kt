@@ -120,6 +120,90 @@ class FilterBitmapRendererTest {
     }
 
     @Test
+    fun `split lip contours exclude the gap and skin below the lips`() {
+        val original = 0xff996633.toInt()
+        val features = MakeupFeatures(
+            leftCheekX = 0f,
+            leftCheekY = 0f,
+            rightCheekX = 0f,
+            rightCheekY = 0f,
+            cheekRadiusX = 0f,
+            cheekRadiusY = 0f,
+            lipCenterX = 0.5f,
+            lipCenterY = 0.5f,
+            lipRadiusX = 0.2f,
+            lipRadiusY = 0.1f,
+            upperLipContour = listOf(
+                NormalizedPoint(0.3f, 0.25f),
+                NormalizedPoint(0.7f, 0.25f),
+                NormalizedPoint(0.7f, 0.42f),
+                NormalizedPoint(0.3f, 0.42f),
+            ),
+            lowerLipContour = listOf(
+                NormalizedPoint(0.3f, 0.58f),
+                NormalizedPoint(0.7f, 0.58f),
+                NormalizedPoint(0.7f, 0.75f),
+                NormalizedPoint(0.3f, 0.75f),
+            ),
+        )
+        val output = FilterBitmapRenderer.renderPixels(
+            pixels = IntArray(7 * 7) { original },
+            width = 7,
+            height = 7,
+            params = ShaderFilterParams.from(
+                recipe = FilterRecipe(lipstick = 100),
+                adjustments = Adjustments(),
+                makeupFeatures = features,
+            ),
+        )
+
+        assertNotEquals(original, output[2 * 7 + 3])
+        assertNotEquals(original, output[4 * 7 + 3])
+        assertEquals(original, output[3 * 7 + 3])
+        assertEquals(original, output[5 * 7 + 3])
+    }
+
+    @Test
+    fun `lipstick does not color low saturation skin inside the lip contour`() {
+        val lip = 0xffcc6655.toInt()
+        val skin = 0xffccaa99.toInt()
+        val output = FilterBitmapRenderer.renderPixels(
+            pixels = intArrayOf(
+                skin, skin, skin,
+                skin, lip, skin,
+                skin, skin, skin,
+            ),
+            width = 3,
+            height = 3,
+            params = ShaderFilterParams.from(
+                recipe = FilterRecipe(lipstick = 100),
+                adjustments = Adjustments(),
+                makeupFeatures = MakeupFeatures(
+                    leftCheekX = 0f,
+                    leftCheekY = 0f,
+                    rightCheekX = 0f,
+                    rightCheekY = 0f,
+                    cheekRadiusX = 0f,
+                    cheekRadiusY = 0f,
+                    lipCenterX = 0.5f,
+                    lipCenterY = 0.5f,
+                    lipRadiusX = 0.4f,
+                    lipRadiusY = 0.4f,
+                    upperLipContour = listOf(
+                        NormalizedPoint(0.1f, 0.1f),
+                        NormalizedPoint(0.9f, 0.1f),
+                        NormalizedPoint(0.9f, 0.9f),
+                        NormalizedPoint(0.1f, 0.9f),
+                    ),
+                ),
+            ),
+        )
+
+        assertNotEquals(lip, output[4])
+        assertEquals(skin, output[1])
+    }
+
+    @Test
     fun `rotated lip region follows face roll`() {
         val original = 0xff996633.toInt()
         val features = MakeupFeatures(
