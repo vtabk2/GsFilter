@@ -390,16 +390,33 @@ binding.filterControls.setCatalog(pack)
 
 Nếu host giữ category/filter state trong `ViewModel`, hãy lưu cùng `FilterPack` đó ở ViewModel. View có thể tự render JSON pack, nhưng preview và selected filter state vẫn thuộc host.
 
+### Default `Original/None`
+
+Pack có thể giữ trạng thái ban đầu không áp filter bằng cách khai báo một option đặc biệt:
+
+- `id`: bắt buộc là `original`.
+- `name`: tên hiển thị tùy chọn, thường là `Original`.
+- `categoryIds`: mảng rỗng để option không xuất hiện trong category filter rail.
+- `defaultFilterId`: đặt là `original` để pack không tự chọn filter đầu tiên.
+
+Nếu không khai báo `defaultFilterId`, parser sẽ dùng filter đầu tiên trong mảng `filters`.
+
 Ví dụ JSON:
 
 ```json
 {
   "defaultCategoryId": "cinematic",
+  "defaultFilterId": "original",
   "categories": [
     { "id": "cinematic", "name": "Cinematic" },
     { "id": "portrait", "name": "Portrait" }
   ],
   "filters": [
+    {
+      "id": "original",
+      "name": "Original",
+      "categoryIds": []
+    },
     {
       "id": "teal_orange",
       "name": "Teal Orange",
