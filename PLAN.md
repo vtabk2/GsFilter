@@ -2252,3 +2252,51 @@ Created: 2026-09-08
 - Upper and lower ML Kit lip contours now render as separate hard polygon masks; the CPU path has regression coverage for the gap and skin below the lips.
 - Lipstick now also requires source-pixel saturation and red dominance, preventing warm skin inside an imperfect contour from being colored.
 - Whitening now uses a luminance lift with highlight protection and mild desaturation instead of a per-channel white overlay.
+
+## Next Task: Finish Beauty accuracy and add practical makeup features
+
+Status: PLANNED
+Created: 2026-09-09
+
+### Goal
+
+- Make the existing Beauty controls look natural on frontal, three-quarter, and profile faces.
+- Keep the current GPU/CPU pipeline and ML Kit contour input.
+- Do not add GPUPixel, JNI, or a new rendering dependency.
+
+### Implementation order
+
+1. **Smoothing**
+   - Keep the skin mask, but protect eyes, lips, hair, and strong edges.
+   - Replace the visibly flat blur behavior with a smaller edge-aware blend.
+   - Verify that texture remains at low/medium strength and edges do not melt at maximum strength.
+
+2. **Blush**
+   - Derive cheek centers from visible face geometry and eye-line roll, not fixed left/right points.
+   - Use rotated soft masks with yaw-based strength so the hidden cheek fades naturally.
+   - Blend blush into the source hue/saturation instead of mixing toward a fixed opaque red color.
+
+3. **Lipstick**
+   - Keep separate upper/lower contour polygons as the primary mask.
+   - Add a narrow feather and reject pixels outside the lip color range to remove spill on the surrounding skin.
+   - Preserve lip shading and texture by using a restrained color blend rather than replacing RGB directly.
+   - Re-test frontal, tilted, and profile images before adding more makeup controls.
+
+4. **Whitening tuning**
+   - Compare low, medium, and maximum strength against the sample and angled faces.
+   - Ensure highlights, lips, eyes, and hair are not lifted noticeably.
+   - Tune only shared mask/strength constants after the three controls above are stable.
+
+5. **Optional next controls**
+   - Teeth whitening using a mouth/teeth color mask.
+   - Under-eye brightening using eye contours and a narrow lower-eye region.
+   - Eye shadow or eye liner only after face-region masks are reliable.
+   - Face reshape/eye enlargement is deferred until landmark stability and export behavior are validated.
+
+### Acceptance checks
+
+- Beauty disabled produces the original filtered result byte-for-byte where currently guaranteed.
+- Each control affects only its intended region and remains bounded at 0 and 100.
+- No visible rectangular/oval patch, color halo, or spill on angled faces.
+- CPU fallback and GPU preview use the same mask and strength behavior.
+- Add focused CPU regression tests for each mask boundary, then run unit tests, compile, install Debug, and manually check at least frontal plus angled samples.
