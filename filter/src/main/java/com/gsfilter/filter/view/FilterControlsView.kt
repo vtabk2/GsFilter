@@ -98,6 +98,12 @@ class FilterControlsView @JvmOverloads constructor(
     private val beautyLipstickLabel: TextView?
     private val beautyLipstickSeekBar: SeekBar?
     private val beautyLipstickValue: TextView?
+    private val beautyUnderEyeLabel: TextView?
+    private val beautyUnderEyeSeekBar: SeekBar?
+    private val beautyUnderEyeValue: TextView?
+    private val beautyTeethWhiteningLabel: TextView?
+    private val beautyTeethWhiteningSeekBar: SeekBar?
+    private val beautyTeethWhiteningValue: TextView?
     private val beautyResetAll: TextView?
     private val adjustContainer: FrameLayout?
     private val adjustContent: AdjustControlsView
@@ -131,6 +137,12 @@ class FilterControlsView @JvmOverloads constructor(
         beautyLipstickLabel = findViewById(R.id.gs_beauty_lipstick_label)
         beautyLipstickSeekBar = findViewById(R.id.gs_beauty_lipstick_seek_bar)
         beautyLipstickValue = findViewById(R.id.gs_beauty_lipstick_value)
+        beautyUnderEyeLabel = findViewById(R.id.gs_beauty_under_eye_label)
+        beautyUnderEyeSeekBar = findViewById(R.id.gs_beauty_under_eye_seek_bar)
+        beautyUnderEyeValue = findViewById(R.id.gs_beauty_under_eye_value)
+        beautyTeethWhiteningLabel = findViewById(R.id.gs_beauty_teeth_whitening_label)
+        beautyTeethWhiteningSeekBar = findViewById(R.id.gs_beauty_teeth_whitening_seek_bar)
+        beautyTeethWhiteningValue = findViewById(R.id.gs_beauty_teeth_whitening_value)
         beautyResetAll = findViewById(R.id.gs_beauty_reset_all)
         adjustContainer = findViewById(R.id.gs_adjust_container)
         adjustContent = AdjustControlsView(context, attrs)
@@ -429,6 +441,8 @@ class FilterControlsView @JvmOverloads constructor(
             beautyWhiteningSeekBar to BeautyControl.Whitening,
             beautyBlushSeekBar to BeautyControl.Blush,
             beautyLipstickSeekBar to BeautyControl.Lipstick,
+            beautyUnderEyeSeekBar to BeautyControl.UnderEye,
+            beautyTeethWhiteningSeekBar to BeautyControl.TeethWhitening,
         ).forEach { (seekBar, control) ->
             seekBar?.max = BEAUTY_MAX
             seekBar?.progressBackgroundTintList = ColorStateList.valueOf(style.intensityTrackColor)
@@ -455,6 +469,10 @@ class FilterControlsView @JvmOverloads constructor(
             beautyBlushValue,
             beautyLipstickLabel,
             beautyLipstickValue,
+            beautyUnderEyeLabel,
+            beautyUnderEyeValue,
+            beautyTeethWhiteningLabel,
+            beautyTeethWhiteningValue,
         ).forEach { it?.setTextColor(style.intensityTextColor) }
         beautyResetAll?.text = context.getString(R.string.gs_action_reset_beauty)
         beautyResetAll?.setTextColor(style.intensityTextColor)
@@ -532,6 +550,8 @@ class FilterControlsView @JvmOverloads constructor(
         val whitening = selectedRecipe.skinWhitening.coerceIn(0, BEAUTY_MAX)
         val blush = selectedRecipe.blush.coerceIn(0, BEAUTY_MAX)
         val lipstick = selectedRecipe.lipstick.coerceIn(0, BEAUTY_MAX)
+        val underEye = selectedRecipe.underEye.coerceIn(0, BEAUTY_MAX)
+        val teethWhitening = selectedRecipe.teethWhitening.coerceIn(0, BEAUTY_MAX)
         isRenderingBeauty = true
         beautySmoothingSeekBar?.progress = smoothing
         beautySmoothingValue?.text = smoothing.toString()
@@ -541,11 +561,17 @@ class FilterControlsView @JvmOverloads constructor(
         beautyBlushValue?.text = blush.toString()
         beautyLipstickSeekBar?.progress = lipstick
         beautyLipstickValue?.text = lipstick.toString()
+        beautyUnderEyeSeekBar?.progress = underEye
+        beautyUnderEyeValue?.text = underEye.toString()
+        beautyTeethWhiteningSeekBar?.progress = teethWhitening
+        beautyTeethWhiteningValue?.text = teethWhitening.toString()
         beautyResetAll?.isEnabled =
             smoothing != selectedFilter.recipe.skinSmoothing ||
                 whitening != selectedFilter.recipe.skinWhitening ||
                 blush != selectedFilter.recipe.blush ||
-                lipstick != selectedFilter.recipe.lipstick
+                lipstick != selectedFilter.recipe.lipstick ||
+                underEye != selectedFilter.recipe.underEye ||
+                teethWhitening != selectedFilter.recipe.teethWhitening
         isRenderingBeauty = false
     }
 
@@ -622,6 +648,8 @@ class FilterControlsView @JvmOverloads constructor(
         Whitening,
         Blush,
         Lipstick,
+        UnderEye,
+        TeethWhitening,
     }
 
     private data class TabParts(

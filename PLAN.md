@@ -2344,3 +2344,46 @@ Created: 2026-09-09
 
 - Add more test photos directly to `app/src/main/assets`; the button remains disabled when only one image exists.
 - The current asset bitmap is replaced safely through the existing state/preview flow; old bitmaps are left for normal garbage collection instead of being recycled while the GL view may still use them.
+
+## Task: Add under-eye brightening control
+
+Status: IN PROGRESS
+Created: 2026-09-09
+
+### Requirements
+
+- Add an Under-eye Brightening slider to the existing Beauty tab.
+- Use ML Kit eye contours to place a narrow mask below each detected eye.
+- Keep CPU fallback and GPU preview behavior aligned.
+- Keep the effect bounded and avoid adding a dependency.
+
+### Checklist
+
+- [x] Add the recipe, state, ViewModel, UI, and JSON mapping.
+- [x] Add normalized eye geometry and CPU/GPU under-eye rendering.
+- [x] Add a regression test for the under-eye boundary.
+- [ ] Run unit tests, compile, install Debug, and manually check the frontal asset.
+
+### Notes
+
+- Unit tests, compile, and Debug installation passed on 2026-09-09.
+- Manual frontal-device verification is pending because the connected Samsung A56 is currently locked behind a PIN.
+
+## Task: Add teeth whitening control
+
+Status: IN PROGRESS
+Created: 2026-09-09
+
+### Requirements
+
+- Add a Teeth Whitening slider to the existing Beauty tab.
+- Restrict the effect to bright, low-saturation pixels inside the detected mouth area.
+- Preserve colored lips and dark mouth pixels.
+- Keep CPU fallback and GPU preview behavior aligned without a new dependency.
+
+### Checklist
+
+- [ ] Add the recipe, state, ViewModel, UI, and JSON mapping.
+- [ ] Add the mouth/teeth color mask to CPU and GPU rendering.
+- [ ] Add a regression test for bright teeth versus lips/skin.
+- [ ] Run unit tests, compile, install Debug, and manually check an image with visible teeth.

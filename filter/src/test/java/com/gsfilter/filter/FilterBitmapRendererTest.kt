@@ -132,6 +132,69 @@ class FilterBitmapRendererTest {
     }
 
     @Test
+    fun `under-eye brightening stays below the detected eye`() {
+        val skin = 0xffbf8c66.toInt()
+        val output = FilterBitmapRenderer.renderPixels(
+            pixels = IntArray(5 * 5) { skin },
+            width = 5,
+            height = 5,
+            params = ShaderFilterParams.from(
+                recipe = FilterRecipe(underEye = 100),
+                adjustments = Adjustments(),
+                makeupFeatures = MakeupFeatures(
+                    leftCheekX = 0f,
+                    leftCheekY = 0f,
+                    rightCheekX = 0f,
+                    rightCheekY = 0f,
+                    cheekRadiusX = 0f,
+                    cheekRadiusY = 0f,
+                    lipCenterX = 0f,
+                    lipCenterY = 0f,
+                    lipRadiusX = 0f,
+                    lipRadiusY = 0f,
+                    leftEyeCenterX = 0.5f,
+                    leftEyeCenterY = 0.3f,
+                    leftEyeRadiusX = 0.2f,
+                    leftEyeRadiusY = 0.1f,
+                ),
+            ),
+        )
+
+        assertEquals(skin, output[0])
+        assertNotEquals(skin, output[2 * 5 + 2])
+    }
+
+    @Test
+    fun `teeth whitening targets bright neutral pixels inside the mouth`() {
+        val tooth = 0xffe0ded8.toInt()
+        val lip = 0xffb74455.toInt()
+        val output = FilterBitmapRenderer.renderPixels(
+            pixels = intArrayOf(tooth, lip, tooth),
+            width = 3,
+            height = 1,
+            params = ShaderFilterParams.from(
+                recipe = FilterRecipe(teethWhitening = 100),
+                adjustments = Adjustments(),
+                makeupFeatures = MakeupFeatures(
+                    leftCheekX = 0f,
+                    leftCheekY = 0f,
+                    rightCheekX = 0f,
+                    rightCheekY = 0f,
+                    cheekRadiusX = 0f,
+                    cheekRadiusY = 0f,
+                    lipCenterX = 0.5f,
+                    lipCenterY = 0.5f,
+                    lipRadiusX = 0.5f,
+                    lipRadiusY = 1f,
+                ),
+            ),
+        )
+
+        assertNotEquals(tooth, output[0])
+        assertEquals(lip, output[1])
+    }
+
+    @Test
     fun `lipstick changes only the detected lip region`() {
         val original = 0xff996633.toInt()
         val output = FilterBitmapRenderer.renderPixels(

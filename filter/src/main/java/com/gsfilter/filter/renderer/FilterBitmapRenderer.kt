@@ -203,6 +203,50 @@ object FilterBitmapRenderer {
                     outerEdge = 1.15f,
                 ) * features.rightCheekStrength,
             )
+            val underEyeMask = max(
+                underEyeMask(
+                    textureX,
+                    textureY,
+                    features.leftEyeCenterX,
+                    features.leftEyeCenterY,
+                    features.leftEyeRadiusX,
+                    features.leftEyeRadiusY,
+                    features.rotationRadians,
+                ),
+                underEyeMask(
+                    textureX,
+                    textureY,
+                    features.rightEyeCenterX,
+                    features.rightEyeCenterY,
+                    features.rightEyeRadiusX,
+                    features.rightEyeRadiusY,
+                    features.rotationRadians,
+                ),
+            )
+            val underEyeAmount = params.underEye * underEyeMask * beautyMask
+            val underEyeLuma = gray(red, green, blue)
+            val underEyeLift = underEyeAmount * (1f - underEyeLuma) * 0.08f
+            red += underEyeLift
+            green += underEyeLift
+            blue += underEyeLift
+            val teethRegionMask = ellipseMask(
+                textureX,
+                textureY,
+                features.lipCenterX,
+                features.lipCenterY,
+                features.lipRadiusX * 1.08f,
+                features.lipRadiusY * 0.65f,
+                features.rotationRadians,
+                innerEdge = 0.15f,
+                outerEdge = 1.05f,
+            )
+            val teethAmount = params.teethWhitening * teethRegionMask * faceMask *
+                teethColorMask(red, green, blue) * 0.65f
+            val teethLuma = gray(red, green, blue)
+            val teethLift = teethAmount * (1f - teethLuma) * 0.22f
+            red += teethLift
+            green += teethLift
+            blue += teethLift
             val blushAmount = params.blush * blushMask * skinMask(red, green, blue) * 0.40f
             val blushLuma = gray(red, green, blue)
             red = mix(red, clamp(blushLuma + 0.20f, 0f, 1f), blushAmount)
@@ -466,6 +510,33 @@ object FilterBitmapRenderer {
         return 1f - smoothstep(innerEdge, outerEdge, distance)
     }
 
+    private fun underEyeMask(
+        x: Float,
+        y: Float,
+        eyeCenterX: Float,
+        eyeCenterY: Float,
+        eyeRadiusX: Float,
+        eyeRadiusY: Float,
+        rotationRadians: Float,
+    ): Float {
+        if (eyeRadiusX <= 0f || eyeRadiusY <= 0f) {
+            return 0f
+        }
+        val offsetX = sin(rotationRadians) * eyeRadiusY * 1.55f
+        val offsetY = cos(rotationRadians) * eyeRadiusY * 1.55f
+        return ellipseMask(
+            x = x,
+            y = y,
+            centerX = eyeCenterX + offsetX,
+            centerY = eyeCenterY + offsetY,
+            radiusX = eyeRadiusX * 1.25f,
+            radiusY = eyeRadiusY * 0.80f,
+            rotationRadians = rotationRadians,
+            innerEdge = 0.35f,
+            outerEdge = 1.15f,
+        )
+    }
+
     private fun polygonMask(x: Float, y: Float, points: List<NormalizedPoint>): Float {
         var inside = false
         var edgeDistance = 1f
@@ -505,6 +576,12 @@ object FilterBitmapRenderer {
         val saturation = maxOf(red, green, blue) - minOf(red, green, blue)
         val redness = red - ((green + blue) * 0.5f)
         return smoothstep(0.20f, 0.34f, saturation) * smoothstep(0.16f, 0.26f, redness)
+    }
+
+    private fun teethColorMask(red: Float, green: Float, blue: Float): Float {
+        val luma = gray(red, green, blue)
+        val saturation = maxOf(red, green, blue) - minOf(red, green, blue)
+        return smoothstep(0.55f, 0.72f, luma) * (1f - smoothstep(0.10f, 0.22f, saturation))
     }
 
     private fun clamp(value: Float, minValue: Float, maxValue: Float): Float = min(max(value, minValue), maxValue)

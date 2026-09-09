@@ -27,4 +27,12 @@ data class MakeupFeatures(
     val faceCenterY: Float = 0f,
     val faceRadiusX: Float = 0f,
     val faceRadiusY: Float = 0f,
+    val leftEyeCenterX: Float = 0f,
+    val leftEyeCenterY: Float = 0f,
+    val rightEyeCenterX: Float = 0f,
+    val rightEyeCenterY: Float = 0f,
+    val leftEyeRadiusX: Float = 0f,
+    val leftEyeRadiusY: Float = 0f,
+    val rightEyeRadiusX: Float = 0f,
+    val rightEyeRadiusY: Float = 0f,
 )

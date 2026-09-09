@@ -11,6 +11,8 @@
     <string name="gs_beauty_whitening">Whitening</string>
     <string name="gs_beauty_blush">Blush</string>
     <string name="gs_beauty_lipstick">Lipstick</string>
+    <string name="gs_beauty_under_eye">Under-eye</string>
+    <string name="gs_beauty_teeth_whitening">Teeth</string>
     <string name="gs_action_reset_beauty">Reset Beauty</string>
     <string name="gs_filter_mono">B&amp;W</string>
     <string name="gs_filter_fresh">Fresh</string>

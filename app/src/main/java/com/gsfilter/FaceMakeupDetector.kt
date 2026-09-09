@@ -73,14 +73,18 @@ internal class FaceMakeupDetector {
         }
         val lipCenterY = lipContourCenter.y
         val bounds = boundingBox
-        val leftEye = getContour(FaceContour.LEFT_EYE)?.points.orEmpty().center()
-        val rightEye = getContour(FaceContour.RIGHT_EYE)?.points.orEmpty().center()
+        val leftEyePoints = getContour(FaceContour.LEFT_EYE)?.points.orEmpty()
+        val rightEyePoints = getContour(FaceContour.RIGHT_EYE)?.points.orEmpty()
+        val leftEye = leftEyePoints.center()
+        val rightEye = rightEyePoints.center()
         val rotationRadians = if (leftEye != null && rightEye != null) {
             atan2(rightEye.y - leftEye.y, rightEye.x - leftEye.x)
         } else {
             0f
         }
         val cheekStrengths = cheekStrengths(leftCheek, rightCheek)
+        val leftEyeRadius = eyeRadius(leftEyePoints, leftEye, width, height)
+        val rightEyeRadius = eyeRadius(rightEyePoints, rightEye, width, height)
 
         // ponytail: one shared roll angle keeps the shader small; polygon masks can handle extreme poses later.
         return MakeupFeatures(
@@ -106,6 +110,14 @@ internal class FaceMakeupDetector {
             faceCenterY = bounds.centerY().toFloat().coerceIn(0f, height.toFloat()) / height,
             faceRadiusX = (bounds.width().toFloat() / width * 0.58f).coerceAtLeast(0.01f),
             faceRadiusY = (bounds.height().toFloat() / height * 0.58f).coerceAtLeast(0.01f),
+            leftEyeCenterX = leftEye?.normalizedX(width) ?: 0f,
+            leftEyeCenterY = leftEye?.normalizedY(height) ?: 0f,
+            rightEyeCenterX = rightEye?.normalizedX(width) ?: 0f,
+            rightEyeCenterY = rightEye?.normalizedY(height) ?: 0f,
+            leftEyeRadiusX = leftEyeRadius.first,
+            leftEyeRadiusY = leftEyeRadius.second,
+            rightEyeRadiusX = rightEyeRadius.first,
+            rightEyeRadiusY = rightEyeRadius.second,
         )
     }
 
@@ -145,6 +157,22 @@ internal class FaceMakeupDetector {
         } else {
             hiddenStrength to 1f
         }
+    }
+
+    private fun eyeRadius(
+        points: List<PointF>,
+        center: PointF?,
+        width: Int,
+        height: Int,
+    ): Pair<Float, Float> {
+        if (center == null || points.isEmpty()) {
+            return 0f to 0f
+        }
+        return (
+            points.maxOf { abs(it.x - center.x) } / width * 1.20f
+        ).coerceAtLeast(0.004f) to (
+            points.maxOf { abs(it.y - center.y) } / height * 1.20f
+        ).coerceAtLeast(0.004f)
     }
 
     private fun distance(first: PointF, second: PointF): Float =
