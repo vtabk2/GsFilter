@@ -35,4 +35,6 @@ data class MakeupFeatures(
     val leftEyeRadiusY: Float = 0f,
     val rightEyeRadiusX: Float = 0f,
     val rightEyeRadiusY: Float = 0f,
+    val leftEyebrowContour: List<NormalizedPoint> = emptyList(),
+    val rightEyebrowContour: List<NormalizedPoint> = emptyList(),
 )

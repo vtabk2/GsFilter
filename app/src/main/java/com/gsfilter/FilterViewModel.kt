@@ -62,6 +62,7 @@ class FilterViewModel(application: Application) : AndroidViewModel(application) 
                 teethWhitening = selectedFilter.recipe.teethWhitening,
                 eyeShadow = selectedFilter.recipe.eyeShadow,
                 eyeliner = selectedFilter.recipe.eyeliner,
+                eyebrow = selectedFilter.recipe.eyebrow,
                 faceSlimming = selectedFilter.recipe.faceSlimming,
                 eyeEnlargement = selectedFilter.recipe.eyeEnlargement,
             )
@@ -80,6 +81,7 @@ class FilterViewModel(application: Application) : AndroidViewModel(application) 
                 teethWhitening = filter.recipe.teethWhitening,
                 eyeShadow = filter.recipe.eyeShadow,
                 eyeliner = filter.recipe.eyeliner,
+                eyebrow = filter.recipe.eyebrow,
                 faceSlimming = filter.recipe.faceSlimming,
                 eyeEnlargement = filter.recipe.eyeEnlargement,
             )
@@ -166,6 +168,10 @@ class FilterViewModel(application: Application) : AndroidViewModel(application) 
         _state.update { it.copy(eyeliner = value.coerceIn(BEAUTY_MIN, BEAUTY_MAX)) }
     }
 
+    fun setEyebrow(value: Int) {
+        _state.update { it.copy(eyebrow = value.coerceIn(BEAUTY_MIN, BEAUTY_MAX)) }
+    }
+
     fun setFaceSlimming(value: Int) {
         _state.update { it.copy(faceSlimming = value.coerceIn(BEAUTY_MIN, BEAUTY_MAX)) }
     }
@@ -185,6 +191,7 @@ class FilterViewModel(application: Application) : AndroidViewModel(application) 
                 teethWhitening = it.selectedFilter.recipe.teethWhitening,
                 eyeShadow = it.selectedFilter.recipe.eyeShadow,
                 eyeliner = it.selectedFilter.recipe.eyeliner,
+                eyebrow = it.selectedFilter.recipe.eyebrow,
                 faceSlimming = it.selectedFilter.recipe.faceSlimming,
                 eyeEnlargement = it.selectedFilter.recipe.eyeEnlargement,
             )

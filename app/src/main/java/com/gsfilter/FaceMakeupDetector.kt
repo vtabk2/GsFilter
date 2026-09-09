@@ -75,6 +75,14 @@ internal class FaceMakeupDetector {
         val bounds = boundingBox
         val leftEyePoints = getContour(FaceContour.LEFT_EYE)?.points.orEmpty()
         val rightEyePoints = getContour(FaceContour.RIGHT_EYE)?.points.orEmpty()
+        val leftEyebrowPoints = eyebrowContour(
+            FaceContour.LEFT_EYEBROW_TOP,
+            FaceContour.LEFT_EYEBROW_BOTTOM,
+        )
+        val rightEyebrowPoints = eyebrowContour(
+            FaceContour.RIGHT_EYEBROW_TOP,
+            FaceContour.RIGHT_EYEBROW_BOTTOM,
+        )
         val leftEye = leftEyePoints.center()
         val rightEye = rightEyePoints.center()
         val rotationRadians = if (leftEye != null && rightEye != null) {
@@ -118,8 +126,16 @@ internal class FaceMakeupDetector {
             leftEyeRadiusY = leftEyeRadius.second,
             rightEyeRadiusX = rightEyeRadius.first,
             rightEyeRadiusY = rightEyeRadius.second,
+            leftEyebrowContour = normalize(leftEyebrowPoints, width, height),
+            rightEyebrowContour = normalize(rightEyebrowPoints, width, height),
         )
     }
+
+    private fun Face.eyebrowContour(upperType: Int, lowerType: Int): List<PointF> =
+        (getContour(upperType)?.points.orEmpty() +
+            getContour(lowerType)?.points.orEmpty().asReversed())
+            .takeIf { it.size >= 3 }
+            .orEmpty()
 
     private fun Face.lipContourPolygon(outerType: Int, innerType: Int): List<PointF> =
         (getContour(outerType)?.points.orEmpty() +

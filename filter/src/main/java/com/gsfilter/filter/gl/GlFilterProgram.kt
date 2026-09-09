@@ -67,6 +67,7 @@ internal object GlFilterProgram {
             teethWhitening = GLES20.glGetUniformLocation(program, U_TEETH_WHITENING),
             eyeShadow = GLES20.glGetUniformLocation(program, U_EYE_SHADOW),
             eyeliner = GLES20.glGetUniformLocation(program, U_EYELINER),
+            eyebrow = GLES20.glGetUniformLocation(program, U_EYEBROW),
             faceSlimming = GLES20.glGetUniformLocation(program, U_FACE_SLIMMING),
             eyeEnlargement = GLES20.glGetUniformLocation(program, U_EYE_ENLARGEMENT),
             blushLeft = GLES20.glGetUniformLocation(program, U_BLUSH_LEFT),
@@ -84,6 +85,10 @@ internal object GlFilterProgram {
             upperLipPointCount = GLES20.glGetUniformLocation(program, U_UPPER_LIP_POINT_COUNT),
             lowerLipPoints = GLES20.glGetUniformLocation(program, U_LOWER_LIP_POINTS),
             lowerLipPointCount = GLES20.glGetUniformLocation(program, U_LOWER_LIP_POINT_COUNT),
+            leftEyebrowPoints = GLES20.glGetUniformLocation(program, U_LEFT_EYEBROW_POINTS),
+            leftEyebrowPointCount = GLES20.glGetUniformLocation(program, U_LEFT_EYEBROW_POINT_COUNT),
+            rightEyebrowPoints = GLES20.glGetUniformLocation(program, U_RIGHT_EYEBROW_POINTS),
+            rightEyebrowPointCount = GLES20.glGetUniformLocation(program, U_RIGHT_EYEBROW_POINT_COUNT),
             makeupRotation = GLES20.glGetUniformLocation(program, U_MAKEUP_ROTATION),
             effect = GLES20.glGetUniformLocation(program, U_EFFECT),
             effectStrength = GLES20.glGetUniformLocation(program, U_EFFECT_STRENGTH),
@@ -154,6 +159,7 @@ internal object GlFilterProgram {
         GLES20.glUniform1f(handles.teethWhitening, params.teethWhitening)
         GLES20.glUniform1f(handles.eyeShadow, params.eyeShadow)
         GLES20.glUniform1f(handles.eyeliner, params.eyeliner)
+        GLES20.glUniform1f(handles.eyebrow, params.eyebrow)
         GLES20.glUniform1f(handles.faceSlimming, params.faceSlimming)
         GLES20.glUniform1f(handles.eyeEnlargement, params.eyeEnlargement)
         GLES20.glUniform1f(handles.makeupRotation, params.makeupFeatures?.rotationRadians ?: 0f)
@@ -245,6 +251,22 @@ internal object GlFilterProgram {
             }
             GLES20.glUniform2fv(handles.lowerLipPoints, MAX_LIP_POINTS, lowerLipPointValues, 0)
             GLES20.glUniform1i(handles.lowerLipPointCount, lowerLipPointCount)
+            val leftEyebrowPointValues = FloatArray(MAX_CONTOUR_POINTS * 2)
+            val leftEyebrowPointCount = features.leftEyebrowContour.size.coerceAtMost(MAX_CONTOUR_POINTS)
+            features.leftEyebrowContour.take(MAX_CONTOUR_POINTS).forEachIndexed { index, point ->
+                leftEyebrowPointValues[index * 2] = point.x
+                leftEyebrowPointValues[(index * 2) + 1] = point.y
+            }
+            GLES20.glUniform2fv(handles.leftEyebrowPoints, MAX_CONTOUR_POINTS, leftEyebrowPointValues, 0)
+            GLES20.glUniform1i(handles.leftEyebrowPointCount, leftEyebrowPointCount)
+            val rightEyebrowPointValues = FloatArray(MAX_CONTOUR_POINTS * 2)
+            val rightEyebrowPointCount = features.rightEyebrowContour.size.coerceAtMost(MAX_CONTOUR_POINTS)
+            features.rightEyebrowContour.take(MAX_CONTOUR_POINTS).forEachIndexed { index, point ->
+                rightEyebrowPointValues[index * 2] = point.x
+                rightEyebrowPointValues[(index * 2) + 1] = point.y
+            }
+            GLES20.glUniform2fv(handles.rightEyebrowPoints, MAX_CONTOUR_POINTS, rightEyebrowPointValues, 0)
+            GLES20.glUniform1i(handles.rightEyebrowPointCount, rightEyebrowPointCount)
         } ?: run {
             GLES20.glUniform4f(handles.blushLeft, 0f, 0f, 0f, 0f)
             GLES20.glUniform4f(handles.blushRight, 0f, 0f, 0f, 0f)
@@ -261,6 +283,10 @@ internal object GlFilterProgram {
             GLES20.glUniform1i(handles.upperLipPointCount, 0)
             GLES20.glUniform2fv(handles.lowerLipPoints, MAX_LIP_POINTS, FloatArray(MAX_LIP_POINTS * 2), 0)
             GLES20.glUniform1i(handles.lowerLipPointCount, 0)
+            GLES20.glUniform2fv(handles.leftEyebrowPoints, MAX_CONTOUR_POINTS, FloatArray(MAX_CONTOUR_POINTS * 2), 0)
+            GLES20.glUniform1i(handles.leftEyebrowPointCount, 0)
+            GLES20.glUniform2fv(handles.rightEyebrowPoints, MAX_CONTOUR_POINTS, FloatArray(MAX_CONTOUR_POINTS * 2), 0)
+            GLES20.glUniform1i(handles.rightEyebrowPointCount, 0)
         }
         GLES20.glUniform1f(handles.effect, params.effect.shaderValue)
         GLES20.glUniform1f(handles.effectStrength, params.effectStrength)
@@ -318,6 +344,7 @@ internal object GlFilterProgram {
         val teethWhitening: Int,
         val eyeShadow: Int,
         val eyeliner: Int,
+        val eyebrow: Int,
         val faceSlimming: Int,
         val eyeEnlargement: Int,
         val blushLeft: Int,
@@ -335,6 +362,10 @@ internal object GlFilterProgram {
         val upperLipPointCount: Int,
         val lowerLipPoints: Int,
         val lowerLipPointCount: Int,
+        val leftEyebrowPoints: Int,
+        val leftEyebrowPointCount: Int,
+        val rightEyebrowPoints: Int,
+        val rightEyebrowPointCount: Int,
         val makeupRotation: Int,
         val effect: Int,
         val effectStrength: Int,
@@ -385,6 +416,7 @@ internal object GlFilterProgram {
     private const val U_TEETH_WHITENING = "uTeethWhitening"
     private const val U_EYE_SHADOW = "uEyeShadow"
     private const val U_EYELINER = "uEyeliner"
+    private const val U_EYEBROW = "uEyebrow"
     private const val U_FACE_SLIMMING = "uFaceSlimming"
     private const val U_EYE_ENLARGEMENT = "uEyeEnlargement"
     private const val U_BLUSH_LEFT = "uBlushLeft"
@@ -402,8 +434,13 @@ internal object GlFilterProgram {
     private const val U_UPPER_LIP_POINT_COUNT = "uUpperLipPointCount"
     private const val U_LOWER_LIP_POINTS = "uLowerLipPoints[0]"
     private const val U_LOWER_LIP_POINT_COUNT = "uLowerLipPointCount"
+    private const val U_LEFT_EYEBROW_POINTS = "uLeftEyebrowPoints[0]"
+    private const val U_LEFT_EYEBROW_POINT_COUNT = "uLeftEyebrowPointCount"
+    private const val U_RIGHT_EYEBROW_POINTS = "uRightEyebrowPoints[0]"
+    private const val U_RIGHT_EYEBROW_POINT_COUNT = "uRightEyebrowPointCount"
     private const val U_MAKEUP_ROTATION = "uMakeupRotation"
     private const val MAX_LIP_POINTS = 32
+    private const val MAX_CONTOUR_POINTS = 32
     private const val U_EFFECT = "uEffect"
     private const val U_EFFECT_STRENGTH = "uEffectStrength"
     private const val U_EFFECT_THRESHOLD = "uEffectThreshold"
@@ -453,6 +490,7 @@ internal object GlFilterProgram {
         uniform float uTeethWhitening;
         uniform float uEyeShadow;
         uniform float uEyeliner;
+        uniform float uEyebrow;
         uniform float uFaceSlimming;
         uniform float uEyeEnlargement;
         uniform vec4 uBlushLeft;
@@ -470,6 +508,10 @@ internal object GlFilterProgram {
         uniform int uUpperLipPointCount;
         uniform vec2 uLowerLipPoints[32];
         uniform int uLowerLipPointCount;
+        uniform vec2 uLeftEyebrowPoints[32];
+        uniform int uLeftEyebrowPointCount;
+        uniform vec2 uRightEyebrowPoints[32];
+        uniform int uRightEyebrowPointCount;
         uniform float uMakeupRotation;
         uniform float uEffect;
         uniform float uEffectStrength;
@@ -664,6 +706,34 @@ internal object GlFilterProgram {
             return smoothstep(0.55, 0.72, luma) * (1.0 - smoothstep(0.10, 0.22, saturation));
         }
 
+        float contourMask(vec2 coord, vec2 points[32], int pointCount) {
+            if (pointCount < 3) {
+                return 0.0;
+            }
+            bool inside = false;
+            float edgeDistance = 1.0;
+            for (int index = 0; index < 32; index++) {
+                if (index >= pointCount) {
+                    break;
+                }
+                int nextIndex = index + 1;
+                if (nextIndex >= pointCount) {
+                    nextIndex = 0;
+                }
+                vec2 start = points[index];
+                vec2 end = points[nextIndex];
+                edgeDistance = min(edgeDistance, pointSegmentDistance(coord, start, end));
+                if ((start.y > coord.y) != (end.y > coord.y)) {
+                    float intersectionX = start.x +
+                        ((coord.y - start.y) * (end.x - start.x) / (end.y - start.y));
+                    if (coord.x < intersectionX) {
+                        inside = !inside;
+                    }
+                }
+            }
+            return (inside && edgeDistance > 0.004) ? 1.0 : 0.0;
+        }
+
         float lipContourMask(vec2 coord) {
             if (uUpperLipPointCount >= 3 || uLowerLipPointCount >= 3) {
                 float mask = 0.0;
@@ -825,6 +895,12 @@ internal object GlFilterProgram {
             );
             float eyelinerAmount = uEyeliner * eyelinerMask * faceAreaMask(vTexCoord) * 0.48;
             rgb = mix(rgb, vec3(0.06, 0.04, 0.05), eyelinerAmount);
+            float eyebrowMask = max(
+                contourMask(vTexCoord, uLeftEyebrowPoints, uLeftEyebrowPointCount),
+                contourMask(vTexCoord, uRightEyebrowPoints, uRightEyebrowPointCount)
+            );
+            float eyebrowAmount = uEyebrow * eyebrowMask * faceAreaMask(vTexCoord) * 0.32;
+            rgb = mix(rgb, rgb * vec3(0.42, 0.32, 0.28), eyebrowAmount);
             float blushMask = max(
                 ellipseMask(vTexCoord, uBlushLeft, uMakeupRotation, 0.35, 1.15) * uBlushStrengths.x,
                 ellipseMask(vTexCoord, uBlushRight, uMakeupRotation, 0.35, 1.15) * uBlushStrengths.y

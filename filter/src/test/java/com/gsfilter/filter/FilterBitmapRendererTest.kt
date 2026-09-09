@@ -241,6 +241,42 @@ class FilterBitmapRendererTest {
     }
 
     @Test
+    fun `eyebrow enhancement stays inside eyebrow contours`() {
+        val skin = 0xffbf8c66.toInt()
+        val output = FilterBitmapRenderer.renderPixels(
+            pixels = IntArray(5 * 5) { skin },
+            width = 5,
+            height = 5,
+            params = ShaderFilterParams.from(
+                recipe = FilterRecipe(eyebrow = 100),
+                adjustments = Adjustments(),
+                makeupFeatures = MakeupFeatures(
+                    leftCheekX = 0f,
+                    leftCheekY = 0f,
+                    rightCheekX = 0f,
+                    rightCheekY = 0f,
+                    cheekRadiusX = 0f,
+                    cheekRadiusY = 0f,
+                    lipCenterX = 0f,
+                    lipCenterY = 0f,
+                    lipRadiusX = 0f,
+                    lipRadiusY = 0f,
+                    leftEyebrowContour = listOf(
+                        NormalizedPoint(0.3f, 0.2f),
+                        NormalizedPoint(0.7f, 0.2f),
+                        NormalizedPoint(0.7f, 0.4f),
+                        NormalizedPoint(0.3f, 0.4f),
+                    ),
+                ),
+            ),
+        )
+
+        assertNotEquals(skin, output[1 * 5 + 2])
+        assertEquals(skin, output[0])
+        assertEquals(skin, output[4 * 5 + 4])
+    }
+
+    @Test
     fun `face slimming and eye enlargement warp only detected regions`() {
         val pixels = IntArray(9 * 9) { index ->
             val x = index % 9

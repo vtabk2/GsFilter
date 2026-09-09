@@ -302,6 +302,14 @@ object FilterBitmapRenderer {
             red = mix(red, 0.06f, eyelinerAmount)
             green = mix(green, 0.04f, eyelinerAmount)
             blue = mix(blue, 0.05f, eyelinerAmount)
+            val eyebrowMask = max(
+                polygonMask(textureX, textureY, features.leftEyebrowContour),
+                polygonMask(textureX, textureY, features.rightEyebrowContour),
+            )
+            val eyebrowAmount = params.eyebrow * eyebrowMask * faceMask * 0.32f
+            red = mix(red, red * 0.42f, eyebrowAmount)
+            green = mix(green, green * 0.32f, eyebrowAmount)
+            blue = mix(blue, blue * 0.28f, eyebrowAmount)
             val blushAmount = params.blush * blushMask * skinMask(red, green, blue) * 0.40f
             val blushLuma = gray(red, green, blue)
             red = mix(red, clamp(blushLuma + 0.20f, 0f, 1f), blushAmount)

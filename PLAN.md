@@ -2255,8 +2255,9 @@ Created: 2026-09-08
 
 ## Next Task: Finish Beauty accuracy and add practical makeup features
 
-Status: IN PROGRESS
+Status: DONE
 Created: 2026-09-09
+Completed: 2026-09-09
 
 ### Goal
 
@@ -2506,3 +2507,28 @@ Completed: 2026-09-09
 - Eye Enlargement uses a bounded radial inverse warp around detected eyes and follows the detected roll angle.
 - CPU fallback uses bilinear source sampling so the warp does not create hard pixel steps.
 - `:filter:testDebugUnitTest :app:testDebugUnitTest :app:compileDebugKotlin :app:installDebug` passed.
+
+## Task: Add eyebrow enhancement Beauty control
+
+Status: DONE
+Created: 2026-09-09
+Completed: 2026-09-09
+
+### Requirements
+
+- Add an Eyebrow enhancement control to the existing Beauty tab.
+- Use ML Kit upper/lower eyebrow contours for both frontal and angled faces.
+- Keep CPU fallback and GPU preview masks aligned.
+- Preserve the Beauty `0..100` range and avoid a new dependency.
+
+### Checklist
+
+- [x] Add recipe, state, ViewModel, UI, JSON mapping, and icon.
+- [x] Add contour-based CPU/GPU brow rendering.
+- [x] Add a focused regression test for the polygon boundary.
+- [x] Run unit tests, compile, install Debug, and review the final diff.
+
+### Notes
+
+- Eyebrow enhancement uses separate ML Kit upper/lower eyebrow contour polygons, so the effect follows tilted and three-quarter faces without a guessed oval region.
+- `:filter:testDebugUnitTest :app:testDebugUnitTest :app:compileDebugKotlin :app:installDebug` passed on Samsung A56 (`SM-A566B`); the app launched without shader or runtime errors in logcat.

@@ -571,6 +571,7 @@ class FilterControlsView @JvmOverloads constructor(
             BeautyControl.TeethWhitening -> recipe.teethWhitening
             BeautyControl.EyeShadow -> recipe.eyeShadow
             BeautyControl.Eyeliner -> recipe.eyeliner
+            BeautyControl.Eyebrow -> recipe.eyebrow
             BeautyControl.FaceSlimming -> recipe.faceSlimming
             BeautyControl.EyeEnlargement -> recipe.eyeEnlargement
         }
@@ -655,6 +656,7 @@ class FilterControlsView @JvmOverloads constructor(
         TeethWhitening(R.string.gs_beauty_teeth_whitening, R.drawable.ic_gs_beauty_teeth),
         EyeShadow(R.string.gs_beauty_eye_shadow, R.drawable.ic_gs_beauty_eye_shadow),
         Eyeliner(R.string.gs_beauty_eyeliner, R.drawable.ic_gs_beauty_eyeliner),
+        Eyebrow(R.string.gs_beauty_eyebrow, R.drawable.ic_gs_beauty_eyebrow),
         FaceSlimming(R.string.gs_beauty_face_slimming, R.drawable.ic_gs_beauty_face_slimming),
         EyeEnlargement(R.string.gs_beauty_eye_enlargement, R.drawable.ic_gs_beauty_eye_enlargement),
     }
