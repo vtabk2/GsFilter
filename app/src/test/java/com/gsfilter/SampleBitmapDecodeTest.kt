@@ -15,4 +15,12 @@ class SampleBitmapDecodeTest {
     fun `sample size does not upscale smaller assets`() {
         assertEquals(1, LoadUtils.bitmapInSampleSize(width = 1024, height = 768, threshold = 4096))
     }
+
+    @Test
+    fun `image assets are filtered and sample stays first`() {
+        assertEquals(
+            listOf("sample.jpg", "portrait.png", "tilted.webp"),
+            imageAssetPaths(arrayOf("filter_pack.json", "tilted.webp", "portrait.png", "sample.jpg", "notes.txt")),
+        )
+    }
 }

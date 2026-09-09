@@ -132,11 +132,18 @@ object FilterBitmapRenderer {
         val sourceGray = gray(sourceRed, sourceGreen, sourceBlue)
         val sharpAmount = (params.sharpness * 0.65f) + (params.clarity * 0.35f)
 
-        val beautyMask = skinMask(sourceRed, sourceGreen, sourceBlue)
-        val beautySmoothAmount = params.skinSmoothing * beautyMask * (1f - smoothstep(0.18f, 0.55f, edgeAt(pixels, x, y, width, height)))
         val blurredRed = average(red(left), red(right), red(up), red(down))
         val blurredGreen = average(green(left), green(right), green(up), green(down))
         val blurredBlue = average(blue(left), blue(right), blue(up), blue(down))
+        val beautyMask = skinMask(sourceRed, sourceGreen, sourceBlue)
+        val localContrast = maxOf(
+            abs(sourceRed - blurredRed),
+            abs(sourceGreen - blurredGreen),
+            abs(sourceBlue - blurredBlue),
+        )
+        val edgeGuard = 1f - smoothstep(0.06f, 0.20f, localContrast)
+        val beautySmoothAmount = params.skinSmoothing * beautyMask * edgeGuard *
+            (1f - smoothstep(0.18f, 0.55f, edgeAt(pixels, x, y, width, height)))
         red = mix(red, blurredRed, beautySmoothAmount)
         green = mix(green, blurredGreen, beautySmoothAmount)
         blue = mix(blue, blurredBlue, beautySmoothAmount)

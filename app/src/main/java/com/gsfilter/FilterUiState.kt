@@ -12,6 +12,7 @@ import com.gsfilter.filter.MakeupFeatures
 data class FilterUiState(
     val sourceBitmap: Bitmap? = null,
     val filterThumbnailKey: String? = null,
+    val imageAssetCount: Int = 0,
     val catalog: FilterPack = FilterCatalog.pack,
     val selectedCategory: FilterCategory = FilterCatalog.defaultCategory,
     val selectedFilter: FilterOption = FilterCatalog.default,

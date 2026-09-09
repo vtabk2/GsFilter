@@ -60,6 +60,44 @@ class FilterBitmapRendererTest {
     }
 
     @Test
+    fun `beauty smoothing protects high contrast boundaries`() {
+        val skin = 0xffbf8c66.toInt()
+        val softNeighbor = 0xffb98868.toInt()
+        val edge = 0xff111111.toInt()
+        val params = ShaderFilterParams.from(
+            recipe = FilterRecipe(skinSmoothing = 100),
+            adjustments = Adjustments(),
+        )
+        val softOutput = FilterBitmapRenderer.renderPixels(
+            pixels = intArrayOf(
+                softNeighbor, softNeighbor, softNeighbor,
+                softNeighbor, skin, softNeighbor,
+                softNeighbor, softNeighbor, softNeighbor,
+            ),
+            width = 3,
+            height = 3,
+            params = params,
+        )
+        val edgeOutput = FilterBitmapRenderer.renderPixels(
+            pixels = intArrayOf(
+                edge, edge, edge,
+                edge, skin, edge,
+                edge, edge, edge,
+            ),
+            width = 3,
+            height = 3,
+            params = params,
+        )
+
+        fun distance(color: Int): Int =
+            kotlin.math.abs(((color shr 16) and 0xff) - ((skin shr 16) and 0xff)) +
+                kotlin.math.abs(((color shr 8) and 0xff) - ((skin shr 8) and 0xff)) +
+                kotlin.math.abs((color and 0xff) - (skin and 0xff))
+
+        assertTrue(distance(edgeOutput[4]) < distance(softOutput[4]))
+    }
+
+    @Test
     fun `lipstick changes only the detected lip region`() {
         val original = 0xff996633.toInt()
         val output = FilterBitmapRenderer.renderPixels(

@@ -103,6 +103,15 @@
             </LinearLayout>
         </LinearLayout>
 
+        <Button
+            android:id="@+id/nextImageButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal"
+            android:layout_marginTop="@dimen/item_spacing"
+            android:enabled="false"
+            android:text="@string/next_image" />
+
         <TextView
             android:id="@+id/errorText"
             android:layout_width="match_parent"

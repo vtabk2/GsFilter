@@ -2255,7 +2255,7 @@ Created: 2026-09-08
 
 ## Next Task: Finish Beauty accuracy and add practical makeup features
 
-Status: PLANNED
+Status: IN PROGRESS
 Created: 2026-09-09
 
 ### Goal
@@ -2263,6 +2263,13 @@ Created: 2026-09-09
 - Make the existing Beauty controls look natural on frontal, three-quarter, and profile faces.
 - Keep the current GPU/CPU pipeline and ML Kit contour input.
 - Do not add GPUPixel, JNI, or a new rendering dependency.
+
+### Progress
+
+- [x] Add local-contrast edge protection to the CPU and GPU smoothing masks.
+- [x] Add a regression test for smoothing beside a high-contrast boundary.
+- [x] Run unit tests, compile, install Debug, and launch on Samsung A56.
+- [ ] Compare smoothing at low, medium, and maximum strength on frontal and angled samples.
 
 ### Implementation order
 
@@ -2300,3 +2307,29 @@ Created: 2026-09-09
 - No visible rectangular/oval patch, color halo, or spill on angled faces.
 - CPU fallback and GPU preview use the same mask and strength behavior.
 - Add focused CPU regression tests for each mask boundary, then run unit tests, compile, install Debug, and manually check at least frontal plus angled samples.
+
+## Task: Cycle test images from app assets
+
+Status: DONE
+Created: 2026-09-09
+
+### Requirements
+
+- Keep image input in `app/src/main/assets`.
+- Start with `sample.jpg`, then cycle through other `.jpg`, `.jpeg`, `.png`, and `.webp` assets.
+- Reset detected makeup features when changing images and re-run face detection for the new bitmap.
+- Keep the current filter, Beauty, and Adjust values while switching images.
+
+### Checklist
+
+- [x] Discover supported image assets and keep `sample.jpg` as the first image.
+- [x] Add a `Next image` button that cycles through the asset list.
+- [x] Prevent switching while an image is loading.
+- [x] Add asset-list unit coverage.
+- [x] Run unit tests and compile the app.
+- [x] Install Debug and verify switching from `sample.jpg` to `demo.png` on Samsung A56.
+
+### Notes
+
+- Add more test photos directly to `app/src/main/assets`; the button remains disabled when only one image exists.
+- The current asset bitmap is replaced safely through the existing state/preview flow; old bitmaps are left for normal garbage collection instead of being recycled while the GL view may still use them.

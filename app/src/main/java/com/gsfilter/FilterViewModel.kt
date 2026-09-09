@@ -2,7 +2,6 @@ package com.gsfilter
 
 import android.app.Application
 import android.graphics.Bitmap
-import android.util.Log
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.gsfilter.filter.AdjustControl
@@ -30,9 +29,22 @@ class FilterViewModel(application: Application) : AndroidViewModel(application) 
     private val _state = MutableStateFlow(FilterUiState())
     val state: StateFlow<FilterUiState> = _state.asStateFlow()
     private val faceMakeupDetector = FaceMakeupDetector()
+    private var imageAssets: List<String> = emptyList()
+    private var imageAssetIndex = 0
 
     init {
         loadSample()
+    }
+
+    fun nextImage() {
+        if (_state.value.isLoading || imageAssets.size < 2) {
+            return
+        }
+        imageAssetIndex = (imageAssetIndex + 1) % imageAssets.size
+        val assetPath = imageAssets[imageAssetIndex]
+        viewModelScope.launch {
+            loadAsset(assetPath)
+        }
     }
 
     fun setCatalog(catalog: FilterPack) {
@@ -182,31 +194,58 @@ class FilterViewModel(application: Application) : AndroidViewModel(application) 
         viewModelScope.launch {
             _state.update { it.copy(isLoading = true, error = null) }
             try {
-                val bitmap = withContext(Dispatchers.IO) { decodeSampleBitmap() }
-                _state.update {
-                    Log.d("TAG5", "loadSample: width = " + bitmap.width)
-                    Log.d("TAG5", "loadSample: height = " + bitmap.height)
-                    it.copy(
-                        sourceBitmap = bitmap,
-                        filterThumbnailKey = FilterSourceKey.asset(SAMPLE_ASSET),
-                        isLoading = false,
-                        error = null,
-                    )
+                imageAssets = withContext(Dispatchers.IO) {
+                    imageAssetPaths(getApplication<Application>().assets.list("") ?: emptyArray())
                 }
-                faceMakeupDetector.detect(bitmap) { makeupFeatures ->
-                    _state.update { state ->
-                        if (state.sourceBitmap === bitmap) {
-                            state.copy(makeupFeatures = makeupFeatures)
-                        } else {
-                            state
-                        }
-                    }
+                if (imageAssets.isEmpty()) {
+                    throw IOException("No image assets found")
                 }
+                imageAssetIndex = imageAssets.indexOf(SAMPLE_ASSET).takeIf { it >= 0 } ?: 0
+                loadAsset(imageAssets[imageAssetIndex])
             } catch (_: IOException) {
                 _state.update {
-                    it.copy(isLoading = false, error = FilterError.AssetLoadFailed)
+                    it.copy(
+                        isLoading = false,
+                        imageAssetCount = imageAssets.size,
+                        error = FilterError.AssetLoadFailed,
+                    )
                 }
             }
+        }
+    }
+
+    private suspend fun loadAsset(assetPath: String) {
+        _state.update {
+            it.copy(
+                isLoading = true,
+                error = null,
+                makeupFeatures = null,
+                imageAssetCount = imageAssets.size,
+            )
+        }
+        try {
+            val bitmap = withContext(Dispatchers.IO) { decodeAssetBitmap(assetPath) }
+            _state.update {
+                it.copy(
+                    sourceBitmap = bitmap,
+                    filterThumbnailKey = FilterSourceKey.asset(assetPath),
+                    isLoading = false,
+                    error = null,
+                    makeupFeatures = null,
+                    imageAssetCount = imageAssets.size,
+                )
+            }
+            faceMakeupDetector.detect(bitmap) { makeupFeatures ->
+                _state.update { state ->
+                    if (state.sourceBitmap === bitmap) {
+                        state.copy(makeupFeatures = makeupFeatures)
+                    } else {
+                        state
+                    }
+                }
+            }
+        } catch (_: IOException) {
+            _state.update { it.copy(isLoading = false, error = FilterError.AssetLoadFailed) }
         }
     }
 
@@ -219,11 +258,11 @@ class FilterViewModel(application: Application) : AndroidViewModel(application) 
         _state.update { it.copy(adjustments = update(it.adjustments)) }
     }
 
-    private fun decodeSampleBitmap(): Bitmap {
+    private fun decodeAssetBitmap(assetPath: String): Bitmap {
         val application = getApplication<Application>()
         return LoadUtils.getBitmapFromAsset(
             context = application,
-            assetPath = SAMPLE_ASSET,
+            assetPath = assetPath,
             threshold = SAMPLE_BITMAP_MAX_EDGE,
         )
     }
@@ -237,3 +276,13 @@ class FilterViewModel(application: Application) : AndroidViewModel(application) 
         const val BEAUTY_MAX = 100
     }
 }
+
+internal fun imageAssetPaths(paths: Array<String>): List<String> =
+    paths
+        .filter { path -> path.substringAfterLast('.', "").lowercase() in SUPPORTED_IMAGE_EXTENSIONS }
+        .sortedWith(
+            compareBy<String> { if (it == "sample.jpg") 0 else 1 }
+                .thenBy { it.lowercase() },
+        )
+
+private val SUPPORTED_IMAGE_EXTENSIONS = setOf("jpg", "jpeg", "png", "webp")

@@ -38,6 +38,7 @@ class MainActivity : ComponentActivity() {
         bindBeautyControls()
         bindAdjustControls()
         bindFilterPackToggle()
+        binding.nextImageButton.setOnClickListener { viewModel.nextImage() }
         collectState()
     }
 
@@ -115,6 +116,7 @@ class MainActivity : ComponentActivity() {
 
     private fun render(state: FilterUiState) {
         binding.progressBar.isVisible = state.isLoading || isSaving
+        binding.nextImageButton.isEnabled = state.imageAssetCount > 1 && !state.isLoading && !isSaving
         binding.errorText.isVisible = state.error != null
         binding.errorText.text = state.error?.toMessage().orEmpty()
         binding.imageOriginal.setImageBitmap(state.sourceBitmap)

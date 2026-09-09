@@ -574,8 +574,15 @@ internal object GlFilterProgram {
             vec3 down = texture2D(uTexture, vTexCoord + vec2(0.0, uTexelSize.y)).rgb;
             vec3 blur = (left + right + up + down) * 0.25;
             float beautyMask = skinMask(color.rgb);
+            vec3 localContrast = abs(color.rgb - blur);
+            float edgeGuard = 1.0 - smoothstep(
+                0.06,
+                0.20,
+                max(max(localContrast.r, localContrast.g), localContrast.b)
+            );
             float beautyEdge = edgeAt(vTexCoord);
-            float smoothAmount = uSkinSmoothing * beautyMask * (1.0 - smoothstep(0.18, 0.55, beautyEdge));
+            float smoothAmount = uSkinSmoothing * beautyMask * edgeGuard *
+                (1.0 - smoothstep(0.18, 0.55, beautyEdge));
             vec3 rgb = mix(color.rgb, blur, smoothAmount);
             rgb = rgb + (rgb - blur) * ((uSharpness * 0.65) + (uClarity * 0.35));
             float whitening = uSkinWhitening * beautyMask;
