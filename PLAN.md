@@ -2251,3 +2251,4 @@ Created: 2026-09-08
 - `:app:installDebug` passed and the app was tested on Samsung A56 (`SM-A566B`); Lip 100 changed only the mouth region in the captured result.
 - Upper and lower ML Kit lip contours now render as separate hard polygon masks; the CPU path has regression coverage for the gap and skin below the lips.
 - Lipstick now also requires source-pixel saturation and red dominance, preventing warm skin inside an imperfect contour from being colored.
+- Whitening now uses a luminance lift with highlight protection and mild desaturation instead of a per-channel white overlay.

@@ -141,9 +141,17 @@ object FilterBitmapRenderer {
         green = mix(green, blurredGreen, beautySmoothAmount)
         blue = mix(blue, blurredBlue, beautySmoothAmount)
         val beautyWhiteAmount = params.skinWhitening * beautyMask
-        red = mix(red, red + ((1f - red) * 0.18f), beautyWhiteAmount)
-        green = mix(green, green + ((1f - green) * 0.18f), beautyWhiteAmount)
-        blue = mix(blue, blue + ((1f - blue) * 0.18f), beautyWhiteAmount)
+        val skinLuma = gray(red, green, blue)
+        val highlightGuard = 1f - smoothstep(0.55f, 0.92f, skinLuma)
+        val skinLift = beautyWhiteAmount * (1f - skinLuma) * 0.10f * highlightGuard
+        red += skinLift
+        green += skinLift
+        blue += skinLift
+        val skinDesaturate = beautyWhiteAmount * 0.08f * highlightGuard
+        val liftedLuma = skinLuma + skinLift
+        red = mix(red, liftedLuma, skinDesaturate)
+        green = mix(green, liftedLuma, skinDesaturate)
+        blue = mix(blue, liftedLuma, skinDesaturate)
         params.makeupFeatures?.let { features ->
             val textureX = (x + 0.5f) / width
             val textureY = (y + 0.5f) / height

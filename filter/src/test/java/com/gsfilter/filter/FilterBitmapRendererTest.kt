@@ -54,6 +54,9 @@ class FilterBitmapRendererTest {
 
         assertNotEquals(skin, output[0])
         assertEquals(neutral, output[1])
+        val outputRed = (output[0] shr 16) and 0xff
+        val outputBlue = output[0] and 0xff
+        assertTrue(outputRed - outputBlue > 20)
     }
 
     @Test

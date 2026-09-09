@@ -578,7 +578,13 @@ internal object GlFilterProgram {
             float smoothAmount = uSkinSmoothing * beautyMask * (1.0 - smoothstep(0.18, 0.55, beautyEdge));
             vec3 rgb = mix(color.rgb, blur, smoothAmount);
             rgb = rgb + (rgb - blur) * ((uSharpness * 0.65) + (uClarity * 0.35));
-            rgb = mix(rgb, rgb + ((vec3(1.0) - rgb) * 0.18), uSkinWhitening * beautyMask);
+            float whitening = uSkinWhitening * beautyMask;
+            float skinLuma = dot(rgb, vec3(0.299, 0.587, 0.114));
+            float highlightGuard = 1.0 - smoothstep(0.55, 0.92, skinLuma);
+            float skinLift = whitening * (1.0 - skinLuma) * 0.10 * highlightGuard;
+            rgb += vec3(skinLift);
+            float skinDesaturate = whitening * 0.08 * highlightGuard;
+            rgb = mix(rgb, vec3(skinLuma + skinLift), skinDesaturate);
             float blushMask = max(
                 ellipseMask(vTexCoord, uBlushLeft, uMakeupRotation, 0.55, 1.35) * uBlushStrengths.x,
                 ellipseMask(vTexCoord, uBlushRight, uMakeupRotation, 0.55, 1.35) * uBlushStrengths.y
