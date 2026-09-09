@@ -60,6 +60,40 @@ class FilterBitmapRendererTest {
     }
 
     @Test
+    fun `beauty whitening stays inside the detected face region`() {
+        val skin = 0xffbf8c66.toInt()
+        val output = FilterBitmapRenderer.renderPixels(
+            pixels = IntArray(5) { skin },
+            width = 5,
+            height = 1,
+            params = ShaderFilterParams.from(
+                recipe = FilterRecipe(skinWhitening = 100),
+                adjustments = Adjustments(),
+                makeupFeatures = MakeupFeatures(
+                    leftCheekX = 0f,
+                    leftCheekY = 0f,
+                    rightCheekX = 0f,
+                    rightCheekY = 0f,
+                    cheekRadiusX = 0f,
+                    cheekRadiusY = 0f,
+                    lipCenterX = 0f,
+                    lipCenterY = 0f,
+                    lipRadiusX = 0f,
+                    lipRadiusY = 0f,
+                    faceCenterX = 0.5f,
+                    faceCenterY = 0.5f,
+                    faceRadiusX = 0.25f,
+                    faceRadiusY = 0.5f,
+                ),
+            ),
+        )
+
+        assertEquals(skin, output.first())
+        assertEquals(skin, output.last())
+        assertNotEquals(skin, output[2])
+    }
+
+    @Test
     fun `beauty smoothing protects high contrast boundaries`() {
         val skin = 0xffbf8c66.toInt()
         val softNeighbor = 0xffb98868.toInt()
@@ -303,6 +337,39 @@ class FilterBitmapRendererTest {
 
         assertEquals(original, output[0])
         assertNotEquals(original, output[3])
+    }
+
+    @Test
+    fun `blush stays inside skin-colored cheek regions`() {
+        val skin = 0xffbf8c66.toInt()
+        val neutral = 0xff808080.toInt()
+        val output = FilterBitmapRenderer.renderPixels(
+            pixels = intArrayOf(neutral, skin, neutral),
+            width = 3,
+            height = 1,
+            params = ShaderFilterParams.from(
+                recipe = FilterRecipe(blush = 100),
+                adjustments = Adjustments(),
+                makeupFeatures = MakeupFeatures(
+                    leftCheekX = 0.5f,
+                    leftCheekY = 0.5f,
+                    rightCheekX = 0f,
+                    rightCheekY = 0f,
+                    cheekRadiusX = 0.5f,
+                    cheekRadiusY = 1f,
+                    rightCheekStrength = 0f,
+                    lipCenterX = 0f,
+                    lipCenterY = 0f,
+                    lipRadiusX = 0f,
+                    lipRadiusY = 0f,
+                ),
+            ),
+        )
+
+        assertEquals(neutral, output[0])
+        assertNotEquals(skin, output[1])
+        assertEquals(neutral, output[2])
+        assertTrue(((output[1] shr 16) and 0xff) > ((skin shr 16) and 0xff))
     }
 
     @Test

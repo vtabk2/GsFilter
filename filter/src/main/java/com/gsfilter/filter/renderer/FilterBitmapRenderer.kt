@@ -135,7 +135,24 @@ object FilterBitmapRenderer {
         val blurredRed = average(red(left), red(right), red(up), red(down))
         val blurredGreen = average(green(left), green(right), green(up), green(down))
         val blurredBlue = average(blue(left), blue(right), blue(up), blue(down))
-        val beautyMask = skinMask(sourceRed, sourceGreen, sourceBlue)
+        val faceMask = params.makeupFeatures?.let { features ->
+            if (features.faceRadiusX > 0f && features.faceRadiusY > 0f) {
+                ellipseMask(
+                    (x + 0.5f) / width,
+                    (y + 0.5f) / height,
+                    features.faceCenterX,
+                    features.faceCenterY,
+                    features.faceRadiusX,
+                    features.faceRadiusY,
+                    features.rotationRadians,
+                    innerEdge = 0.55f,
+                    outerEdge = 1.05f,
+                )
+            } else {
+                1f
+            }
+        } ?: 1f
+        val beautyMask = skinMask(sourceRed, sourceGreen, sourceBlue) * faceMask
         val localContrast = maxOf(
             abs(sourceRed - blurredRed),
             abs(sourceGreen - blurredGreen),
@@ -171,8 +188,8 @@ object FilterBitmapRenderer {
                     features.cheekRadiusX,
                     features.cheekRadiusY,
                     features.rotationRadians,
-                    innerEdge = 0.55f,
-                    outerEdge = 1.35f,
+                    innerEdge = 0.35f,
+                    outerEdge = 1.15f,
                 ) * features.leftCheekStrength,
                 ellipseMask(
                     textureX,
@@ -182,14 +199,15 @@ object FilterBitmapRenderer {
                     features.cheekRadiusX,
                     features.cheekRadiusY,
                     features.rotationRadians,
-                    innerEdge = 0.55f,
-                    outerEdge = 1.35f,
+                    innerEdge = 0.35f,
+                    outerEdge = 1.15f,
                 ) * features.rightCheekStrength,
             )
-            val blushAmount = params.blush * blushMask * 0.22f
-            red = mix(red, 0.95f, blushAmount)
-            green = mix(green, 0.38f, blushAmount)
-            blue = mix(blue, 0.42f, blushAmount)
+            val blushAmount = params.blush * blushMask * skinMask(red, green, blue) * 0.40f
+            val blushLuma = gray(red, green, blue)
+            red = mix(red, clamp(blushLuma + 0.20f, 0f, 1f), blushAmount)
+            green = mix(green, clamp(blushLuma - 0.05f, 0f, 1f), blushAmount)
+            blue = mix(blue, clamp(blushLuma - 0.02f, 0f, 1f), blushAmount)
             val lipstickMask = when {
                 features.upperLipContour.size >= 3 || features.lowerLipContour.size >= 3 -> max(
                     if (features.upperLipContour.size >= 3) {

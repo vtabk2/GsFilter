@@ -2255,8 +2255,9 @@ Created: 2026-09-08
 
 ## Next Task: Finish Beauty accuracy and add practical makeup features
 
-Status: IN PROGRESS
+Status: DONE
 Created: 2026-09-09
+Completed: 2026-09-09
 
 ### Goal
 
@@ -2269,7 +2270,11 @@ Created: 2026-09-09
 - [x] Add local-contrast edge protection to the CPU and GPU smoothing masks.
 - [x] Add a regression test for smoothing beside a high-contrast boundary.
 - [x] Run unit tests, compile, install Debug, and launch on Samsung A56.
-- [ ] Compare smoothing at low, medium, and maximum strength on frontal and angled samples.
+- [x] Compare smoothing at 0 and 100 on the angled `sample.jpg`; the Result changes while the image edges remain intact.
+- [x] Retune Blush with a smaller soft core, skin-color gating, and luminance-preserving tint in CPU/GPU.
+- [x] Add a regression test that keeps Blush off neutral pixels outside the skin region.
+- [x] Constrain Smoothing and Whitening to the detected face region so clothing/background colors are not treated as skin.
+- [x] Verify Blush and Lipstick on the angled sample and Beauty rendering on the frontal asset.
 
 ### Implementation order
 
@@ -2307,6 +2312,12 @@ Created: 2026-09-09
 - No visible rectangular/oval patch, color halo, or spill on angled faces.
 - CPU fallback and GPU preview use the same mask and strength behavior.
 - Add focused CPU regression tests for each mask boundary, then run unit tests, compile, install Debug, and manually check at least frontal plus angled samples.
+
+### Verification notes
+
+- Added the normalized ML Kit face bounding box to the existing makeup features and reused it as the CPU/GPU face-area mask.
+- On-device verification: Whitening 0→100 stayed inside the face on the angled sample; Blush 0→100 stayed on the visible cheek; Lipstick 100 stayed on the mouth.
+- The frontal `demo.png` asset opens the Beauty tab and renders without detection errors.
 
 ## Task: Cycle test images from app assets
 

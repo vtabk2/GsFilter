@@ -102,6 +102,10 @@ internal class FaceMakeupDetector {
             lipContour = normalize(outerLipPoints, width, height),
             upperLipContour = normalize(upperLipPoints, width, height),
             lowerLipContour = normalize(lowerLipPoints, width, height),
+            faceCenterX = bounds.centerX().toFloat().coerceIn(0f, width.toFloat()) / width,
+            faceCenterY = bounds.centerY().toFloat().coerceIn(0f, height.toFloat()) / height,
+            faceRadiusX = (bounds.width().toFloat() / width * 0.58f).coerceAtLeast(0.01f),
+            faceRadiusY = (bounds.height().toFloat() / height * 0.58f).coerceAtLeast(0.01f),
         )
     }
 
