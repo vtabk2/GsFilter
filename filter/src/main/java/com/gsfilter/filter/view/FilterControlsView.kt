@@ -571,6 +571,8 @@ class FilterControlsView @JvmOverloads constructor(
             BeautyControl.TeethWhitening -> recipe.teethWhitening
             BeautyControl.EyeShadow -> recipe.eyeShadow
             BeautyControl.Eyeliner -> recipe.eyeliner
+            BeautyControl.FaceSlimming -> recipe.faceSlimming
+            BeautyControl.EyeEnlargement -> recipe.eyeEnlargement
         }
 
     private fun renderTab(tab: LinearLayout?, isSelected: Boolean) {
@@ -653,6 +655,8 @@ class FilterControlsView @JvmOverloads constructor(
         TeethWhitening(R.string.gs_beauty_teeth_whitening, R.drawable.ic_gs_beauty_teeth),
         EyeShadow(R.string.gs_beauty_eye_shadow, R.drawable.ic_gs_beauty_eye_shadow),
         Eyeliner(R.string.gs_beauty_eyeliner, R.drawable.ic_gs_beauty_eyeliner),
+        FaceSlimming(R.string.gs_beauty_face_slimming, R.drawable.ic_gs_beauty_face_slimming),
+        EyeEnlargement(R.string.gs_beauty_eye_enlargement, R.drawable.ic_gs_beauty_eye_enlargement),
     }
 
     private data class TabParts(

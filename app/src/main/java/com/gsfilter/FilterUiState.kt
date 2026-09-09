@@ -25,6 +25,8 @@ data class FilterUiState(
     val teethWhitening: Int = FilterCatalog.default.recipe.teethWhitening,
     val eyeShadow: Int = FilterCatalog.default.recipe.eyeShadow,
     val eyeliner: Int = FilterCatalog.default.recipe.eyeliner,
+    val faceSlimming: Int = FilterCatalog.default.recipe.faceSlimming,
+    val eyeEnlargement: Int = FilterCatalog.default.recipe.eyeEnlargement,
     val makeupFeatures: MakeupFeatures? = null,
     val adjustments: Adjustments = Adjustments(),
     val isLoading: Boolean = false,
@@ -46,7 +48,9 @@ data class FilterUiState(
                 underEye != recipe.underEye ||
                 teethWhitening != recipe.teethWhitening ||
                 eyeShadow != recipe.eyeShadow ||
-                eyeliner != recipe.eyeliner
+                eyeliner != recipe.eyeliner ||
+                faceSlimming != recipe.faceSlimming ||
+                eyeEnlargement != recipe.eyeEnlargement
             ) {
                 recipe.copy(
                     intensity = intensity,
@@ -58,6 +62,8 @@ data class FilterUiState(
                     teethWhitening = teethWhitening,
                     eyeShadow = eyeShadow,
                     eyeliner = eyeliner,
+                    faceSlimming = faceSlimming,
+                    eyeEnlargement = eyeEnlargement,
                 )
             } else {
                 recipe

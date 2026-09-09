@@ -241,6 +241,58 @@ class FilterBitmapRendererTest {
     }
 
     @Test
+    fun `face slimming and eye enlargement warp only detected regions`() {
+        val pixels = IntArray(9 * 9) { index ->
+            val x = index % 9
+            val y = index / 9
+            0xff000000.toInt() or ((x * 20) shl 16) or ((y * 20) shl 8)
+        }
+        val features = MakeupFeatures(
+            leftCheekX = 0f,
+            leftCheekY = 0f,
+            rightCheekX = 0f,
+            rightCheekY = 0f,
+            cheekRadiusX = 0f,
+            cheekRadiusY = 0f,
+            lipCenterX = 0f,
+            lipCenterY = 0f,
+            lipRadiusX = 0f,
+            lipRadiusY = 0f,
+            faceCenterX = 0.5f,
+            faceCenterY = 0.5f,
+            faceRadiusX = 0.4f,
+            faceRadiusY = 0.5f,
+            leftEyeCenterX = 0.5f,
+            leftEyeCenterY = 0.5f,
+            leftEyeRadiusX = 0.18f,
+            leftEyeRadiusY = 0.12f,
+        )
+        val baseline = FilterBitmapRenderer.renderPixels(
+            pixels = pixels,
+            width = 9,
+            height = 9,
+            params = ShaderFilterParams.from(FilterRecipe(), Adjustments(), features),
+        )
+        val slimmed = FilterBitmapRenderer.renderPixels(
+            pixels = pixels,
+            width = 9,
+            height = 9,
+            params = ShaderFilterParams.from(FilterRecipe(faceSlimming = 100), Adjustments(), features),
+        )
+        val enlarged = FilterBitmapRenderer.renderPixels(
+            pixels = pixels,
+            width = 9,
+            height = 9,
+            params = ShaderFilterParams.from(FilterRecipe(eyeEnlargement = 100), Adjustments(), features),
+        )
+
+        assertNotEquals(baseline[4 * 9 + 2], slimmed[4 * 9 + 2])
+        assertNotEquals(baseline[3 * 9 + 4], enlarged[3 * 9 + 4])
+        assertEquals(baseline[4 * 9], slimmed[4 * 9])
+        assertEquals(baseline[8 * 9], enlarged[8 * 9])
+    }
+
+    @Test
     fun `lipstick changes only the detected lip region`() {
         val original = 0xff996633.toInt()
         val output = FilterBitmapRenderer.renderPixels(

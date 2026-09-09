@@ -2478,3 +2478,31 @@ Completed: 2026-09-09
 - Eye Shadow and Eyeliner are driven by existing ML Kit eye geometry and roll angle; no new dependency was added.
 - Both CPU fallback and GPU preview use the same localized upper-eyelid masks.
 - `:filter:testDebugUnitTest :app:testDebugUnitTest :app:compileDebugKotlin :app:installDebug` passed.
+
+## Task: Add face slimming and eye enlargement Beauty controls
+
+Status: DONE
+Created: 2026-09-09
+Completed: 2026-09-09
+
+### Requirements
+
+- Add Face Slimming and Eye Enlargement controls to the Beauty tab.
+- Use the detected face and eye geometry, including roll angle, for placement.
+- Apply bounded inverse warps so pixels outside the target face/eye regions stay unchanged.
+- Keep CPU fallback and GPU preview behavior aligned.
+- Preserve the Beauty `0..100` range and existing controls.
+
+### Checklist
+
+- [x] Add recipe, state, ViewModel, UI, and JSON mapping.
+- [x] Add bounded CPU/GPU inverse-warp logic.
+- [x] Add focused geometry/warp regression coverage.
+- [x] Run unit tests, compile, install Debug, and review the final diff.
+
+### Notes
+
+- Face Slimming uses a bounded horizontal inverse warp inside the detected face ellipse.
+- Eye Enlargement uses a bounded radial inverse warp around detected eyes and follows the detected roll angle.
+- CPU fallback uses bilinear source sampling so the warp does not create hard pixel steps.
+- `:filter:testDebugUnitTest :app:testDebugUnitTest :app:compileDebugKotlin :app:installDebug` passed.

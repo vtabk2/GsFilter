@@ -67,6 +67,8 @@ internal object GlFilterProgram {
             teethWhitening = GLES20.glGetUniformLocation(program, U_TEETH_WHITENING),
             eyeShadow = GLES20.glGetUniformLocation(program, U_EYE_SHADOW),
             eyeliner = GLES20.glGetUniformLocation(program, U_EYELINER),
+            faceSlimming = GLES20.glGetUniformLocation(program, U_FACE_SLIMMING),
+            eyeEnlargement = GLES20.glGetUniformLocation(program, U_EYE_ENLARGEMENT),
             blushLeft = GLES20.glGetUniformLocation(program, U_BLUSH_LEFT),
             blushRight = GLES20.glGetUniformLocation(program, U_BLUSH_RIGHT),
             blushStrengths = GLES20.glGetUniformLocation(program, U_BLUSH_STRENGTHS),
@@ -152,6 +154,8 @@ internal object GlFilterProgram {
         GLES20.glUniform1f(handles.teethWhitening, params.teethWhitening)
         GLES20.glUniform1f(handles.eyeShadow, params.eyeShadow)
         GLES20.glUniform1f(handles.eyeliner, params.eyeliner)
+        GLES20.glUniform1f(handles.faceSlimming, params.faceSlimming)
+        GLES20.glUniform1f(handles.eyeEnlargement, params.eyeEnlargement)
         GLES20.glUniform1f(handles.makeupRotation, params.makeupFeatures?.rotationRadians ?: 0f)
         params.makeupFeatures?.let { features ->
             val sine = sin(features.rotationRadians)
@@ -314,6 +318,8 @@ internal object GlFilterProgram {
         val teethWhitening: Int,
         val eyeShadow: Int,
         val eyeliner: Int,
+        val faceSlimming: Int,
+        val eyeEnlargement: Int,
         val blushLeft: Int,
         val blushRight: Int,
         val blushStrengths: Int,
@@ -379,6 +385,8 @@ internal object GlFilterProgram {
     private const val U_TEETH_WHITENING = "uTeethWhitening"
     private const val U_EYE_SHADOW = "uEyeShadow"
     private const val U_EYELINER = "uEyeliner"
+    private const val U_FACE_SLIMMING = "uFaceSlimming"
+    private const val U_EYE_ENLARGEMENT = "uEyeEnlargement"
     private const val U_BLUSH_LEFT = "uBlushLeft"
     private const val U_BLUSH_RIGHT = "uBlushRight"
     private const val U_BLUSH_STRENGTHS = "uBlushStrengths"
@@ -445,6 +453,8 @@ internal object GlFilterProgram {
         uniform float uTeethWhitening;
         uniform float uEyeShadow;
         uniform float uEyeliner;
+        uniform float uFaceSlimming;
+        uniform float uEyeEnlargement;
         uniform vec4 uBlushLeft;
         uniform vec4 uBlushRight;
         uniform vec2 uBlushStrengths;
@@ -589,6 +599,52 @@ internal object GlFilterProgram {
             return band * upperLid;
         }
 
+        vec2 eyeWarp(vec2 coord, vec4 area, float amount) {
+            if (amount <= 0.0 || area.z <= 0.0 || area.w <= 0.0) {
+                return coord;
+            }
+            vec2 delta = coord - area.xy;
+            float sine = sin(uMakeupRotation);
+            float cosine = cos(uMakeupRotation);
+            vec2 rotated = vec2(
+                (delta.x * cosine) + (delta.y * sine),
+                (-delta.x * sine) + (delta.y * cosine)
+            );
+            vec2 normalized = rotated / max(area.zw * vec2(1.55, 1.55), vec2(0.0001));
+            float distanceFromCenter = length(normalized);
+            float falloff = 1.0 - smoothstep(0.25, 1.05, distanceFromCenter);
+            float scale = 1.0 - (amount * 0.18 * falloff);
+            rotated *= scale;
+            return area.xy + vec2(
+                (rotated.x * cosine) - (rotated.y * sine),
+                (rotated.x * sine) + (rotated.y * cosine)
+            );
+        }
+
+        vec2 warpCoordinate(vec2 coord) {
+            vec2 warped = coord;
+            if (uFaceSlimming > 0.0 && uFaceArea.z > 0.0 && uFaceArea.w > 0.0) {
+                vec2 delta = coord - uFaceArea.xy;
+                float sine = sin(uMakeupRotation);
+                float cosine = cos(uMakeupRotation);
+                vec2 rotated = vec2(
+                    (delta.x * cosine) + (delta.y * sine),
+                    (-delta.x * sine) + (delta.y * cosine)
+                );
+                vec2 normalized = rotated / uFaceArea.zw;
+                float distanceFromCenter = length(normalized);
+                float falloff = 1.0 - smoothstep(0.25, 1.05, distanceFromCenter);
+                rotated.x *= 1.0 + (uFaceSlimming * 0.18 * falloff);
+                warped = uFaceArea.xy + vec2(
+                    (rotated.x * cosine) - (rotated.y * sine),
+                    (rotated.x * sine) + (rotated.y * cosine)
+                );
+            }
+            warped = eyeWarp(warped, uEyeLeft, uEyeEnlargement);
+            warped = eyeWarp(warped, uEyeRight, uEyeEnlargement);
+            return clamp(warped, vec2(0.0), vec2(1.0));
+        }
+
         float pointSegmentDistance(vec2 point, vec2 start, vec2 end) {
             vec2 segment = end - start;
             float lengthSquared = max(dot(segment, segment), 0.000001);
@@ -711,11 +767,12 @@ internal object GlFilterProgram {
         }
 
         void main() {
-            vec4 color = texture2D(uTexture, vTexCoord);
-            vec3 left = texture2D(uTexture, vTexCoord - vec2(uTexelSize.x, 0.0)).rgb;
-            vec3 right = texture2D(uTexture, vTexCoord + vec2(uTexelSize.x, 0.0)).rgb;
-            vec3 up = texture2D(uTexture, vTexCoord - vec2(0.0, uTexelSize.y)).rgb;
-            vec3 down = texture2D(uTexture, vTexCoord + vec2(0.0, uTexelSize.y)).rgb;
+            vec2 sourceCoord = warpCoordinate(vTexCoord);
+            vec4 color = texture2D(uTexture, sourceCoord);
+            vec3 left = texture2D(uTexture, sourceCoord - vec2(uTexelSize.x, 0.0)).rgb;
+            vec3 right = texture2D(uTexture, sourceCoord + vec2(uTexelSize.x, 0.0)).rgb;
+            vec3 up = texture2D(uTexture, sourceCoord - vec2(0.0, uTexelSize.y)).rgb;
+            vec3 down = texture2D(uTexture, sourceCoord + vec2(0.0, uTexelSize.y)).rgb;
             vec3 blur = (left + right + up + down) * 0.25;
             float beautyMask = skinMask(color.rgb) * faceAreaMask(vTexCoord);
             vec3 localContrast = abs(color.rgb - blur);
@@ -724,7 +781,7 @@ internal object GlFilterProgram {
                 0.20,
                 max(max(localContrast.r, localContrast.g), localContrast.b)
             );
-            float beautyEdge = edgeAt(vTexCoord);
+            float beautyEdge = edgeAt(sourceCoord);
             float smoothAmount = uSkinSmoothing * beautyMask * edgeGuard *
                 (1.0 - smoothstep(0.18, 0.55, beautyEdge));
             vec3 rgb = mix(color.rgb, blur, smoothAmount);

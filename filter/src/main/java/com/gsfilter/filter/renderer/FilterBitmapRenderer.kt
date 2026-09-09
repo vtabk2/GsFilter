@@ -90,10 +90,11 @@ object FilterBitmapRenderer {
 
         val output = IntArray(pixels.size)
         val lutOutput = FloatArray(3)
+        val warpCoordinate = FloatArray(2)
         for (y in 0 until height) {
             for (x in 0 until width) {
                 val index = y * width + x
-                output[index] = filterPixel(pixels, x, y, width, height, params, lutOutput)
+                output[index] = filterPixel(pixels, x, y, width, height, params, lutOutput, warpCoordinate)
             }
         }
         return output
@@ -106,7 +107,7 @@ object FilterBitmapRenderer {
         width: Int,
         height: Int,
         params: ShaderFilterParams,
-    ): Int = filterPixel(pixels, x, y, width, height, params, FloatArray(3))
+    ): Int = filterPixel(pixels, x, y, width, height, params, FloatArray(3), FloatArray(2))
 
     private fun filterPixel(
         pixels: IntArray,
@@ -116,12 +117,18 @@ object FilterBitmapRenderer {
         height: Int,
         params: ShaderFilterParams,
         lutOutput: FloatArray,
+        warpCoordinate: FloatArray,
     ): Int {
-        val color = pixels[y * width + x]
-        val left = pixels[y * width + (x - 1).coerceAtLeast(0)]
-        val right = pixels[y * width + (x + 1).coerceAtMost(width - 1)]
-        val up = pixels[(y - 1).coerceAtLeast(0) * width + x]
-        val down = pixels[(y + 1).coerceAtMost(height - 1) * width + x]
+        warpSourceCoordinate(x, y, width, height, params, warpCoordinate)
+        val sourceX = warpCoordinate[0]
+        val sourceY = warpCoordinate[1]
+        val texelX = 1f / width
+        val texelY = 1f / height
+        val color = sampleBilinear(pixels, sourceX, sourceY, width, height)
+        val left = sampleBilinear(pixels, sourceX - texelX, sourceY, width, height)
+        val right = sampleBilinear(pixels, sourceX + texelX, sourceY, width, height)
+        val up = sampleBilinear(pixels, sourceX, sourceY - texelY, width, height)
+        val down = sampleBilinear(pixels, sourceX, sourceY + texelY, width, height)
 
         val sourceRed = red(color)
         val sourceGreen = green(color)
@@ -483,6 +490,136 @@ object FilterBitmapRenderer {
     }
 
     private fun alpha(color: Int): Int = color ushr 24
+
+    private fun sampleBilinear(
+        pixels: IntArray,
+        x: Float,
+        y: Float,
+        width: Int,
+        height: Int,
+    ): Int {
+        val pixelX = (x * width - 0.5f).coerceIn(0f, (width - 1).toFloat())
+        val pixelY = (y * height - 0.5f).coerceIn(0f, (height - 1).toFloat())
+        val left = floor(pixelX).toInt()
+        val top = floor(pixelY).toInt()
+        val right = (left + 1).coerceAtMost(width - 1)
+        val bottom = (top + 1).coerceAtMost(height - 1)
+        val horizontal = pixelX - left
+        val vertical = pixelY - top
+        val topLeft = pixels[top * width + left]
+        val topRight = pixels[top * width + right]
+        val bottomLeft = pixels[bottom * width + left]
+        val bottomRight = pixels[bottom * width + right]
+
+        return argb(
+            alpha = blendChannel(
+                alpha(topLeft).toFloat(),
+                alpha(topRight).toFloat(),
+                alpha(bottomLeft).toFloat(),
+                alpha(bottomRight).toFloat(),
+                horizontal,
+                vertical,
+            ).roundToInt(),
+            red = blendChannel(red(topLeft), red(topRight), red(bottomLeft), red(bottomRight), horizontal, vertical),
+            green = blendChannel(
+                green(topLeft),
+                green(topRight),
+                green(bottomLeft),
+                green(bottomRight),
+                horizontal,
+                vertical,
+            ),
+            blue = blendChannel(blue(topLeft), blue(topRight), blue(bottomLeft), blue(bottomRight), horizontal, vertical),
+        )
+    }
+
+    private fun blendChannel(
+        topLeft: Float,
+        topRight: Float,
+        bottomLeft: Float,
+        bottomRight: Float,
+        horizontal: Float,
+        vertical: Float,
+    ): Float {
+        val top = topLeft + ((topRight - topLeft) * horizontal)
+        val bottom = bottomLeft + ((bottomRight - bottomLeft) * horizontal)
+        return top + ((bottom - top) * vertical)
+    }
+
+    private fun warpSourceCoordinate(
+        x: Int,
+        y: Int,
+        width: Int,
+        height: Int,
+        params: ShaderFilterParams,
+        output: FloatArray,
+    ) {
+        output[0] = (x + 0.5f) / width
+        output[1] = (y + 0.5f) / height
+        val features = params.makeupFeatures ?: return
+        if (params.faceSlimming > 0f && features.faceRadiusX > 0f && features.faceRadiusY > 0f) {
+            val sine = sin(features.rotationRadians)
+            val cosine = cos(features.rotationRadians)
+            val deltaX = (output[0] - features.faceCenterX) * cosine +
+                (output[1] - features.faceCenterY) * sine
+            val deltaY = -(output[0] - features.faceCenterX) * sine +
+                (output[1] - features.faceCenterY) * cosine
+            val normalizedX = deltaX / features.faceRadiusX
+            val normalizedY = deltaY / features.faceRadiusY
+            val distance = sqrt((normalizedX * normalizedX) + (normalizedY * normalizedY))
+            val falloff = 1f - smoothstep(0.25f, 1.05f, distance)
+            val slimmedX = deltaX * (1f + (params.faceSlimming * 0.18f * falloff))
+            output[0] = features.faceCenterX + (slimmedX * cosine) - (deltaY * sine)
+            output[1] = features.faceCenterY + (slimmedX * sine) + (deltaY * cosine)
+        }
+        if (params.eyeEnlargement > 0f) {
+            applyEyeWarp(
+                output,
+                features.leftEyeCenterX,
+                features.leftEyeCenterY,
+                features.leftEyeRadiusX,
+                features.leftEyeRadiusY,
+                features.rotationRadians,
+                params.eyeEnlargement,
+            )
+            applyEyeWarp(
+                output,
+                features.rightEyeCenterX,
+                features.rightEyeCenterY,
+                features.rightEyeRadiusX,
+                features.rightEyeRadiusY,
+                features.rotationRadians,
+                params.eyeEnlargement,
+            )
+        }
+    }
+
+    private fun applyEyeWarp(
+        coordinate: FloatArray,
+        centerX: Float,
+        centerY: Float,
+        radiusX: Float,
+        radiusY: Float,
+        rotationRadians: Float,
+        amount: Float,
+    ) {
+        if (radiusX <= 0f || radiusY <= 0f) {
+            return
+        }
+        val sine = sin(rotationRadians)
+        val cosine = cos(rotationRadians)
+        val deltaX = (coordinate[0] - centerX) * cosine + (coordinate[1] - centerY) * sine
+        val deltaY = -(coordinate[0] - centerX) * sine + (coordinate[1] - centerY) * cosine
+        val normalizedX = deltaX / (radiusX * 1.55f)
+        val normalizedY = deltaY / (radiusY * 1.55f)
+        val distance = sqrt((normalizedX * normalizedX) + (normalizedY * normalizedY))
+        val falloff = 1f - smoothstep(0.25f, 1.05f, distance)
+        val scale = 1f - (amount * 0.18f * falloff)
+        val warpedX = deltaX * scale
+        val warpedY = deltaY * scale
+        coordinate[0] = centerX + (warpedX * cosine) - (warpedY * sine)
+        coordinate[1] = centerY + (warpedX * sine) + (warpedY * cosine)
+    }
 
     private fun red(color: Int): Float = ((color shr 16) and CHANNEL_MASK) / CHANNEL_MAX
 

@@ -15,6 +15,8 @@
     <string name="gs_beauty_teeth_whitening">Teeth</string>
     <string name="gs_beauty_eye_shadow">Eye Shadow</string>
     <string name="gs_beauty_eyeliner">Eyeliner</string>
+    <string name="gs_beauty_face_slimming">Face Slim</string>
+    <string name="gs_beauty_eye_enlargement">Big Eyes</string>
     <string name="gs_action_reset_beauty">Reset All Beauty</string>
     <string name="gs_filter_mono">B&amp;W</string>
     <string name="gs_filter_fresh">Fresh</string>
