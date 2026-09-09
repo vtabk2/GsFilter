@@ -65,12 +65,16 @@ internal object GlFilterProgram {
             lipstick = GLES20.glGetUniformLocation(program, U_LIPSTICK),
             underEye = GLES20.glGetUniformLocation(program, U_UNDER_EYE),
             teethWhitening = GLES20.glGetUniformLocation(program, U_TEETH_WHITENING),
+            eyeShadow = GLES20.glGetUniformLocation(program, U_EYE_SHADOW),
+            eyeliner = GLES20.glGetUniformLocation(program, U_EYELINER),
             blushLeft = GLES20.glGetUniformLocation(program, U_BLUSH_LEFT),
             blushRight = GLES20.glGetUniformLocation(program, U_BLUSH_RIGHT),
             blushStrengths = GLES20.glGetUniformLocation(program, U_BLUSH_STRENGTHS),
             faceArea = GLES20.glGetUniformLocation(program, U_FACE_AREA),
             underEyeLeft = GLES20.glGetUniformLocation(program, U_UNDER_EYE_LEFT),
             underEyeRight = GLES20.glGetUniformLocation(program, U_UNDER_EYE_RIGHT),
+            eyeLeft = GLES20.glGetUniformLocation(program, U_EYE_LEFT),
+            eyeRight = GLES20.glGetUniformLocation(program, U_EYE_RIGHT),
             lipArea = GLES20.glGetUniformLocation(program, U_LIP_AREA),
             lipPoints = GLES20.glGetUniformLocation(program, U_LIP_POINTS),
             lipPointCount = GLES20.glGetUniformLocation(program, U_LIP_POINT_COUNT),
@@ -146,6 +150,8 @@ internal object GlFilterProgram {
         GLES20.glUniform1f(handles.lipstick, params.lipstick)
         GLES20.glUniform1f(handles.underEye, params.underEye)
         GLES20.glUniform1f(handles.teethWhitening, params.teethWhitening)
+        GLES20.glUniform1f(handles.eyeShadow, params.eyeShadow)
+        GLES20.glUniform1f(handles.eyeliner, params.eyeliner)
         GLES20.glUniform1f(handles.makeupRotation, params.makeupFeatures?.rotationRadians ?: 0f)
         params.makeupFeatures?.let { features ->
             val sine = sin(features.rotationRadians)
@@ -163,6 +169,20 @@ internal object GlFilterProgram {
                 features.rightEyeCenterY + (cosine * features.rightEyeRadiusY * 1.55f),
                 features.rightEyeRadiusX * 1.25f,
                 features.rightEyeRadiusY * 0.80f,
+            )
+            GLES20.glUniform4f(
+                handles.eyeLeft,
+                features.leftEyeCenterX,
+                features.leftEyeCenterY,
+                features.leftEyeRadiusX,
+                features.leftEyeRadiusY,
+            )
+            GLES20.glUniform4f(
+                handles.eyeRight,
+                features.rightEyeCenterX,
+                features.rightEyeCenterY,
+                features.rightEyeRadiusX,
+                features.rightEyeRadiusY,
             )
             GLES20.glUniform4f(
                 handles.blushLeft,
@@ -228,6 +248,8 @@ internal object GlFilterProgram {
             GLES20.glUniform4f(handles.faceArea, 0f, 0f, 0f, 0f)
             GLES20.glUniform4f(handles.underEyeLeft, 0f, 0f, 0f, 0f)
             GLES20.glUniform4f(handles.underEyeRight, 0f, 0f, 0f, 0f)
+            GLES20.glUniform4f(handles.eyeLeft, 0f, 0f, 0f, 0f)
+            GLES20.glUniform4f(handles.eyeRight, 0f, 0f, 0f, 0f)
             GLES20.glUniform4f(handles.lipArea, 0f, 0f, 0f, 0f)
             GLES20.glUniform2fv(handles.lipPoints, MAX_LIP_POINTS, FloatArray(MAX_LIP_POINTS * 2), 0)
             GLES20.glUniform1i(handles.lipPointCount, 0)
@@ -290,12 +312,16 @@ internal object GlFilterProgram {
         val lipstick: Int,
         val underEye: Int,
         val teethWhitening: Int,
+        val eyeShadow: Int,
+        val eyeliner: Int,
         val blushLeft: Int,
         val blushRight: Int,
         val blushStrengths: Int,
         val faceArea: Int,
         val underEyeLeft: Int,
         val underEyeRight: Int,
+        val eyeLeft: Int,
+        val eyeRight: Int,
         val lipArea: Int,
         val lipPoints: Int,
         val lipPointCount: Int,
@@ -351,12 +377,16 @@ internal object GlFilterProgram {
     private const val U_LIPSTICK = "uLipstick"
     private const val U_UNDER_EYE = "uUnderEye"
     private const val U_TEETH_WHITENING = "uTeethWhitening"
+    private const val U_EYE_SHADOW = "uEyeShadow"
+    private const val U_EYELINER = "uEyeliner"
     private const val U_BLUSH_LEFT = "uBlushLeft"
     private const val U_BLUSH_RIGHT = "uBlushRight"
     private const val U_BLUSH_STRENGTHS = "uBlushStrengths"
     private const val U_FACE_AREA = "uFaceArea"
     private const val U_UNDER_EYE_LEFT = "uUnderEyeLeft"
     private const val U_UNDER_EYE_RIGHT = "uUnderEyeRight"
+    private const val U_EYE_LEFT = "uEyeLeft"
+    private const val U_EYE_RIGHT = "uEyeRight"
     private const val U_LIP_AREA = "uLipArea"
     private const val U_LIP_POINTS = "uLipPoints[0]"
     private const val U_LIP_POINT_COUNT = "uLipPointCount"
@@ -413,12 +443,16 @@ internal object GlFilterProgram {
         uniform float uLipstick;
         uniform float uUnderEye;
         uniform float uTeethWhitening;
+        uniform float uEyeShadow;
+        uniform float uEyeliner;
         uniform vec4 uBlushLeft;
         uniform vec4 uBlushRight;
         uniform vec2 uBlushStrengths;
         uniform vec4 uFaceArea;
         uniform vec4 uUnderEyeLeft;
         uniform vec4 uUnderEyeRight;
+        uniform vec4 uEyeLeft;
+        uniform vec4 uEyeRight;
         uniform vec4 uLipArea;
         uniform vec2 uLipPoints[32];
         uniform int uLipPointCount;
@@ -513,6 +547,46 @@ internal object GlFilterProgram {
                 return 0.0;
             }
             return ellipseMask(coord, area, uMakeupRotation, 0.35, 1.15);
+        }
+
+        float eyeShadowRegionMask(vec2 coord, vec4 area) {
+            if (area.z <= 0.0 || area.w <= 0.0) {
+                return 0.0;
+            }
+            vec2 radius = max(area.zw * vec2(1.55, 1.35), vec2(0.0001));
+            vec2 center = area.xy - vec2(
+                sin(uMakeupRotation) * area.w * 0.28,
+                cos(uMakeupRotation) * area.w * 0.28
+            );
+            vec2 delta = (coord - center) / radius;
+            float sine = sin(uMakeupRotation);
+            float cosine = cos(uMakeupRotation);
+            vec2 rotated = vec2(
+                (delta.x * cosine) + (delta.y * sine),
+                (-delta.x * sine) + (delta.y * cosine)
+            );
+            float ellipse = 1.0 - smoothstep(0.38, 1.05, length(rotated));
+            float upperLid = 1.0 - smoothstep(-0.10, 0.48, rotated.y);
+            return ellipse * upperLid;
+        }
+
+        float eyelinerRegionMask(vec2 coord, vec4 area) {
+            if (area.z <= 0.0 || area.w <= 0.0) {
+                return 0.0;
+            }
+            vec2 radius = max(area.zw * vec2(1.14, 1.12), vec2(0.0001));
+            vec2 delta = (coord - area.xy) / radius;
+            float sine = sin(uMakeupRotation);
+            float cosine = cos(uMakeupRotation);
+            vec2 rotated = vec2(
+                (delta.x * cosine) + (delta.y * sine),
+                (-delta.x * sine) + (delta.y * cosine)
+            );
+            float distanceFromCenter = length(rotated);
+            float band = smoothstep(0.70, 0.86, distanceFromCenter) *
+                (1.0 - smoothstep(0.88, 1.08, distanceFromCenter));
+            float upperLid = 1.0 - smoothstep(-0.12, 0.30, rotated.y);
+            return band * upperLid;
         }
 
         float pointSegmentDistance(vec2 point, vec2 start, vec2 end) {
@@ -682,6 +756,18 @@ internal object GlFilterProgram {
             float teethLuma = dot(rgb, vec3(0.299, 0.587, 0.114));
             float teethLift = teethAmount * (1.0 - teethLuma) * 0.22;
             rgb += vec3(teethLift);
+            float eyeShadowMask = max(
+                eyeShadowRegionMask(vTexCoord, uEyeLeft),
+                eyeShadowRegionMask(vTexCoord, uEyeRight)
+            );
+            float eyeShadowAmount = uEyeShadow * eyeShadowMask * faceAreaMask(vTexCoord) * 0.28;
+            rgb = mix(rgb, vec3(0.34, 0.16, 0.22), eyeShadowAmount);
+            float eyelinerMask = max(
+                eyelinerRegionMask(vTexCoord, uEyeLeft),
+                eyelinerRegionMask(vTexCoord, uEyeRight)
+            );
+            float eyelinerAmount = uEyeliner * eyelinerMask * faceAreaMask(vTexCoord) * 0.48;
+            rgb = mix(rgb, vec3(0.06, 0.04, 0.05), eyelinerAmount);
             float blushMask = max(
                 ellipseMask(vTexCoord, uBlushLeft, uMakeupRotation, 0.35, 1.15) * uBlushStrengths.x,
                 ellipseMask(vTexCoord, uBlushRight, uMakeupRotation, 0.35, 1.15) * uBlushStrengths.y

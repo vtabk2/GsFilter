@@ -2451,3 +2451,30 @@ Completed: 2026-09-09
 
 - The Beauty reset label now matches the Adjust wording pattern.
 - `:filter:testDebugUnitTest :app:testDebugUnitTest :app:compileDebugKotlin :app:installDebug` passed after the label update.
+
+## Task: Add eye shadow and eyeliner Beauty controls
+
+Status: DONE
+Created: 2026-09-09
+Completed: 2026-09-09
+
+### Requirements
+
+- Add Eye Shadow and Eyeliner controls to the existing Beauty tab.
+- Use the detected eye centers/radii and roll angle for placement.
+- Keep masks localized to the upper eyelid/eye area for frontal and tilted faces.
+- Keep CPU fallback and GPU preview behavior aligned.
+- Preserve the Beauty `0..100` range and existing controls.
+
+### Checklist
+
+- [x] Add recipe, state, ViewModel, UI, and JSON mapping.
+- [x] Add CPU/GPU eye shadow and eyeliner masks.
+- [x] Add focused rendering regression coverage.
+- [x] Run unit tests, compile, install Debug, and review the final diff.
+
+### Notes
+
+- Eye Shadow and Eyeliner are driven by existing ML Kit eye geometry and roll angle; no new dependency was added.
+- Both CPU fallback and GPU preview use the same localized upper-eyelid masks.
+- `:filter:testDebugUnitTest :app:testDebugUnitTest :app:compileDebugKotlin :app:installDebug` passed.

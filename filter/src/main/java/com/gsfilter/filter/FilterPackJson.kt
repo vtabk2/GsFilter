@@ -61,6 +61,8 @@ object FilterPackJson {
             lipstick = optInt("lipstick", 0).coerceIn(EFFECT_MIN, EFFECT_MAX),
             underEye = optInt("underEye", 0).coerceIn(EFFECT_MIN, EFFECT_MAX),
             teethWhitening = optInt("teethWhitening", 0).coerceIn(EFFECT_MIN, EFFECT_MAX),
+            eyeShadow = optInt("eyeShadow", 0).coerceIn(EFFECT_MIN, EFFECT_MAX),
+            eyeliner = optInt("eyeliner", 0).coerceIn(EFFECT_MIN, EFFECT_MAX),
             isMonochrome = optBoolean("isMonochrome", false),
             redShift = optInt("redShift", 0).coerceIn(COLOR_SHIFT_MIN, COLOR_SHIFT_MAX),
             greenShift = optInt("greenShift", 0).coerceIn(COLOR_SHIFT_MIN, COLOR_SHIFT_MAX),

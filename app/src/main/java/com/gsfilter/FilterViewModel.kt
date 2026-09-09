@@ -60,6 +60,8 @@ class FilterViewModel(application: Application) : AndroidViewModel(application) 
                 lipstick = selectedFilter.recipe.lipstick,
                 underEye = selectedFilter.recipe.underEye,
                 teethWhitening = selectedFilter.recipe.teethWhitening,
+                eyeShadow = selectedFilter.recipe.eyeShadow,
+                eyeliner = selectedFilter.recipe.eyeliner,
             )
         }
     }
@@ -74,6 +76,8 @@ class FilterViewModel(application: Application) : AndroidViewModel(application) 
                 lipstick = filter.recipe.lipstick,
                 underEye = filter.recipe.underEye,
                 teethWhitening = filter.recipe.teethWhitening,
+                eyeShadow = filter.recipe.eyeShadow,
+                eyeliner = filter.recipe.eyeliner,
             )
         }
     }
@@ -150,6 +154,14 @@ class FilterViewModel(application: Application) : AndroidViewModel(application) 
         _state.update { it.copy(teethWhitening = value.coerceIn(BEAUTY_MIN, BEAUTY_MAX)) }
     }
 
+    fun setEyeShadow(value: Int) {
+        _state.update { it.copy(eyeShadow = value.coerceIn(BEAUTY_MIN, BEAUTY_MAX)) }
+    }
+
+    fun setEyeliner(value: Int) {
+        _state.update { it.copy(eyeliner = value.coerceIn(BEAUTY_MIN, BEAUTY_MAX)) }
+    }
+
     fun resetBeauty() {
         _state.update {
             it.copy(
@@ -159,6 +171,8 @@ class FilterViewModel(application: Application) : AndroidViewModel(application) 
                 lipstick = it.selectedFilter.recipe.lipstick,
                 underEye = it.selectedFilter.recipe.underEye,
                 teethWhitening = it.selectedFilter.recipe.teethWhitening,
+                eyeShadow = it.selectedFilter.recipe.eyeShadow,
+                eyeliner = it.selectedFilter.recipe.eyeliner,
             )
         }
     }

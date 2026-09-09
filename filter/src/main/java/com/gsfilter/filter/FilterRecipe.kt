@@ -14,6 +14,8 @@ data class FilterRecipe(
     val lipstick: Int = 0,
     val underEye: Int = 0,
     val teethWhitening: Int = 0,
+    val eyeShadow: Int = 0,
+    val eyeliner: Int = 0,
     val isMonochrome: Boolean = false,
     val redShift: Int = 0,
     val greenShift: Int = 0,

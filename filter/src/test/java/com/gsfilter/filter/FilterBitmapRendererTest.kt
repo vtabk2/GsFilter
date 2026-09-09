@@ -195,6 +195,52 @@ class FilterBitmapRendererTest {
     }
 
     @Test
+    fun `eye makeup stays near the detected upper eyelids`() {
+        val skin = 0xffbf8c66.toInt()
+        val features = MakeupFeatures(
+            leftCheekX = 0f,
+            leftCheekY = 0f,
+            rightCheekX = 0f,
+            rightCheekY = 0f,
+            cheekRadiusX = 0f,
+            cheekRadiusY = 0f,
+            lipCenterX = 0f,
+            lipCenterY = 0f,
+            lipRadiusX = 0f,
+            lipRadiusY = 0f,
+            leftEyeCenterX = 0.5f,
+            leftEyeCenterY = 0.5f,
+            leftEyeRadiusX = 0.28f,
+            leftEyeRadiusY = 0.25f,
+        )
+        val shadowOutput = FilterBitmapRenderer.renderPixels(
+            pixels = IntArray(9 * 9) { skin },
+            width = 9,
+            height = 9,
+            params = ShaderFilterParams.from(
+                recipe = FilterRecipe(eyeShadow = 100),
+                adjustments = Adjustments(),
+                makeupFeatures = features,
+            ),
+        )
+        val eyelinerOutput = FilterBitmapRenderer.renderPixels(
+            pixels = IntArray(9 * 9) { skin },
+            width = 9,
+            height = 9,
+            params = ShaderFilterParams.from(
+                recipe = FilterRecipe(eyeliner = 100),
+                adjustments = Adjustments(),
+                makeupFeatures = features,
+            ),
+        )
+
+        assertNotEquals(skin, shadowOutput[3 * 9 + 4])
+        assertNotEquals(skin, eyelinerOutput[2 * 9 + 4])
+        assertEquals(skin, shadowOutput[8 * 9])
+        assertEquals(skin, eyelinerOutput[8 * 9])
+    }
+
+    @Test
     fun `lipstick changes only the detected lip region`() {
         val original = 0xff996633.toInt()
         val output = FilterBitmapRenderer.renderPixels(

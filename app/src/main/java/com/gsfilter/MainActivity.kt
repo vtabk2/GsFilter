@@ -89,6 +89,8 @@ class MainActivity : ComponentActivity() {
                 FilterControlsView.BeautyControl.Lipstick -> viewModel.setLipstick(value)
                 FilterControlsView.BeautyControl.UnderEye -> viewModel.setUnderEye(value)
                 FilterControlsView.BeautyControl.TeethWhitening -> viewModel.setTeethWhitening(value)
+                FilterControlsView.BeautyControl.EyeShadow -> viewModel.setEyeShadow(value)
+                FilterControlsView.BeautyControl.Eyeliner -> viewModel.setEyeliner(value)
             }
         }
         binding.filterControls.onResetBeautyClick = viewModel::resetBeauty

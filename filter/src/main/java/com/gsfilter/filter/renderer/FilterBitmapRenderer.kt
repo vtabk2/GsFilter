@@ -247,6 +247,54 @@ object FilterBitmapRenderer {
             red += teethLift
             green += teethLift
             blue += teethLift
+            val eyeShadowMask = max(
+                eyeShadowMask(
+                    textureX,
+                    textureY,
+                    features.leftEyeCenterX,
+                    features.leftEyeCenterY,
+                    features.leftEyeRadiusX,
+                    features.leftEyeRadiusY,
+                    features.rotationRadians,
+                ),
+                eyeShadowMask(
+                    textureX,
+                    textureY,
+                    features.rightEyeCenterX,
+                    features.rightEyeCenterY,
+                    features.rightEyeRadiusX,
+                    features.rightEyeRadiusY,
+                    features.rotationRadians,
+                ),
+            )
+            val eyeShadowAmount = params.eyeShadow * eyeShadowMask * faceMask * 0.28f
+            red = mix(red, 0.34f, eyeShadowAmount)
+            green = mix(green, 0.16f, eyeShadowAmount)
+            blue = mix(blue, 0.22f, eyeShadowAmount)
+            val eyelinerMask = max(
+                eyelinerMask(
+                    textureX,
+                    textureY,
+                    features.leftEyeCenterX,
+                    features.leftEyeCenterY,
+                    features.leftEyeRadiusX,
+                    features.leftEyeRadiusY,
+                    features.rotationRadians,
+                ),
+                eyelinerMask(
+                    textureX,
+                    textureY,
+                    features.rightEyeCenterX,
+                    features.rightEyeCenterY,
+                    features.rightEyeRadiusX,
+                    features.rightEyeRadiusY,
+                    features.rotationRadians,
+                ),
+            )
+            val eyelinerAmount = params.eyeliner * eyelinerMask * faceMask * 0.48f
+            red = mix(red, 0.06f, eyelinerAmount)
+            green = mix(green, 0.04f, eyelinerAmount)
+            blue = mix(blue, 0.05f, eyelinerAmount)
             val blushAmount = params.blush * blushMask * skinMask(red, green, blue) * 0.40f
             val blushLuma = gray(red, green, blue)
             red = mix(red, clamp(blushLuma + 0.20f, 0f, 1f), blushAmount)
@@ -535,6 +583,56 @@ object FilterBitmapRenderer {
             innerEdge = 0.35f,
             outerEdge = 1.15f,
         )
+    }
+
+    private fun eyeShadowMask(
+        x: Float,
+        y: Float,
+        eyeCenterX: Float,
+        eyeCenterY: Float,
+        eyeRadiusX: Float,
+        eyeRadiusY: Float,
+        rotationRadians: Float,
+    ): Float {
+        if (eyeRadiusX <= 0f || eyeRadiusY <= 0f) {
+            return 0f
+        }
+        val sine = sin(rotationRadians)
+        val cosine = cos(rotationRadians)
+        val centerX = eyeCenterX - (sine * eyeRadiusY * 0.28f)
+        val centerY = eyeCenterY - (cosine * eyeRadiusY * 0.28f)
+        val deltaX = (x - centerX) * cosine + (y - centerY) * sine
+        val deltaY = -(x - centerX) * sine + (y - centerY) * cosine
+        val normalizedX = deltaX / (eyeRadiusX * 1.55f)
+        val normalizedY = deltaY / (eyeRadiusY * 1.35f)
+        val distance = sqrt((normalizedX * normalizedX) + (normalizedY * normalizedY))
+        val ellipse = 1f - smoothstep(0.38f, 1.05f, distance)
+        val upperLid = 1f - smoothstep(-0.10f, 0.48f, normalizedY)
+        return ellipse * upperLid
+    }
+
+    private fun eyelinerMask(
+        x: Float,
+        y: Float,
+        eyeCenterX: Float,
+        eyeCenterY: Float,
+        eyeRadiusX: Float,
+        eyeRadiusY: Float,
+        rotationRadians: Float,
+    ): Float {
+        if (eyeRadiusX <= 0f || eyeRadiusY <= 0f) {
+            return 0f
+        }
+        val sine = sin(rotationRadians)
+        val cosine = cos(rotationRadians)
+        val deltaX = (x - eyeCenterX) * cosine + (y - eyeCenterY) * sine
+        val deltaY = -(x - eyeCenterX) * sine + (y - eyeCenterY) * cosine
+        val normalizedX = deltaX / (eyeRadiusX * 1.14f)
+        val normalizedY = deltaY / (eyeRadiusY * 1.12f)
+        val distance = sqrt((normalizedX * normalizedX) + (normalizedY * normalizedY))
+        val band = smoothstep(0.70f, 0.86f, distance) * (1f - smoothstep(0.88f, 1.08f, distance))
+        val upperLid = 1f - smoothstep(-0.12f, 0.30f, normalizedY)
+        return band * upperLid
     }
 
     private fun polygonMask(x: Float, y: Float, points: List<NormalizedPoint>): Float {
