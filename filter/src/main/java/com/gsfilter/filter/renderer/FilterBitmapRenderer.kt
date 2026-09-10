@@ -91,10 +91,25 @@ object FilterBitmapRenderer {
         val output = IntArray(pixels.size)
         val lutOutput = FloatArray(3)
         val warpCoordinate = FloatArray(2)
+        val texelX = 1f / width
+        val texelY = 1f / height
+        val exposure = 2.0.pow(params.exposure.toDouble()).toFloat()
         for (y in 0 until height) {
             for (x in 0 until width) {
                 val index = y * width + x
-                output[index] = filterPixel(pixels, x, y, width, height, params, lutOutput, warpCoordinate)
+                output[index] = filterPixel(
+                    pixels,
+                    x,
+                    y,
+                    width,
+                    height,
+                    params,
+                    lutOutput,
+                    warpCoordinate,
+                    texelX,
+                    texelY,
+                    exposure,
+                )
             }
         }
         return output
@@ -107,7 +122,19 @@ object FilterBitmapRenderer {
         width: Int,
         height: Int,
         params: ShaderFilterParams,
-    ): Int = filterPixel(pixels, x, y, width, height, params, FloatArray(3), FloatArray(2))
+    ): Int = filterPixel(
+        pixels,
+        x,
+        y,
+        width,
+        height,
+        params,
+        FloatArray(3),
+        FloatArray(2),
+        1f / width,
+        1f / height,
+        2.0.pow(params.exposure.toDouble()).toFloat(),
+    )
 
     private fun filterPixel(
         pixels: IntArray,
@@ -118,12 +145,15 @@ object FilterBitmapRenderer {
         params: ShaderFilterParams,
         lutOutput: FloatArray,
         warpCoordinate: FloatArray,
+        texelX: Float,
+        texelY: Float,
+        exposure: Float,
     ): Int {
-        warpSourceCoordinate(x, y, width, height, params, warpCoordinate)
+        val textureX = (x + 0.5f) / width
+        val textureY = (y + 0.5f) / height
+        warpSourceCoordinate(textureX, textureY, params, warpCoordinate)
         val sourceX = warpCoordinate[0]
         val sourceY = warpCoordinate[1]
-        val texelX = 1f / width
-        val texelY = 1f / height
         val color = sampleBilinear(pixels, sourceX, sourceY, width, height)
 
         val sourceRed = red(color)
@@ -157,8 +187,8 @@ object FilterBitmapRenderer {
         val faceMask = params.makeupFeatures?.let { features ->
             if (features.faceRadiusX > 0f && features.faceRadiusY > 0f) {
                 ellipseMask(
-                    (x + 0.5f) / width,
-                    (y + 0.5f) / height,
+                    textureX,
+                    textureY,
                     features.faceCenterX,
                     features.faceCenterY,
                     features.faceRadiusX,
@@ -205,8 +235,6 @@ object FilterBitmapRenderer {
         green = mix(green, liftedLuma, skinDesaturate)
         blue = mix(blue, liftedLuma, skinDesaturate)
         params.makeupFeatures?.let { features ->
-            val textureX = (x + 0.5f) / width
-            val textureY = (y + 0.5f) / height
             val blushMask = max(
                 ellipseMask(
                     textureX,
@@ -385,7 +413,6 @@ object FilterBitmapRenderer {
         green += params.brightness
         blue += params.brightness
 
-        val exposure = 2.0.pow(params.exposure.toDouble()).toFloat()
         red *= exposure
         green *= exposure
         blue *= exposure
@@ -427,8 +454,6 @@ object FilterBitmapRenderer {
             blue = mix(blue, lutOutput[2], params.lutStrength)
         }
 
-        val textureX = (x + 0.5f) / width
-        val textureY = (y + 0.5f) / height
         val beforeEffectRed = red
         val beforeEffectGreen = green
         val beforeEffectBlue = blue
@@ -575,15 +600,13 @@ object FilterBitmapRenderer {
     }
 
     private fun warpSourceCoordinate(
-        x: Int,
-        y: Int,
-        width: Int,
-        height: Int,
+        textureX: Float,
+        textureY: Float,
         params: ShaderFilterParams,
         output: FloatArray,
     ) {
-        output[0] = (x + 0.5f) / width
-        output[1] = (y + 0.5f) / height
+        output[0] = textureX
+        output[1] = textureY
         val features = params.makeupFeatures ?: return
         if (params.faceSlimming > 0f && features.faceRadiusX > 0f && features.faceRadiusY > 0f) {
             val sine = sin(features.rotationRadians)

@@ -2833,3 +2833,26 @@ Completed: 2026-09-10
 - CPU fallback skips four neighbor samples when smoothing, sharpness, and clarity are inactive.
 - The existing blurred channels are reused by the sharpening pass.
 - `:filter:testDebugUnitTest`, `:filter:compileDebugKotlin`, and `:app:compileDebugKotlin` passed.
+## Task: Hoist per-render CPU constants
+
+Status: DONE
+Created: 2026-09-10
+Completed: 2026-09-10
+
+### Requirements
+
+- Compute render-wide constants once per bitmap render.
+- Reuse normalized pixel coordinates across warp, makeup, and final effects.
+- Preserve CPU output and existing public helper behavior.
+
+### Checklist
+
+- [x] Hoist exposure and texel size out of the pixel loop.
+- [x] Reuse normalized texture coordinates in the pixel path.
+- [x] Run focused unit tests, compile, and review diff.
+
+### Notes
+
+- `pow(exposure)` and texel size are now computed once per bitmap render.
+- Normalized texture coordinates are reused by warp, face masks, makeup, and effects.
+- `:filter:testDebugUnitTest`, `:filter:compileDebugKotlin`, and `:app:compileDebugKotlin` passed.
