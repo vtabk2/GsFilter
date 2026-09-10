@@ -2647,3 +2647,28 @@ Completed: 2026-09-09
 - [x] Document Beauty controls and the assets-based Next Image flow.
 - [x] Document Windows build/test/install commands.
 - [x] Document JSON pack default Original/None and identity bitmap export.
+
+## Task: Optimize filter thumbnail loading and GL context recovery
+
+Status: DONE
+Created: 2026-09-10
+Completed: 2026-09-10
+
+### Requirements
+
+- Keep the existing filter UI and GPU pipeline.
+- Avoid eagerly rendering every thumbnail when the filter rail is shown.
+- Re-upload the preview bitmap after an OpenGL context recreation.
+- Keep the change local to the `filter` module.
+
+### Checklist
+
+- [x] Remove eager thumbnail preloading and its now-unused state.
+- [x] Preserve and re-upload the current preview bitmap on GL context creation.
+- [x] Run focused unit tests, compile, and review the diff.
+
+### Notes
+
+- Thumbnail rendering now starts when RecyclerView binds visible items instead of eagerly preloading the whole category.
+- The preview renderer keeps the current source bitmap and re-uploads it after an OpenGL context recreation.
+- `:filter:testDebugUnitTest`, `:filter:compileDebugKotlin`, and `:app:compileDebugKotlin` passed.

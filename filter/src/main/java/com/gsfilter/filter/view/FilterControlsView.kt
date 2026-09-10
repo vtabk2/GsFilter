@@ -55,7 +55,6 @@ class FilterControlsView @JvmOverloads constructor(
     private var thumbnailBitmap: Bitmap? = null
     private var thumbnailKey: String? = null
     private var thumbnailGenerationId = 0
-    private var lastPreloadKey: String? = null
     private var isRenderingFilterIntensity = false
     private var isRenderingBeauty = false
 
@@ -263,35 +262,6 @@ class FilterControlsView @JvmOverloads constructor(
             if (selectedIndex >= 0) {
                 filterRecyclerView?.scrollToPosition(selectedIndex)
             }
-        }
-        preloadFilterThumbnails(items)
-    }
-
-    private fun preloadFilterThumbnails(items: List<FilterItem>) {
-        val models = items.mapNotNull { item ->
-            val source = item.thumbnailBitmap ?: return@mapNotNull null
-            val sourceKey = item.thumbnailKey ?: return@mapNotNull null
-            FilterThumbnailModel(sourceKey, source, item.filter)
-        }
-        if (models.isEmpty()) {
-            lastPreloadKey = null
-            return
-        }
-
-        val preloadKey = models.joinToString(separator = "|") { it.cacheKey }
-        if (preloadKey == lastPreloadKey) {
-            return
-        }
-        lastPreloadKey = preloadKey
-
-        val width = resources.getDimensionPixelSize(R.dimen.gs_filter_thumbnail_width)
-        val height = resources.getDimensionPixelSize(R.dimen.gs_filter_thumbnail_height)
-        val requestManager = Glide.with(this)
-        models.forEach { model ->
-            requestManager
-                .load(model)
-                .diskCacheStrategy(DiskCacheStrategy.RESOURCE)
-                .preload(width, height)
         }
     }
 

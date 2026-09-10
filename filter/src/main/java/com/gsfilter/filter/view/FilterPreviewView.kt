@@ -80,6 +80,7 @@ class FilterPreviewView @JvmOverloads constructor(
         private var textureId = 0
         private var lutTextureId = 0
         private var lutTexture = FilterLut.None
+        private var sourceBitmap: Bitmap? = null
         private var pendingBitmap: Bitmap? = null
         private var imageWidth = 0
         private var imageHeight = 0
@@ -92,8 +93,12 @@ class FilterPreviewView @JvmOverloads constructor(
         override fun onSurfaceCreated(gl: GL10?, config: EGLConfig?) {
             program = GlFilterProgram.buildProgram()
             handles = GlFilterProgram.resolveHandles(program)
+            textureId = 0
             lutTextureId = 0
             lutTexture = FilterLut.None
+            imageWidth = 0
+            imageHeight = 0
+            pendingBitmap = sourceBitmap
             GLES20.glClearColor(0.93f, 0.93f, 0.93f, 1f)
         }
 
@@ -127,6 +132,7 @@ class FilterPreviewView @JvmOverloads constructor(
         }
 
         fun setSourceBitmap(bitmap: Bitmap?) {
+            sourceBitmap = bitmap
             pendingBitmap = bitmap
         }
 
