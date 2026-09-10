@@ -184,57 +184,73 @@ object FilterBitmapRenderer {
         val blurredRed = average(red(left), red(right), red(up), red(down))
         val blurredGreen = average(green(left), green(right), green(up), green(down))
         val blurredBlue = average(blue(left), blue(right), blue(up), blue(down))
-        val faceMask = params.makeupFeatures?.let { features ->
-            if (features.faceRadiusX > 0f && features.faceRadiusY > 0f) {
-                ellipseMask(
-                    textureX,
-                    textureY,
-                    features.faceCenterX,
-                    features.faceCenterY,
-                    features.faceRadiusX,
-                    features.faceRadiusY,
-                    features.rotationRadians,
-                    innerEdge = 0.55f,
-                    outerEdge = 1.05f,
-                )
-            } else {
-                1f
-            }
-        } ?: 1f
-        val beautyMask = skinMask(sourceRed, sourceGreen, sourceBlue) * faceMask
         val edge = if (params.skinSmoothing != 0f || params.effect != FilterEffect.Color) {
             edgeAt(pixels, x, y, width, height)
         } else {
             0f
         }
-        val beautySmoothAmount = if (params.skinSmoothing != 0f) {
-            val localContrast = maxOf(
-                abs(sourceRed - blurredRed),
-                abs(sourceGreen - blurredGreen),
-                abs(sourceBlue - blurredBlue),
-            )
-            val edgeGuard = 1f - smoothstep(0.06f, 0.20f, localContrast)
-            params.skinSmoothing * beautyMask * edgeGuard *
-                (1f - smoothstep(0.18f, 0.55f, edge))
+        val hasBeauty = params.skinSmoothing != 0f ||
+            params.skinWhitening != 0f ||
+            params.blush != 0f ||
+            params.lipstick != 0f ||
+            params.underEye != 0f ||
+            params.teethWhitening != 0f ||
+            params.eyeShadow != 0f ||
+            params.eyeliner != 0f ||
+            params.eyebrow != 0f
+        val faceMask: Float
+        val beautyMask: Float
+        if (hasBeauty) {
+            faceMask = params.makeupFeatures?.let { features ->
+                if (features.faceRadiusX > 0f && features.faceRadiusY > 0f) {
+                    ellipseMask(
+                        textureX,
+                        textureY,
+                        features.faceCenterX,
+                        features.faceCenterY,
+                        features.faceRadiusX,
+                        features.faceRadiusY,
+                        features.rotationRadians,
+                        innerEdge = 0.55f,
+                        outerEdge = 1.05f,
+                    )
+                } else {
+                    1f
+                }
+            } ?: 1f
+            beautyMask = skinMask(sourceRed, sourceGreen, sourceBlue) * faceMask
+            val beautySmoothAmount = if (params.skinSmoothing != 0f) {
+                val localContrast = maxOf(
+                    abs(sourceRed - blurredRed),
+                    abs(sourceGreen - blurredGreen),
+                    abs(sourceBlue - blurredBlue),
+                )
+                val edgeGuard = 1f - smoothstep(0.06f, 0.20f, localContrast)
+                params.skinSmoothing * beautyMask * edgeGuard *
+                    (1f - smoothstep(0.18f, 0.55f, edge))
+            } else {
+                0f
+            }
+            red = mix(red, blurredRed, beautySmoothAmount)
+            green = mix(green, blurredGreen, beautySmoothAmount)
+            blue = mix(blue, blurredBlue, beautySmoothAmount)
+            val beautyWhiteAmount = params.skinWhitening * beautyMask
+            val skinLuma = gray(red, green, blue)
+            val highlightGuard = 1f - smoothstep(0.55f, 0.92f, skinLuma)
+            val skinLift = beautyWhiteAmount * (1f - skinLuma) * 0.10f * highlightGuard
+            red += skinLift
+            green += skinLift
+            blue += skinLift
+            val skinDesaturate = beautyWhiteAmount * 0.08f * highlightGuard
+            val liftedLuma = skinLuma + skinLift
+            red = mix(red, liftedLuma, skinDesaturate)
+            green = mix(green, liftedLuma, skinDesaturate)
+            blue = mix(blue, liftedLuma, skinDesaturate)
         } else {
-            0f
+            faceMask = 1f
+            beautyMask = 0f
         }
-        red = mix(red, blurredRed, beautySmoothAmount)
-        green = mix(green, blurredGreen, beautySmoothAmount)
-        blue = mix(blue, blurredBlue, beautySmoothAmount)
-        val beautyWhiteAmount = params.skinWhitening * beautyMask
-        val skinLuma = gray(red, green, blue)
-        val highlightGuard = 1f - smoothstep(0.55f, 0.92f, skinLuma)
-        val skinLift = beautyWhiteAmount * (1f - skinLuma) * 0.10f * highlightGuard
-        red += skinLift
-        green += skinLift
-        blue += skinLift
-        val skinDesaturate = beautyWhiteAmount * 0.08f * highlightGuard
-        val liftedLuma = skinLuma + skinLift
-        red = mix(red, liftedLuma, skinDesaturate)
-        green = mix(green, liftedLuma, skinDesaturate)
-        blue = mix(blue, liftedLuma, skinDesaturate)
-        params.makeupFeatures?.let { features ->
+        params.makeupFeatures?.takeIf { hasBeauty }?.let { features ->
             val blushMask = max(
                 ellipseMask(
                     textureX,

@@ -2856,3 +2856,48 @@ Completed: 2026-09-10
 - `pow(exposure)` and texel size are now computed once per bitmap render.
 - Normalized texture coordinates are reused by warp, face masks, makeup, and effects.
 - `:filter:testDebugUnitTest`, `:filter:compileDebugKotlin`, and `:app:compileDebugKotlin` passed.
+## Task: Skip inactive CPU beauty processing
+
+Status: DONE
+Created: 2026-09-10
+Completed: 2026-09-10
+
+### Requirements
+
+- Skip skin and makeup mask work when all beauty controls are inactive.
+- Preserve face-aware processing when any beauty control is active.
+- Keep effect, adjustment, and warp behavior unchanged.
+
+### Checklist
+
+- [x] Gate beauty and makeup calculations behind one active-controls check.
+- [x] Run focused unit tests, compile, and review diff.
+
+### Notes
+
+- CPU fallback skips skin, face, and makeup masks when all beauty controls are inactive.
+- Face warp and non-beauty effects remain unchanged.
+- `:filter:testDebugUnitTest`, `:filter:compileDebugKotlin`, and `:app:compileDebugKotlin` passed.
+## Task: Skip inactive art fragment work
+
+Status: DONE
+Created: 2026-09-10
+Completed: 2026-09-10
+
+### Requirements
+
+- Avoid beauty and blur texture sampling when art thumbnails do not use those controls.
+- Keep the art edge pass and all active beauty behavior unchanged.
+- Preserve the existing shader output for active parameters.
+
+### Checklist
+
+- [x] Gate blur sampling behind active smoothing/sharpness/clarity.
+- [x] Gate beauty calculations behind active beauty controls.
+- [x] Run focused unit tests, compile, and review diff.
+
+### Notes
+
+- Art fragments skip four blur texture samples when smoothing, sharpness, and clarity are inactive.
+- Beauty masks and makeup calculations are skipped when all beauty controls are inactive; art edge detection remains active.
+- `:filter:testDebugUnitTest`, `:filter:compileDebugKotlin`, and `:app:compileDebugKotlin` passed.
