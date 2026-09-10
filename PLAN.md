@@ -2673,6 +2673,28 @@ Completed: 2026-09-10
 - The preview renderer keeps the current source bitmap and re-uploads it after an OpenGL context recreation.
 - `:filter:testDebugUnitTest`, `:filter:compileDebugKotlin`, and `:app:compileDebugKotlin` passed.
 
+## Task: Bound offscreen readback buffer retention
+
+Status: DONE
+Created: 2026-09-10
+Completed: 2026-09-10
+
+### Requirements
+
+- Keep readback reuse for normal thumbnails and previews.
+- Do not retain buffers sized for a one-off large export indefinitely.
+- Keep rendered pixels unchanged.
+
+### Checklist
+
+- [x] Trim oversized cached readback buffers after rendering.
+- [x] Run focused unit tests, compile, and review the diff.
+
+### Notes
+
+- Readback buffers up to 1 MP are reused; larger one-off buffers are released after rendering.
+- `:filter:testDebugUnitTest`, `:filter:compileDebugKotlin`, and `:app:compileDebugKotlin` passed.
+
 ## Task: Cancel stale filter thumbnail renders
 
 Status: DONE

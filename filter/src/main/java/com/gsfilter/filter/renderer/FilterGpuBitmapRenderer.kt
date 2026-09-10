@@ -85,6 +85,7 @@ object FilterGpuBitmapRenderer {
             }
             egl.release()
             FilterBitmapRenderer.recycleIfTemporary(renderSource, source)
+            readbackBuffers.trim()
         }
     }
 
@@ -134,6 +135,13 @@ object FilterGpuBitmapRenderer {
             }
             if (pixels.size < pixelCount) {
                 pixels = IntArray(pixelCount)
+            }
+        }
+
+        fun trim() {
+            if (pixels.size > MAX_CACHED_READBACK_PIXELS) {
+                buffer = null
+                pixels = IntArray(0)
             }
         }
     }
@@ -221,6 +229,7 @@ object FilterGpuBitmapRenderer {
 
     private const val BYTES_PER_PIXEL = 4
     private const val CHANNEL_MASK = 255
+    private const val MAX_CACHED_READBACK_PIXELS = 1_048_576
     // ponytail: one offscreen GL render at a time; split locks if profiling proves parallel EGL helps.
     private val renderLock = Any()
     // Accessed only from getBitmap(), while renderLock is held.
