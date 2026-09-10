@@ -160,6 +160,11 @@ object FilterBitmapRenderer {
             }
         } ?: 1f
         val beautyMask = skinMask(sourceRed, sourceGreen, sourceBlue) * faceMask
+        val edge = if (params.skinSmoothing > 0f || params.effect != FilterEffect.Color) {
+            edgeAt(pixels, x, y, width, height)
+        } else {
+            0f
+        }
         val localContrast = maxOf(
             abs(sourceRed - blurredRed),
             abs(sourceGreen - blurredGreen),
@@ -167,7 +172,7 @@ object FilterBitmapRenderer {
         )
         val edgeGuard = 1f - smoothstep(0.06f, 0.20f, localContrast)
         val beautySmoothAmount = params.skinSmoothing * beautyMask * edgeGuard *
-            (1f - smoothstep(0.18f, 0.55f, edgeAt(pixels, x, y, width, height)))
+            (1f - smoothstep(0.18f, 0.55f, edge))
         red = mix(red, blurredRed, beautySmoothAmount)
         green = mix(green, blurredGreen, beautySmoothAmount)
         blue = mix(blue, blurredBlue, beautySmoothAmount)
@@ -408,7 +413,6 @@ object FilterBitmapRenderer {
 
         val textureX = (x + 0.5f) / width
         val textureY = (y + 0.5f) / height
-        val edge = edgeAt(pixels, x, y, width, height)
         val beforeEffectRed = red
         val beforeEffectGreen = green
         val beforeEffectBlue = blue

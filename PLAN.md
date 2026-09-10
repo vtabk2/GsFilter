@@ -2789,3 +2789,24 @@ Completed: 2026-09-10
 - Contour uniform buffers are reused per rendering thread, reducing temporary allocations during preview updates.
 - The preview renderer releases the LUT texture when LUT strength reaches zero.
 - `:filter:testDebugUnitTest`, `:filter:compileDebugKotlin`, and `:app:compileDebugKotlin` passed.
+## Task: Avoid duplicate CPU edge sampling
+
+Status: DONE
+Created: 2026-09-10
+Completed: 2026-09-10
+
+### Requirements
+
+- Keep CPU output unchanged.
+- Compute the source edge map at most once per pixel.
+- Skip edge sampling when neither smoothing nor art effect uses it.
+
+### Checklist
+
+- [x] Share conditional edge value in CPU filterPixel.
+- [x] Run focused unit tests, compile, and review diff.
+
+### Notes
+
+- CPU fallback now calculates `edgeAt` once per pixel only when smoothing or an art effect uses it.
+- `:filter:testDebugUnitTest`, `:filter:compileDebugKotlin`, and `:app:compileDebugKotlin` passed.
