@@ -2673,6 +2673,31 @@ Completed: 2026-09-10
 - The preview renderer keeps the current source bitmap and re-uploads it after an OpenGL context recreation.
 - `:filter:testDebugUnitTest`, `:filter:compileDebugKotlin`, and `:app:compileDebugKotlin` passed.
 
+## Task: Reduce offscreen GPU readback overhead
+
+Status: DONE
+Created: 2026-09-10
+Completed: 2026-09-10
+
+### Requirements
+
+- Keep the current per-render EGL lifecycle and thread safety.
+- Reuse offscreen readback buffers under the existing render lock.
+- Avoid an unnecessary GPU flush before the synchronous pixel readback.
+- Keep rendered pixels unchanged.
+
+### Checklist
+
+- [x] Reuse the RGBA and ARGB readback buffers.
+- [x] Remove the redundant `glFinish()` before `glReadPixels()`.
+- [x] Run focused unit tests, compile, and review the diff.
+
+### Notes
+
+- Offscreen GPU rendering now reuses its largest readback buffers instead of allocating them for every bitmap.
+- `glReadPixels()` remains the synchronization point for readback, so the explicit `glFinish()` was removed.
+- `:filter:testDebugUnitTest`, `:filter:compileDebugKotlin`, and `:app:compileDebugKotlin` passed.
+
 ## Task: Reduce GL uniform allocations and release inactive LUT textures
 
 Status: DONE

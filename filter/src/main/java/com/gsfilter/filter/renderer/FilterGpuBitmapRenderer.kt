@@ -70,7 +70,6 @@ object FilterGpuBitmapRenderer {
             )
             GLES20.glDrawArrays(GLES20.GL_TRIANGLE_STRIP, 0, GlFilterProgram.VERTEX_COUNT)
             GlFilterProgram.disableAttributes(handles)
-            GLES20.glFinish()
 
             readBitmap(width, height)
         } finally {
@@ -102,9 +101,12 @@ object FilterGpuBitmapRenderer {
     }
 
     private fun readBitmap(width: Int, height: Int): Bitmap {
-        val buffer = ByteBuffer.allocateDirect(width * height * BYTES_PER_PIXEL)
+        val pixelCount = width * height
+        readbackBuffers.ensure(pixelCount)
+        val buffer = requireNotNull(readbackBuffers.buffer)
+        val pixels = readbackBuffers.pixels
+        buffer.clear()
         GLES20.glReadPixels(0, 0, width, height, GLES20.GL_RGBA, GLES20.GL_UNSIGNED_BYTE, buffer)
-        val pixels = IntArray(width * height)
         for (y in 0 until height) {
             val targetY = height - 1 - y
             for (x in 0 until width) {
@@ -118,6 +120,21 @@ object FilterGpuBitmapRenderer {
             }
         }
         return Bitmap.createBitmap(pixels, width, height, Bitmap.Config.ARGB_8888)
+    }
+
+    private class ReadbackBuffers {
+        var buffer: ByteBuffer? = null
+        var pixels = IntArray(0)
+
+        fun ensure(pixelCount: Int) {
+            val byteCount = pixelCount * BYTES_PER_PIXEL
+            if ((buffer?.capacity() ?: 0) < byteCount) {
+                buffer = ByteBuffer.allocateDirect(byteCount)
+            }
+            if (pixels.size < pixelCount) {
+                pixels = IntArray(pixelCount)
+            }
+        }
     }
 
     private class EglPbuffer(
@@ -205,6 +222,8 @@ object FilterGpuBitmapRenderer {
     private const val CHANNEL_MASK = 255
     // ponytail: one offscreen GL render at a time; split locks if profiling proves parallel EGL helps.
     private val renderLock = Any()
+    // Accessed only from getBitmap(), while renderLock is held.
+    private val readbackBuffers = ReadbackBuffers()
 
     private val CONFIG_ATTRIBUTES = intArrayOf(
         EGL14.EGL_RENDERABLE_TYPE,
