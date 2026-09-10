@@ -2810,3 +2810,26 @@ Completed: 2026-09-10
 
 - CPU fallback now calculates `edgeAt` once per pixel only when smoothing or an art effect uses it.
 - `:filter:testDebugUnitTest`, `:filter:compileDebugKotlin`, and `:app:compileDebugKotlin` passed.
+## Task: Skip inactive CPU neighborhood sampling
+
+Status: DONE
+Created: 2026-09-10
+Completed: 2026-09-10
+
+### Requirements
+
+- Avoid neighbor sampling when smoothing, sharpness, and clarity are inactive.
+- Reuse the existing blurred channels for sharpening instead of recomputing them.
+- Preserve CPU output for active effects.
+
+### Checklist
+
+- [x] Gate four bilinear neighbor samples behind active blur-dependent effects.
+- [x] Reuse blurred channels in the sharpening pass.
+- [x] Run focused unit tests, compile, and review diff.
+
+### Notes
+
+- CPU fallback skips four neighbor samples when smoothing, sharpness, and clarity are inactive.
+- The existing blurred channels are reused by the sharpening pass.
+- `:filter:testDebugUnitTest`, `:filter:compileDebugKotlin`, and `:app:compileDebugKotlin` passed.

@@ -125,10 +125,6 @@ object FilterBitmapRenderer {
         val texelX = 1f / width
         val texelY = 1f / height
         val color = sampleBilinear(pixels, sourceX, sourceY, width, height)
-        val left = sampleBilinear(pixels, sourceX - texelX, sourceY, width, height)
-        val right = sampleBilinear(pixels, sourceX + texelX, sourceY, width, height)
-        val up = sampleBilinear(pixels, sourceX, sourceY - texelY, width, height)
-        val down = sampleBilinear(pixels, sourceX, sourceY + texelY, width, height)
 
         val sourceRed = red(color)
         val sourceGreen = green(color)
@@ -138,6 +134,22 @@ object FilterBitmapRenderer {
         var blue = sourceBlue
         val sourceGray = gray(sourceRed, sourceGreen, sourceBlue)
         val sharpAmount = (params.sharpness * 0.65f) + (params.clarity * 0.35f)
+        val needsNeighborhood = params.skinSmoothing != 0f || sharpAmount != 0f
+        val left: Int
+        val right: Int
+        val up: Int
+        val down: Int
+        if (needsNeighborhood) {
+            left = sampleBilinear(pixels, sourceX - texelX, sourceY, width, height)
+            right = sampleBilinear(pixels, sourceX + texelX, sourceY, width, height)
+            up = sampleBilinear(pixels, sourceX, sourceY - texelY, width, height)
+            down = sampleBilinear(pixels, sourceX, sourceY + texelY, width, height)
+        } else {
+            left = color
+            right = color
+            up = color
+            down = color
+        }
 
         val blurredRed = average(red(left), red(right), red(up), red(down))
         val blurredGreen = average(green(left), green(right), green(up), green(down))
@@ -160,19 +172,23 @@ object FilterBitmapRenderer {
             }
         } ?: 1f
         val beautyMask = skinMask(sourceRed, sourceGreen, sourceBlue) * faceMask
-        val edge = if (params.skinSmoothing > 0f || params.effect != FilterEffect.Color) {
+        val edge = if (params.skinSmoothing != 0f || params.effect != FilterEffect.Color) {
             edgeAt(pixels, x, y, width, height)
         } else {
             0f
         }
-        val localContrast = maxOf(
-            abs(sourceRed - blurredRed),
-            abs(sourceGreen - blurredGreen),
-            abs(sourceBlue - blurredBlue),
-        )
-        val edgeGuard = 1f - smoothstep(0.06f, 0.20f, localContrast)
-        val beautySmoothAmount = params.skinSmoothing * beautyMask * edgeGuard *
-            (1f - smoothstep(0.18f, 0.55f, edge))
+        val beautySmoothAmount = if (params.skinSmoothing != 0f) {
+            val localContrast = maxOf(
+                abs(sourceRed - blurredRed),
+                abs(sourceGreen - blurredGreen),
+                abs(sourceBlue - blurredBlue),
+            )
+            val edgeGuard = 1f - smoothstep(0.06f, 0.20f, localContrast)
+            params.skinSmoothing * beautyMask * edgeGuard *
+                (1f - smoothstep(0.18f, 0.55f, edge))
+        } else {
+            0f
+        }
         red = mix(red, blurredRed, beautySmoothAmount)
         green = mix(green, blurredGreen, beautySmoothAmount)
         blue = mix(blue, blurredBlue, beautySmoothAmount)
@@ -352,9 +368,9 @@ object FilterBitmapRenderer {
             blue = mix(blue, 0.22f, lipstickAmount)
         }
 
-        red += (red - average(red(left), red(right), red(up), red(down))) * sharpAmount
-        green += (green - average(green(left), green(right), green(up), green(down))) * sharpAmount
-        blue += (blue - average(blue(left), blue(right), blue(up), blue(down))) * sharpAmount
+        red += (red - blurredRed) * sharpAmount
+        green += (green - blurredGreen) * sharpAmount
+        blue += (blue - blurredBlue) * sharpAmount
 
         red += params.redShift
         green += params.greenShift
