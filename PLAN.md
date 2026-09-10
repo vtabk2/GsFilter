@@ -2901,3 +2901,26 @@ Completed: 2026-09-10
 - Art fragments skip four blur texture samples when smoothing, sharpness, and clarity are inactive.
 - Beauty masks and makeup calculations are skipped when all beauty controls are inactive; art edge detection remains active.
 - `:filter:testDebugUnitTest`, `:filter:compileDebugKotlin`, and `:app:compileDebugKotlin` passed.
+## Task: Bound art thumbnail source textures
+
+Status: DONE
+Created: 2026-09-10
+Completed: 2026-09-10
+
+### Requirements
+
+- Avoid uploading full-resolution source images for small art thumbnails.
+- Keep at least 2x thumbnail resolution for edge detail.
+- Recycle only temporary scaled sources; never recycle the caller-owned bitmap.
+
+### Checklist
+
+- [x] Scale oversized art sources before GPU upload.
+- [x] Preserve existing art output dimensions and fallback behavior.
+- [x] Run focused unit tests, compile, and review diff.
+
+### Notes
+
+- Art thumbnails cap the temporary GPU source texture at 2x the requested thumbnail bounds.
+- Temporary scaled bitmaps are recycled without touching the caller-owned source.
+- `:filter:testDebugUnitTest`, `:filter:compileDebugKotlin`, and `:app:compileDebugKotlin` passed.

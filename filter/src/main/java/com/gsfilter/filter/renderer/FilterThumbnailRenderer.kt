@@ -29,10 +29,15 @@ object FilterThumbnailRenderer {
         adjustments: Adjustments,
         maxWidth: Int,
         maxHeight: Int,
-    ): Bitmap =
-        try {
+    ): Bitmap {
+        val renderSource = FilterBitmapRenderer.scaledSource(
+            source = source,
+            maxWidth = maxWidth * ART_SOURCE_SCALE,
+            maxHeight = maxHeight * ART_SOURCE_SCALE,
+        )
+        return try {
             FilterGpuBitmapRenderer.getBitmap(
-                source = source,
+                source = renderSource,
                 recipe = recipe,
                 adjustments = adjustments,
                 maxWidth = maxWidth,
@@ -42,7 +47,10 @@ object FilterThumbnailRenderer {
             )
         } catch (_: RuntimeException) {
             renderScaledFirst(source, recipe, adjustments, maxWidth, maxHeight)
+        } finally {
+            FilterBitmapRenderer.recycleIfTemporary(renderSource, source)
         }
+    }
 
     private fun renderScaledFirst(
         source: Bitmap,
@@ -129,6 +137,7 @@ object FilterThumbnailRenderer {
     private const val PERCENT_MAX = 100
     private const val EFFECT_MIN = 0
     private const val EFFECT_MAX = 100
+    private const val ART_SOURCE_SCALE = 2
     private const val DEFAULT_TEXEL_SCALE = 1f
     private const val ART_TEXEL_SCALE = 0.5f
 }
