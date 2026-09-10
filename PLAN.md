@@ -2673,6 +2673,29 @@ Completed: 2026-09-10
 - The preview renderer keeps the current source bitmap and re-uploads it after an OpenGL context recreation.
 - `:filter:testDebugUnitTest`, `:filter:compileDebugKotlin`, and `:app:compileDebugKotlin` passed.
 
+## Task: Cancel stale filter thumbnail renders
+
+Status: DONE
+Created: 2026-09-10
+Completed: 2026-09-10
+
+### Requirements
+
+- Stop delivering thumbnail results after Glide cancels a request.
+- Recycle a rendered bitmap only when it has not been handed to Glide.
+- Keep normal thumbnail rendering unchanged.
+
+### Checklist
+
+- [x] Track cancellation in the thumbnail data fetcher.
+- [x] Drop and recycle canceled results safely.
+- [x] Run focused unit tests, compile, and review the diff.
+
+### Notes
+
+- Canceled thumbnail requests no longer deliver stale bitmaps to Glide; rendered results are recycled when safe.
+- `:filter:testDebugUnitTest`, `:filter:compileDebugKotlin`, and `:app:compileDebugKotlin` passed.
+
 ## Task: Reuse offscreen GPU geometry buffers
 
 Status: DONE

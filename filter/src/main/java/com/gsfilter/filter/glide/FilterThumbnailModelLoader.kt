@@ -10,6 +10,7 @@ import com.bumptech.glide.load.model.ModelLoaderFactory
 import com.bumptech.glide.load.model.MultiModelLoaderFactory
 import com.bumptech.glide.signature.ObjectKey
 import com.gsfilter.filter.renderer.FilterThumbnailRenderer
+import java.util.concurrent.atomic.AtomicBoolean
 
 class FilterThumbnailModelLoader : ModelLoader<FilterThumbnailModel, Bitmap> {
 
@@ -44,25 +45,37 @@ private class FilterThumbnailDataFetcher(
     private val maxHeight: Int,
 ) : DataFetcher<Bitmap> {
 
+    private val cancelled = AtomicBoolean(false)
+
     override fun loadData(priority: Priority, callback: DataFetcher.DataCallback<in Bitmap>) {
+        if (cancelled.get()) {
+            return
+        }
         try {
-            callback.onDataReady(
-                FilterThumbnailRenderer.render(
-                    source = model.source,
-                    recipe = model.filter.recipe,
-                    adjustments = model.adjustments,
-                    maxWidth = maxWidth,
-                    maxHeight = maxHeight,
-                ),
+            val bitmap = FilterThumbnailRenderer.render(
+                source = model.source,
+                recipe = model.filter.recipe,
+                adjustments = model.adjustments,
+                maxWidth = maxWidth,
+                maxHeight = maxHeight,
             )
+            if (cancelled.get()) {
+                bitmap.recycle()
+            } else {
+                callback.onDataReady(bitmap)
+            }
         } catch (error: RuntimeException) {
-            callback.onLoadFailed(error)
+            if (!cancelled.get()) {
+                callback.onLoadFailed(error)
+            }
         }
     }
 
     override fun cleanup() = Unit
 
-    override fun cancel() = Unit
+    override fun cancel() {
+        cancelled.set(true)
+    }
 
     override fun getDataClass(): Class<Bitmap> = Bitmap::class.java
 
