@@ -18,6 +18,9 @@ import java.nio.ByteBuffer
 
 object FilterGpuBitmapRenderer {
 
+    private val vertexBuffer = GlFilterProgram.floatBufferOf(GlFilterProgram.VERTICES)
+    private val textureBuffer = GlFilterProgram.floatBufferOf(GlFilterProgram.TEXTURE_COORDS)
+
     fun getBitmap(
         source: Bitmap,
         recipe: FilterRecipe,
@@ -56,8 +59,6 @@ object FilterGpuBitmapRenderer {
             GLES20.glUseProgram(program)
 
             val handles = GlFilterProgram.resolveHandles(program)
-            val vertexBuffer = GlFilterProgram.floatBufferOf(GlFilterProgram.VERTICES)
-            val textureBuffer = GlFilterProgram.floatBufferOf(GlFilterProgram.TEXTURE_COORDS)
             GlFilterProgram.bindAttributes(handles, vertexBuffer, textureBuffer)
             GlFilterProgram.bindUniforms(
                 handles = handles,

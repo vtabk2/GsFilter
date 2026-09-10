@@ -2673,6 +2673,28 @@ Completed: 2026-09-10
 - The preview renderer keeps the current source bitmap and re-uploads it after an OpenGL context recreation.
 - `:filter:testDebugUnitTest`, `:filter:compileDebugKotlin`, and `:app:compileDebugKotlin` passed.
 
+## Task: Reuse offscreen GPU geometry buffers
+
+Status: DONE
+Created: 2026-09-10
+Completed: 2026-09-10
+
+### Requirements
+
+- Reuse the immutable vertex and texture coordinate buffers for offscreen renders.
+- Keep access serialized by the existing render lock.
+- Keep rendered pixels unchanged.
+
+### Checklist
+
+- [x] Hoist the two fixed `FloatBuffer` instances out of `getBitmap()`.
+- [x] Run focused unit tests, compile, and review the diff.
+
+### Notes
+
+- Offscreen rendering now reuses fixed vertex and texture coordinate buffers under the existing render lock.
+- `:filter:testDebugUnitTest`, `:filter:compileDebugKotlin`, and `:app:compileDebugKotlin` passed.
+
 ## Task: Reduce offscreen GPU readback overhead
 
 Status: DONE
