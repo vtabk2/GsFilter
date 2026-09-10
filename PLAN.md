@@ -2672,3 +2672,28 @@ Completed: 2026-09-10
 - Thumbnail rendering now starts when RecyclerView binds visible items instead of eagerly preloading the whole category.
 - The preview renderer keeps the current source bitmap and re-uploads it after an OpenGL context recreation.
 - `:filter:testDebugUnitTest`, `:filter:compileDebugKotlin`, and `:app:compileDebugKotlin` passed.
+
+## Task: Reduce GL uniform allocations and release inactive LUT textures
+
+Status: DONE
+Created: 2026-09-10
+Completed: 2026-09-10
+
+### Requirements
+
+- Keep shader output unchanged.
+- Reuse temporary uniform buffers across renders.
+- Release the preview LUT texture when LUT processing is inactive.
+- Keep the change local to the `filter` module.
+
+### Checklist
+
+- [x] Reuse contour uniform arrays instead of allocating them per draw.
+- [x] Delete inactive LUT textures.
+- [x] Run focused unit tests, compile, and review the diff.
+
+### Notes
+
+- Contour uniform buffers are reused per rendering thread, reducing temporary allocations during preview updates.
+- The preview renderer releases the LUT texture when LUT strength reaches zero.
+- `:filter:testDebugUnitTest`, `:filter:compileDebugKotlin`, and `:app:compileDebugKotlin` passed.

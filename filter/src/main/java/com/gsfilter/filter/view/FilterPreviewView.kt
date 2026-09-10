@@ -142,6 +142,11 @@ class FilterPreviewView @JvmOverloads constructor(
 
         private fun lutTextureFor(params: ShaderFilterParams): Int {
             if (params.lutStrength <= 0f) {
+                if (lutTextureId != 0) {
+                    GLES20.glDeleteTextures(1, intArrayOf(lutTextureId), 0)
+                    lutTextureId = 0
+                    lutTexture = FilterLut.None
+                }
                 return 0
             }
             if (lutTextureId != 0 && lutTexture == params.lut) {
