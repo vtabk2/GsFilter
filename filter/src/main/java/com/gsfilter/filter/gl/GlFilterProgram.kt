@@ -959,29 +959,46 @@ internal object GlFilterProgram {
             rgb = mix(rgb, vec3(0.70, 0.16, 0.22), lipstickAmount);
             }
 
-            rgb = rgb + uRgbShift;
-            float gray = dot(rgb, vec3(0.299, 0.587, 0.114));
-            rgb = mix(rgb, vec3(gray), uMono);
-
-            rgb = rgb + uBrightness;
-            rgb = rgb * pow(2.0, uExposure);
-            gray = dot(rgb, vec3(0.299, 0.587, 0.114));
-            float shadowMask = 1.0 - smoothstep(0.0, 0.6, gray);
-            float highlightMask = smoothstep(0.4, 1.0, gray);
-            rgb = rgb + (shadowMask * uShadows * 0.35);
-            rgb = rgb + (highlightMask * uHighlights * 0.35);
-            rgb = (rgb - 0.5) * uContrast + 0.5;
-
-            rgb.r = rgb.r + (uTemperature * 0.12) + (uTint * 0.06);
-            rgb.g = rgb.g - (uTint * 0.08);
-            rgb.b = rgb.b - (uTemperature * 0.12) + (uTint * 0.06);
-
-            gray = dot(rgb, vec3(0.299, 0.587, 0.114));
-            rgb = mix(vec3(gray), rgb, uSaturation);
-            float maxChannel = max(max(rgb.r, rgb.g), rgb.b);
-            float average = (rgb.r + rgb.g + rgb.b) / 3.0;
-            float vibranceMask = 1.0 - clamp(maxChannel - average, 0.0, 1.0);
-            rgb = mix(vec3(gray), rgb, 1.0 + (uVibrance * vibranceMask));
+            if (uRgbShift.r != 0.0 || uRgbShift.g != 0.0 || uRgbShift.b != 0.0) {
+                rgb = rgb + uRgbShift;
+            }
+            if (uMono != 0.0) {
+                float gray = dot(rgb, vec3(0.299, 0.587, 0.114));
+                rgb = mix(rgb, vec3(gray), uMono);
+            }
+            if (uBrightness != 0.0) {
+                rgb = rgb + uBrightness;
+            }
+            if (uExposure != 0.0) {
+                rgb = rgb * pow(2.0, uExposure);
+            }
+            if (uShadows != 0.0 || uHighlights != 0.0) {
+                float gray = dot(rgb, vec3(0.299, 0.587, 0.114));
+                float shadowMask = 1.0 - smoothstep(0.0, 0.6, gray);
+                float highlightMask = smoothstep(0.4, 1.0, gray);
+                rgb = rgb + (shadowMask * uShadows * 0.35);
+                rgb = rgb + (highlightMask * uHighlights * 0.35);
+            }
+            if (uContrast != 1.0) {
+                rgb = (rgb - 0.5) * uContrast + 0.5;
+            }
+            if (uTemperature != 0.0 || uTint != 0.0) {
+                rgb.r = rgb.r + (uTemperature * 0.12) + (uTint * 0.06);
+                rgb.g = rgb.g - (uTint * 0.08);
+                rgb.b = rgb.b - (uTemperature * 0.12) + (uTint * 0.06);
+            }
+            if (uSaturation != 1.0 || uVibrance != 0.0) {
+                float gray = dot(rgb, vec3(0.299, 0.587, 0.114));
+                if (uSaturation != 1.0) {
+                    rgb = mix(vec3(gray), rgb, uSaturation);
+                }
+                if (uVibrance != 0.0) {
+                    float maxChannel = max(max(rgb.r, rgb.g), rgb.b);
+                    float average = (rgb.r + rgb.g + rgb.b) / 3.0;
+                    float vibranceMask = 1.0 - clamp(maxChannel - average, 0.0, 1.0);
+                    rgb = mix(vec3(gray), rgb, 1.0 + (uVibrance * vibranceMask));
+                }
+            }
 
             if (uLutStrength > 0.0) {
                 rgb = mix(rgb, sampleLut(rgb), uLutStrength);

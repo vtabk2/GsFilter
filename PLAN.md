@@ -2924,3 +2924,26 @@ Completed: 2026-09-10
 - Art thumbnails cap the temporary GPU source texture at 2x the requested thumbnail bounds.
 - Temporary scaled bitmaps are recycled without touching the caller-owned source.
 - `:filter:testDebugUnitTest`, `:filter:compileDebugKotlin`, and `:app:compileDebugKotlin` passed.
+## Task: Skip neutral art color stages
+
+Status: DONE
+Created: 2026-09-10
+Completed: 2026-09-10
+
+### Requirements
+
+- Skip neutral color-adjustment stages in the GPU fragment shader.
+- Preserve the existing stage order when a parameter is active.
+- Keep art effect, LUT, beauty, and grain behavior unchanged.
+
+### Checklist
+
+- [x] Gate neutral RGB shift, exposure, contrast, and tonal stages.
+- [x] Gate neutral monochrome, saturation, and vibrance stages.
+- [x] Run focused unit tests, compile, and review diff.
+
+### Notes
+
+- GPU art fragments now skip neutral color stages while preserving active stage order.
+- Saturation and vibrance continue sharing the original pre-saturation luma value.
+- `:filter:testDebugUnitTest`, `:filter:compileDebugKotlin`, and `:app:compileDebugKotlin` passed.
