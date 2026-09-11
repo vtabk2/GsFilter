@@ -103,8 +103,6 @@ object FilterGpuBitmapRenderer {
             if (params.lutStrength > 0f) {
                 lutTextureId = GlLutTexture.upload(params.lut)
             }
-            GLES20.glViewport(0, 0, width, height)
-            GLES20.glUseProgram(session.program)
 
             val handles = session.handles
             GlFilterProgram.bindUniforms(
@@ -257,6 +255,7 @@ object FilterGpuBitmapRenderer {
                 handles = GlFilterProgram.resolveHandles(program)
                 inputTextureId = createTexture()
                 GLES20.glUseProgram(program)
+                GLES20.glViewport(0, 0, width, height)
                 GlFilterProgram.bindAttributes(handles, vertexBuffer, textureBuffer)
                 initialized = true
             } finally {

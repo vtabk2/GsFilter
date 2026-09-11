@@ -1,5 +1,29 @@
 # PLAN
 
+## Task: Reuse offscreen program and viewport state
+
+Status: DONE
+Created: 2026-09-11
+Completed: 2026-09-11
+
+### Requirements
+
+- Set the fixed offscreen program and viewport once per GPU session.
+- Preserve output when rendering multiple thumbnails at the same dimensions.
+- Keep preview rendering unchanged.
+
+### Checklist
+
+- [x] Move offscreen program/viewport setup into session initialization.
+- [x] Remove redundant per-thumbnail state calls.
+- [x] Run focused unit tests, compile, and review diff.
+
+### Notes
+
+- Reused offscreen sessions now retain the active program and fixed viewport state.
+- Sequential thumbnails avoid repeated program and viewport setup calls.
+- `:filter:testDebugUnitTest`, filter/app compilation, and `git diff --check` passed.
+
 ## Task: Add Popular category visibility configuration
 
 Status: DONE
