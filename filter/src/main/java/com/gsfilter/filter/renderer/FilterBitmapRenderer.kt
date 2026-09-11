@@ -181,9 +181,18 @@ object FilterBitmapRenderer {
             down = color
         }
 
-        val blurredRed = average(red(left), red(right), red(up), red(down))
-        val blurredGreen = average(green(left), green(right), green(up), green(down))
-        val blurredBlue = average(blue(left), blue(right), blue(up), blue(down))
+        val blurredRed: Float
+        val blurredGreen: Float
+        val blurredBlue: Float
+        if (needsNeighborhood) {
+            blurredRed = average(red(left), red(right), red(up), red(down))
+            blurredGreen = average(green(left), green(right), green(up), green(down))
+            blurredBlue = average(blue(left), blue(right), blue(up), blue(down))
+        } else {
+            blurredRed = sourceRed
+            blurredGreen = sourceGreen
+            blurredBlue = sourceBlue
+        }
         val edge = if (params.skinSmoothing != 0f || params.effect != FilterEffect.Color) {
             edgeAt(pixels, x, y, width, height)
         } else {

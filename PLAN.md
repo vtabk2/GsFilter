@@ -1,5 +1,28 @@
 # PLAN
 
+## Task: Skip unused CPU blur averaging
+
+Status: DONE
+Created: 2026-09-11
+Completed: 2026-09-11
+
+### Requirements
+
+- Avoid blur-channel averaging when neighborhood sampling is disabled.
+- Preserve the existing sampled blur values when beauty smoothing or sharpness/clarity is active.
+- Keep art effect edge detection unchanged.
+
+### Checklist
+
+- [x] Reuse the source channels for the inactive blur path.
+- [x] Run focused unit tests, compile, and review diff.
+
+### Notes
+
+- CPU fallback now avoids three blur averages when smoothing, sharpness, and clarity are inactive.
+- Active neighborhood sampling and art edge detection remain unchanged.
+- `:filter:testDebugUnitTest`, filter/app compilation, and `git diff --check` passed.
+
 ## Task: Reuse offscreen texture storage
 
 Status: DONE
