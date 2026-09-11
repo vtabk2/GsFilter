@@ -1,5 +1,29 @@
 # PLAN
 
+## Task: Reuse thumbnail input texture objects
+
+Status: DONE
+Created: 2026-09-11
+Completed: 2026-09-11
+
+### Requirements
+
+- Reuse the input `GL_TEXTURE_2D` object for sequential renders in one GPU session.
+- Preserve texture parameters and upload fresh bitmap pixels for each render.
+- Delete the cached texture when the session is released.
+
+### Checklist
+
+- [x] Move input texture ownership into `RenderSession`.
+- [x] Upload each source bitmap into the reusable texture.
+- [x] Run focused unit tests, compile, and review diff.
+
+### Notes
+
+- Sequential renders reuse one configured input texture object per GPU session.
+- Each render still uploads fresh source pixels; the texture is deleted with its session.
+- `:filter:testDebugUnitTest`, filter/app compilation, and `git diff --check` passed.
+
 ## Task: MVP Android image filter demo using MVVM
 
 Status: DONE

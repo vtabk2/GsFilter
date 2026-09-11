@@ -42,13 +42,12 @@ object FilterGpuBitmapRenderer {
         val height = if (scaleSource) renderSource.height else renderSize.height
         val session = sessionFor(width, height)
         val params = ShaderFilterParams.from(recipe, adjustments, makeupFeatures)
-        var textureId = 0
         var lutTextureId = 0
         var invalidateSession = false
 
         return try {
             session.egl.makeCurrent()
-            textureId = uploadTexture(renderSource)
+            uploadTexture(renderSource, session.inputTextureId)
             if (params.lutStrength > 0f) {
                 lutTextureId = GlLutTexture.upload(params.lut)
             }
@@ -61,7 +60,7 @@ object FilterGpuBitmapRenderer {
             GlFilterProgram.bindAttributes(handles, vertexBuffer, textureBuffer)
             GlFilterProgram.bindUniforms(
                 handles = handles,
-                textureId = textureId,
+                textureId = session.inputTextureId,
                 lutTextureId = lutTextureId,
                 renderWidth = width,
                 renderHeight = height,
@@ -76,9 +75,6 @@ object FilterGpuBitmapRenderer {
             invalidateSession = true
             throw error
         } finally {
-            if (textureId != 0) {
-                GLES20.glDeleteTextures(1, intArrayOf(textureId), 0)
-            }
             if (lutTextureId != 0) {
                 GLES20.glDeleteTextures(1, intArrayOf(lutTextureId), 0)
             }
@@ -102,7 +98,12 @@ object FilterGpuBitmapRenderer {
         return RenderSession(width, height).also { cachedSession = it }
     }
 
-    private fun uploadTexture(bitmap: Bitmap): Int {
+    private fun uploadTexture(bitmap: Bitmap, textureId: Int) {
+        GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, textureId)
+        GLUtils.texImage2D(GLES20.GL_TEXTURE_2D, 0, bitmap, 0)
+    }
+
+    private fun createTexture(): Int {
         val textures = IntArray(1)
         GLES20.glGenTextures(1, textures, 0)
         val textureId = textures[0]
@@ -111,7 +112,6 @@ object FilterGpuBitmapRenderer {
         GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MAG_FILTER, GLES20.GL_LINEAR)
         GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_WRAP_S, GLES20.GL_CLAMP_TO_EDGE)
         GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_WRAP_T, GLES20.GL_CLAMP_TO_EDGE)
-        GLUtils.texImage2D(GLES20.GL_TEXTURE_2D, 0, bitmap, 0)
         return textureId
     }
 
@@ -166,6 +166,8 @@ object FilterGpuBitmapRenderer {
         val egl = EglPbuffer(width, height)
         var program = 0
             private set
+        var inputTextureId = 0
+            private set
         lateinit var handles: GlFilterProgram.ProgramHandles
             private set
 
@@ -175,6 +177,7 @@ object FilterGpuBitmapRenderer {
                 egl.makeCurrent()
                 program = GlFilterProgram.buildProgram()
                 handles = GlFilterProgram.resolveHandles(program)
+                inputTextureId = createTexture()
                 initialized = true
             } finally {
                 egl.detach()
@@ -190,6 +193,10 @@ object FilterGpuBitmapRenderer {
                 if (program != 0) {
                     GLES20.glDeleteProgram(program)
                     program = 0
+                }
+                if (inputTextureId != 0) {
+                    GLES20.glDeleteTextures(1, intArrayOf(inputTextureId), 0)
+                    inputTextureId = 0
                 }
             } catch (_: RuntimeException) {
                 // The EGL context may already be lost; release still must run.
