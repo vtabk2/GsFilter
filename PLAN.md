@@ -1,5 +1,28 @@
 # PLAN
 
+## Task: Skip duplicate preview source uploads
+
+Status: DONE
+Created: 2026-09-11
+Completed: 2026-09-11
+
+### Requirements
+
+- Avoid queueing the same unchanged preview bitmap more than once.
+- Re-upload when the bitmap content changes through `generationId`.
+- Preserve source replacement and surface recreation behavior.
+
+### Checklist
+
+- [x] Gate `setSourceBitmap` by bitmap identity and generation.
+- [x] Run tests, compile, and review diff.
+
+### Notes
+
+- Repeated `setSourceBitmap` calls for the same unchanged bitmap now stop before posting another GL event.
+- A crop/mutation that changes `generationId` still reaches the existing texture update path.
+- `:filter:testDebugUnitTest`, `:filter:compileDebugKotlin`, `:app:compileDebugKotlin`, `:app:testDebugUnitTest`, and `git diff --check` passed.
+
 ## Task: Add explicit thumbnail cache revision
 
 Status: DONE

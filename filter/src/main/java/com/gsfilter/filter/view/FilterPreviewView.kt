@@ -22,6 +22,8 @@ class FilterPreviewView @JvmOverloads constructor(
 ) : GLSurfaceView(context, attrs) {
 
     private val filterRenderer = FilterRenderer()
+    private var lastSourceBitmap: Bitmap? = null
+    private var lastSourceGenerationId = 0
     private var lastFilterParams: ShaderFilterParams? = null
     private var pendingFilterParams: ShaderFilterParams? = null
     private var isFilterRenderPosted = false
@@ -34,6 +36,12 @@ class FilterPreviewView @JvmOverloads constructor(
     }
 
     fun setSourceBitmap(bitmap: Bitmap?) {
+        val generationId = bitmap?.generationId ?: 0
+        if (lastSourceBitmap === bitmap && lastSourceGenerationId == generationId) {
+            return
+        }
+        lastSourceBitmap = bitmap
+        lastSourceGenerationId = generationId
         queueEvent {
             filterRenderer.setSourceBitmap(bitmap)
             requestRender()
