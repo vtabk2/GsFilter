@@ -1,5 +1,29 @@
 # PLAN
 
+## Task: Avoid redundant adjustment uniform writes
+
+Status: DONE
+Created: 2026-09-11
+Completed: 2026-09-11
+
+### Requirements
+
+- Skip neutral adjustment uniform writes after the reused session is initialized.
+- Upload the neutral reset once when leaving an adjusted render.
+- Preserve active adjustment values and the existing preview path.
+
+### Checklist
+
+- [x] Track adjustment uniform state per reused GPU session.
+- [x] Gate redundant neutral writes and reset transitions safely.
+- [x] Run focused unit tests, compile, and review diff.
+
+### Notes
+
+- Repeated neutral renders skip redundant adjustment uniform writes after session initialization.
+- Active adjustments and transitions back to neutral still upload/reset the full adjustment state.
+- `:filter:testDebugUnitTest`, filter/app compilation, and `git diff --check` passed.
+
 ## Task: Avoid redundant makeup uniform writes
 
 Status: DONE

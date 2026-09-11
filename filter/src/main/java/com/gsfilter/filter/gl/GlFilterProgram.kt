@@ -161,6 +161,7 @@ internal object GlFilterProgram {
         params: ShaderFilterParams,
         texelScale: Float = 1f,
         uploadMakeupUniforms: Boolean = true,
+        uploadAdjustmentUniforms: Boolean = true,
     ) {
         GLES20.glActiveTexture(GLES20.GL_TEXTURE0)
         GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, textureId)
@@ -333,21 +334,23 @@ internal object GlFilterProgram {
             if (renderWidth > 0) texelScale / renderWidth else 0f,
             if (renderHeight > 0) texelScale / renderHeight else 0f,
         )
-        GLES20.glUniform3f(handles.rgbShift, params.redShift, params.greenShift, params.blueShift)
-        GLES20.glUniform1f(handles.brightness, params.brightness)
-        GLES20.glUniform1f(handles.exposure, params.exposure)
-        GLES20.glUniform1f(handles.contrast, params.contrast)
-        GLES20.glUniform1f(handles.highlights, params.highlights)
-        GLES20.glUniform1f(handles.shadows, params.shadows)
-        GLES20.glUniform1f(handles.saturation, params.saturation)
-        GLES20.glUniform1f(handles.vibrance, params.vibrance)
-        GLES20.glUniform1f(handles.temperature, params.temperature)
-        GLES20.glUniform1f(handles.tint, params.tint)
-        GLES20.glUniform1f(handles.sharpness, params.sharpness)
-        GLES20.glUniform1f(handles.clarity, params.clarity)
-        GLES20.glUniform1f(handles.fade, params.fade)
-        GLES20.glUniform1f(handles.vignette, params.vignette)
-        GLES20.glUniform1f(handles.grain, params.grain)
+        if (uploadAdjustmentUniforms) {
+            GLES20.glUniform3f(handles.rgbShift, params.redShift, params.greenShift, params.blueShift)
+            GLES20.glUniform1f(handles.brightness, params.brightness)
+            GLES20.glUniform1f(handles.exposure, params.exposure)
+            GLES20.glUniform1f(handles.contrast, params.contrast)
+            GLES20.glUniform1f(handles.highlights, params.highlights)
+            GLES20.glUniform1f(handles.shadows, params.shadows)
+            GLES20.glUniform1f(handles.saturation, params.saturation)
+            GLES20.glUniform1f(handles.vibrance, params.vibrance)
+            GLES20.glUniform1f(handles.temperature, params.temperature)
+            GLES20.glUniform1f(handles.tint, params.tint)
+            GLES20.glUniform1f(handles.sharpness, params.sharpness)
+            GLES20.glUniform1f(handles.clarity, params.clarity)
+            GLES20.glUniform1f(handles.fade, params.fade)
+            GLES20.glUniform1f(handles.vignette, params.vignette)
+            GLES20.glUniform1f(handles.grain, params.grain)
+        }
     }
 
     fun disableAttributes(handles: ProgramHandles) {
@@ -367,6 +370,25 @@ internal object GlFilterProgram {
             params.eyebrow != 0f ||
             params.faceSlimming != 0f ||
             params.eyeEnlargement != 0f
+
+    fun hasAdjustmentValues(params: ShaderFilterParams): Boolean =
+        params.redShift != 0f ||
+            params.greenShift != 0f ||
+            params.blueShift != 0f ||
+            params.brightness != 0f ||
+            params.exposure != 0f ||
+            params.contrast != 1f ||
+            params.highlights != 0f ||
+            params.shadows != 0f ||
+            params.saturation != 1f ||
+            params.vibrance != 0f ||
+            params.temperature != 0f ||
+            params.tint != 0f ||
+            params.sharpness != 0f ||
+            params.clarity != 0f ||
+            params.fade != 0f ||
+            params.vignette != 0f ||
+            params.grain != 0f
 
     fun floatBufferOf(values: FloatArray): FloatBuffer =
         ByteBuffer.allocateDirect(values.size * java.lang.Float.BYTES)
