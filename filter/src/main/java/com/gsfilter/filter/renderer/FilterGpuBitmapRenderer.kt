@@ -40,15 +40,14 @@ object FilterGpuBitmapRenderer {
             }
         val width = if (scaleSource) renderSource.width else renderSize.width
         val height = if (scaleSource) renderSource.height else renderSize.height
-        val egl = EglPbuffer(width, height)
+        val session = sessionFor(width, height)
         val params = ShaderFilterParams.from(recipe, adjustments, makeupFeatures)
-        var program = 0
         var textureId = 0
         var lutTextureId = 0
+        var invalidateSession = false
 
         return try {
-            egl.makeCurrent()
-            program = GlFilterProgram.buildProgram()
+            session.egl.makeCurrent()
             textureId = uploadTexture(renderSource)
             if (params.lutStrength > 0f) {
                 lutTextureId = GlLutTexture.upload(params.lut)
@@ -56,9 +55,9 @@ object FilterGpuBitmapRenderer {
             GLES20.glViewport(0, 0, width, height)
             GLES20.glClearColor(0f, 0f, 0f, 0f)
             GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT)
-            GLES20.glUseProgram(program)
+            GLES20.glUseProgram(session.program)
 
-            val handles = GlFilterProgram.resolveHandles(program)
+            val handles = session.handles
             GlFilterProgram.bindAttributes(handles, vertexBuffer, textureBuffer)
             GlFilterProgram.bindUniforms(
                 handles = handles,
@@ -73,6 +72,9 @@ object FilterGpuBitmapRenderer {
             GlFilterProgram.disableAttributes(handles)
 
             readBitmap(width, height)
+        } catch (error: RuntimeException) {
+            invalidateSession = true
+            throw error
         } finally {
             if (textureId != 0) {
                 GLES20.glDeleteTextures(1, intArrayOf(textureId), 0)
@@ -80,13 +82,24 @@ object FilterGpuBitmapRenderer {
             if (lutTextureId != 0) {
                 GLES20.glDeleteTextures(1, intArrayOf(lutTextureId), 0)
             }
-            if (program != 0) {
-                GLES20.glDeleteProgram(program)
+            session.egl.detach()
+            if (invalidateSession && cachedSession === session) {
+                cachedSession = null
+                session.release()
             }
-            egl.release()
             FilterBitmapRenderer.recycleIfTemporary(renderSource, source)
             readbackBuffers.trim()
         }
+    }
+
+    private fun sessionFor(width: Int, height: Int): RenderSession {
+        val current = cachedSession
+        if (current != null && current.width == width && current.height == height) {
+            return current
+        }
+        cachedSession = null
+        current?.release()
+        return RenderSession(width, height).also { cachedSession = it }
     }
 
     private fun uploadTexture(bitmap: Bitmap): Int {
@@ -142,6 +155,46 @@ object FilterGpuBitmapRenderer {
             if (pixels.size > MAX_CACHED_READBACK_PIXELS) {
                 buffer = null
                 pixels = IntArray(0)
+            }
+        }
+    }
+
+    private class RenderSession(
+        val width: Int,
+        val height: Int,
+    ) {
+        val egl = EglPbuffer(width, height)
+        var program = 0
+            private set
+        lateinit var handles: GlFilterProgram.ProgramHandles
+            private set
+
+        init {
+            var initialized = false
+            try {
+                egl.makeCurrent()
+                program = GlFilterProgram.buildProgram()
+                handles = GlFilterProgram.resolveHandles(program)
+                initialized = true
+            } finally {
+                egl.detach()
+                if (!initialized) {
+                    egl.release()
+                }
+            }
+        }
+
+        fun release() {
+            try {
+                egl.makeCurrent()
+                if (program != 0) {
+                    GLES20.glDeleteProgram(program)
+                    program = 0
+                }
+            } catch (_: RuntimeException) {
+                // The EGL context may already be lost; release still must run.
+            } finally {
+                egl.release()
             }
         }
     }
@@ -205,6 +258,17 @@ object FilterGpuBitmapRenderer {
             }
         }
 
+        fun detach() {
+            if (display != EGL14.EGL_NO_DISPLAY) {
+                EGL14.eglMakeCurrent(
+                    display,
+                    EGL14.EGL_NO_SURFACE,
+                    EGL14.EGL_NO_SURFACE,
+                    EGL14.EGL_NO_CONTEXT,
+                )
+            }
+        }
+
         fun release() {
             if (display != EGL14.EGL_NO_DISPLAY) {
                 EGL14.eglMakeCurrent(
@@ -234,6 +298,9 @@ object FilterGpuBitmapRenderer {
     private val renderLock = Any()
     // Accessed only from getBitmap(), while renderLock is held.
     private val readbackBuffers = ReadbackBuffers()
+    // Accessed only from getBitmap(), while renderLock is held.
+    // ponytail: cache one output size; replace on size changes to avoid unbounded EGL resources.
+    private var cachedSession: RenderSession? = null
 
     private val CONFIG_ATTRIBUTES = intArrayOf(
         EGL14.EGL_RENDERABLE_TYPE,

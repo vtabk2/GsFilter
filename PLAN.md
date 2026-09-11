@@ -2969,3 +2969,26 @@ Completed: 2026-09-11
 - GPU art fragments skip inactive fade, vignette, and grain calculations.
 - Active finishing stages retain their original formulas and order.
 - `:filter:testDebugUnitTest`, `:filter:compileDebugKotlin`, and `:app:compileDebugKotlin` passed.
+## Task: Reuse offscreen GPU sessions for thumbnails
+
+Status: DONE
+Created: 2026-09-11
+Completed: 2026-09-11
+
+### Requirements
+
+- Reuse EGL context and shader program for sequential renders at the same output size.
+- Recreate the session when output dimensions change.
+- Invalidate and release the cached session after a GL runtime failure.
+
+### Checklist
+
+- [x] Cache the EGL/program/handles session under the existing render lock.
+- [x] Detach the session after each render and release it safely.
+- [x] Run focused unit tests, compile, and review diff.
+
+### Notes
+
+- Sequential offscreen renders at the same size reuse EGL setup and shader program compilation.
+- Sessions are replaced on size changes and invalidated after runtime GL failures.
+- `:filter:testDebugUnitTest`, `:filter:compileDebugKotlin`, and `:app:compileDebugKotlin` passed.
