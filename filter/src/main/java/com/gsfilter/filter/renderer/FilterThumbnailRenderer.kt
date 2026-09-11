@@ -14,9 +14,21 @@ object FilterThumbnailRenderer {
     private val artSourceCacheLock = Any()
     private var cachedArtSource: Bitmap? = null
     private var cachedArtSourceOriginal: WeakReference<Bitmap>? = null
+    private var cachedArtSourceKey: String? = null
+    private var cachedArtSourceWidth = 0
+    private var cachedArtSourceHeight = 0
     private var cachedArtSourceGenerationId = 0
     private var cachedArtSourceMaxWidth = 0
     private var cachedArtSourceMaxHeight = 0
+    private val thumbnailSourceCacheLock = Any()
+    private var cachedThumbnailSource: Bitmap? = null
+    private var cachedThumbnailSourceOriginal: WeakReference<Bitmap>? = null
+    private var cachedThumbnailSourceKey: String? = null
+    private var cachedThumbnailSourceWidth = 0
+    private var cachedThumbnailSourceHeight = 0
+    private var cachedThumbnailSourceGenerationId = 0
+    private var cachedThumbnailSourceMaxWidth = 0
+    private var cachedThumbnailSourceMaxHeight = 0
 
     fun render(
         source: Bitmap,
@@ -25,6 +37,7 @@ object FilterThumbnailRenderer {
         maxWidth: Int = THUMBNAIL_MAX_SIZE,
         maxHeight: Int = THUMBNAIL_MAX_SIZE,
         isCancelled: () -> Boolean = { false },
+        sourceKey: String? = null,
     ): Bitmap {
         throwIfCancelled(isCancelled)
         val thumbnailRecipe = thumbnailRecipe(recipe)
@@ -35,10 +48,19 @@ object FilterThumbnailRenderer {
                 adjustments,
                 maxWidth,
                 maxHeight,
+                sourceKey,
                 isCancelled,
             )
         } else {
-            renderScaledFirst(source, thumbnailRecipe, adjustments, maxWidth, maxHeight, isCancelled)
+            renderScaledFirst(
+                source,
+                thumbnailRecipe,
+                adjustments,
+                maxWidth,
+                maxHeight,
+                sourceKey,
+                isCancelled,
+            )
         }
     }
 
@@ -48,9 +70,10 @@ object FilterThumbnailRenderer {
         adjustments: Adjustments,
         maxWidth: Int,
         maxHeight: Int,
+        sourceKey: String?,
         isCancelled: () -> Boolean,
     ): Bitmap = synchronized(artSourceCacheLock) {
-        val renderSource = scaledArtSource(source, maxWidth, maxHeight)
+        val renderSource = scaledArtSource(source, maxWidth, maxHeight, sourceKey)
         try {
             throwIfCancelled(isCancelled)
             FilterGpuBitmapRenderer.getBitmap(
@@ -67,17 +90,29 @@ object FilterThumbnailRenderer {
             if (isCancelled()) {
                 throw error
             }
-            renderScaledFirst(source, recipe, adjustments, maxWidth, maxHeight, isCancelled)
+            renderScaledFirst(source, recipe, adjustments, maxWidth, maxHeight, sourceKey, isCancelled)
         }
     }
 
-    private fun scaledArtSource(source: Bitmap, maxWidth: Int, maxHeight: Int): Bitmap {
+    private fun scaledArtSource(
+        source: Bitmap,
+        maxWidth: Int,
+        maxHeight: Int,
+        sourceKey: String?,
+    ): Bitmap {
         val generationId = source.generationId
         val cachedSource = cachedArtSource
+        val sourceMatches = if (sourceKey != null) {
+            cachedArtSourceKey == sourceKey &&
+                cachedArtSourceWidth == source.width &&
+                cachedArtSourceHeight == source.height &&
+                (cachedArtSourceOriginal?.get() !== source || cachedArtSourceGenerationId == generationId)
+        } else {
+            cachedArtSourceOriginal?.get() === source && cachedArtSourceGenerationId == generationId
+        }
         if (
             cachedSource != null &&
-            cachedArtSourceOriginal?.get() === source &&
-            cachedArtSourceGenerationId == generationId &&
+            sourceMatches &&
             cachedArtSourceMaxWidth == maxWidth &&
             cachedArtSourceMaxHeight == maxHeight
         ) {
@@ -87,6 +122,9 @@ object FilterThumbnailRenderer {
         cachedArtSource?.recycle()
         cachedArtSource = null
         cachedArtSourceOriginal = null
+        cachedArtSourceKey = null
+        cachedArtSourceWidth = 0
+        cachedArtSourceHeight = 0
         val scaled = FilterBitmapRenderer.scaledSource(
             source = source,
             maxWidth = maxWidth * ART_SOURCE_SCALE,
@@ -97,6 +135,9 @@ object FilterThumbnailRenderer {
         }
         cachedArtSource = scaled
         cachedArtSourceOriginal = WeakReference(source)
+        cachedArtSourceKey = sourceKey
+        cachedArtSourceWidth = source.width
+        cachedArtSourceHeight = source.height
         cachedArtSourceGenerationId = generationId
         cachedArtSourceMaxWidth = maxWidth
         cachedArtSourceMaxHeight = maxHeight
@@ -109,16 +150,19 @@ object FilterThumbnailRenderer {
         adjustments: Adjustments,
         maxWidth: Int,
         maxHeight: Int,
+        sourceKey: String?,
         isCancelled: () -> Boolean,
-    ): Bitmap =
+    ): Bitmap = synchronized(thumbnailSourceCacheLock) {
+        val renderSource = scaledThumbnailSource(source, maxWidth, maxHeight, sourceKey)
         try {
             throwIfCancelled(isCancelled)
             FilterGpuBitmapRenderer.getBitmap(
-                source = source,
+                source = renderSource,
                 recipe = recipe,
                 adjustments = adjustments,
                 maxWidth = maxWidth,
                 maxHeight = maxHeight,
+                scaleSource = false,
                 texelScale = texelScaleFor(recipe),
                 isCancelled = isCancelled,
             )
@@ -128,13 +172,62 @@ object FilterThumbnailRenderer {
             }
             throwIfCancelled(isCancelled)
             FilterBitmapRenderer.getBitmap(
-                source = source,
+                source = renderSource,
                 recipe = recipe,
                 adjustments = adjustments,
-                maxWidth = maxWidth,
-                maxHeight = maxHeight,
             )
         }
+    }
+
+    private fun scaledThumbnailSource(
+        source: Bitmap,
+        maxWidth: Int,
+        maxHeight: Int,
+        sourceKey: String?,
+    ): Bitmap {
+        val generationId = source.generationId
+        val cachedSource = cachedThumbnailSource
+        val sourceMatches = if (sourceKey != null) {
+            cachedThumbnailSourceKey == sourceKey &&
+                cachedThumbnailSourceWidth == source.width &&
+                cachedThumbnailSourceHeight == source.height &&
+                (cachedThumbnailSourceOriginal?.get() !== source || cachedThumbnailSourceGenerationId == generationId)
+        } else {
+            cachedThumbnailSourceOriginal?.get() === source && cachedThumbnailSourceGenerationId == generationId
+        }
+        if (
+            cachedSource != null &&
+            sourceMatches &&
+            cachedThumbnailSourceMaxWidth == maxWidth &&
+            cachedThumbnailSourceMaxHeight == maxHeight
+        ) {
+            return cachedSource
+        }
+
+        cachedThumbnailSource?.recycle()
+        cachedThumbnailSource = null
+        cachedThumbnailSourceOriginal = null
+        cachedThumbnailSourceKey = null
+        cachedThumbnailSourceWidth = 0
+        cachedThumbnailSourceHeight = 0
+        val scaled = FilterBitmapRenderer.scaledSource(
+            source = source,
+            maxWidth = maxWidth,
+            maxHeight = maxHeight,
+        )
+        if (scaled === source) {
+            return source
+        }
+        cachedThumbnailSource = scaled
+        cachedThumbnailSourceOriginal = WeakReference(source)
+        cachedThumbnailSourceKey = sourceKey
+        cachedThumbnailSourceWidth = source.width
+        cachedThumbnailSourceHeight = source.height
+        cachedThumbnailSourceGenerationId = generationId
+        cachedThumbnailSourceMaxWidth = maxWidth
+        cachedThumbnailSourceMaxHeight = maxHeight
+        return scaled
+    }
 
     private fun throwIfCancelled(isCancelled: () -> Boolean) {
         if (isCancelled()) {

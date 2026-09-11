@@ -6,6 +6,8 @@ object FilterSourceKey {
 
     fun asset(path: String): String = "asset:$path"
 
+    fun withRevision(sourceKey: String, revision: Long): String = "$sourceKey:revision=$revision"
+
     fun file(path: String, length: Long, lastModifiedMillis: Long): String =
         "file:$path:$length:$lastModifiedMillis"
 

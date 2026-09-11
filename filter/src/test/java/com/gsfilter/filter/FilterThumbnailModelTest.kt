@@ -8,6 +8,14 @@ import org.junit.Test
 class FilterThumbnailModelTest {
 
     @Test
+    fun `source key revision forces a different cache key`() {
+        val first = FilterSourceKey.withRevision("asset:sample.jpg", 1L)
+        val second = FilterSourceKey.withRevision("asset:sample.jpg", 2L)
+
+        assertNotEquals(first, second)
+    }
+
+    @Test
     fun `cache key changes when effect tuning changes`() {
         val first = FilterThumbnailModel.buildCacheKey(
             sourceKey = "asset:sample.jpg",

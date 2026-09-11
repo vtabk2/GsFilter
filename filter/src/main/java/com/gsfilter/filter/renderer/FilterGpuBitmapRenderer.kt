@@ -43,6 +43,9 @@ object FilterGpuBitmapRenderer {
             if (isCancelled()) {
                 throw CancellationException("Thumbnail render cancelled")
             }
+            if (offscreenGpuUnavailable) {
+                throw IllegalStateException("Offscreen GPU rendering is unavailable.")
+            }
             renderLocked(
                 source = source,
                 recipe = recipe,
@@ -142,7 +145,12 @@ object FilterGpuBitmapRenderer {
         }
         cachedSession = null
         current?.release()
-        return RenderSession(width, height).also { cachedSession = it }
+        return try {
+            RenderSession(width, height).also { cachedSession = it }
+        } catch (error: RuntimeException) {
+            offscreenGpuUnavailable = true
+            throw error
+        }
     }
 
     private fun uploadTexture(bitmap: Bitmap, session: RenderSession) {
@@ -426,6 +434,8 @@ object FilterGpuBitmapRenderer {
     // Accessed only from getBitmap(), while renderLock is held.
     // ponytail: cache one output size; replace on size changes to avoid unbounded EGL resources.
     private var cachedSession: RenderSession? = null
+    // Accessed only from getBitmap(), while renderLock is held.
+    private var offscreenGpuUnavailable = false
 
     private val CONFIG_ATTRIBUTES = intArrayOf(
         EGL14.EGL_RENDERABLE_TYPE,

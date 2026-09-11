@@ -1,5 +1,101 @@
 # PLAN
 
+## Task: Add explicit thumbnail cache revision
+
+Status: DONE
+Created: 2026-09-11
+Completed: 2026-09-11
+
+### Requirements
+
+- Allow cropped content with the same path to force a new thumbnail cache entry.
+- Keep unchanged paths reusable without adding automatic bitmap churn.
+- Preserve existing source-key cache behavior.
+
+### Checklist
+
+- [x] Add a source-key revision helper.
+- [x] Cover the revision format with a focused unit test.
+- [x] Run tests, compile, and review diff.
+
+### Notes
+
+- `FilterSourceKey.withRevision(sourceKey, revision)` lets crop flows invalidate a same-path thumbnail explicitly.
+- The revision is part of the existing Glide and scaled-source cache key because both already consume `sourceKey`.
+- `:filter:testDebugUnitTest`, `:filter:compileDebugKotlin`, `:app:compileDebugKotlin`, `:app:testDebugUnitTest`, and `git diff --check` passed.
+
+## Task: Key thumbnail source cache by source path
+
+Status: DONE
+Created: 2026-09-11
+Completed: 2026-09-11
+
+### Requirements
+
+- Reuse the scaled thumbnail source when the same source key/path is requested again.
+- Keep source dimensions and target-size invalidation checks.
+- Preserve the one-slot memory bound and bitmap ownership behavior.
+
+### Checklist
+
+- [x] Pass `sourceKey` into thumbnail rendering.
+- [x] Match scaled-source caches by source key, with bitmap identity fallback.
+- [x] Run focused tests, compile, and review diff.
+
+### Notes
+
+- Scaled thumbnail sources now reuse the same source key/path across newly decoded `Bitmap` instances when dimensions and target bounds match.
+- Same-object generation changes and missing source keys still invalidate through the existing fallback checks.
+- `:filter:testDebugUnitTest`, `:filter:compileDebugKotlin`, `:app:compileDebugKotlin`, `:app:testDebugUnitTest`, and `git diff --check` passed.
+
+## Task: Reuse scaled source for color thumbnails
+
+Status: DONE
+Created: 2026-09-11
+Completed: 2026-09-11
+
+### Requirements
+
+- Reuse the scaled source across color-filter thumbnail requests for one image and size.
+- Invalidate on source identity, source generation, or target-size changes.
+- Keep memory bounded and preserve CPU fallback/cancellation behavior.
+
+### Checklist
+
+- [x] Add a one-slot scaled-source cache for the scaled-first path.
+- [x] Render the cached source without scaling it again in GPU/CPU fallback paths.
+- [x] Run focused unit tests, compile, and review diff.
+
+### Notes
+
+- Color thumbnail requests cùng ảnh/kích thước dùng lại scaled source, tránh scale lặp cho từng filter.
+- Cache giữ một bitmap, kiểm tra source identity/generation/size và không đổi cleanup/cancellation.
+- `:filter:testDebugUnitTest`, `:filter:compileDebugKotlin`, `:app:testDebugUnitTest`, `:app:compileDebugKotlin`, and `git diff --check` passed.
+
+## Task: Cache offscreen GPU initialization failure
+
+Status: DONE
+Created: 2026-09-11
+Completed: 2026-09-11
+
+### Requirements
+
+- Skip repeated offscreen EGL setup after initialization is known to fail.
+- Preserve CPU fallback behavior for unsupported devices.
+- Continue retrying recoverable runtime failures from an existing session.
+
+### Checklist
+
+- [x] Cache only `RenderSession` construction failures.
+- [x] Keep existing runtime-session invalidation behavior.
+- [x] Run focused unit tests, compile, and review diff.
+
+### Notes
+
+- Sau lỗi khởi tạo `RenderSession`, các request offscreen tiếp theo fallback CPU ngay, không lặp EGL setup.
+- Lỗi runtime trên session đang chạy vẫn invalidate và retry như trước.
+- `:filter:compileDebugKotlin`, `:filter:testDebugUnitTest`, `:app:compileDebugKotlin`, `:app:testDebugUnitTest`, and `git diff --check` passed.
+
 ## Task: Avoid redundant main-screen image updates
 
 Status: DONE

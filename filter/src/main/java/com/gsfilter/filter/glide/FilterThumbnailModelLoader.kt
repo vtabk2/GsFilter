@@ -59,6 +59,7 @@ private class FilterThumbnailDataFetcher(
                 maxWidth = maxWidth,
                 maxHeight = maxHeight,
                 isCancelled = cancelled::get,
+                sourceKey = model.sourceKey,
             )
             if (cancelled.get()) {
                 bitmap.recycle()
