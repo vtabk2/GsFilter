@@ -78,6 +78,7 @@ class FilterPreviewView @JvmOverloads constructor(
         private var program = 0
         private var handles: GlFilterProgram.ProgramHandles? = null
         private var textureId = 0
+        private var textureConfig: Bitmap.Config? = null
         private var lutTextureId = 0
         private var lutTexture = FilterLut.None
         private var sourceBitmap: Bitmap? = null
@@ -101,6 +102,7 @@ class FilterPreviewView @JvmOverloads constructor(
             GLES20.glUniform1i(currentHandles.lutTexture, 1)
             GlFilterProgram.bindAttributes(currentHandles, vertexBuffer, textureBuffer)
             textureId = 0
+            textureConfig = null
             lutTextureId = 0
             lutTexture = FilterLut.None
             imageWidth = 0
@@ -179,36 +181,42 @@ class FilterPreviewView @JvmOverloads constructor(
             val bitmap = pendingBitmap ?: return
             pendingBitmap = null
 
-            if (textureId == 0) {
+            val isNewTexture = textureId == 0
+            if (isNewTexture) {
                 val textures = IntArray(1)
                 GLES20.glGenTextures(1, textures, 0)
                 textureId = textures[0]
             }
 
+            GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, textureId)
+            if (isNewTexture) {
+                GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MIN_FILTER, GLES20.GL_LINEAR)
+                GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MAG_FILTER, GLES20.GL_LINEAR)
+                GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_WRAP_S, GLES20.GL_CLAMP_TO_EDGE)
+                GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_WRAP_T, GLES20.GL_CLAMP_TO_EDGE)
+            }
+            if (
+                !isNewTexture &&
+                bitmap.config == Bitmap.Config.ARGB_8888 &&
+                textureConfig == Bitmap.Config.ARGB_8888 &&
+                imageWidth == bitmap.width &&
+                imageHeight == bitmap.height
+            ) {
+                GLUtils.texSubImage2D(
+                    GLES20.GL_TEXTURE_2D,
+                    0,
+                    0,
+                    0,
+                    bitmap,
+                    GLES20.GL_RGBA,
+                    GLES20.GL_UNSIGNED_BYTE,
+                )
+            } else {
+                GLUtils.texImage2D(GLES20.GL_TEXTURE_2D, 0, bitmap, 0)
+            }
             imageWidth = bitmap.width
             imageHeight = bitmap.height
-            GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, textureId)
-            GLES20.glTexParameteri(
-                GLES20.GL_TEXTURE_2D,
-                GLES20.GL_TEXTURE_MIN_FILTER,
-                GLES20.GL_LINEAR,
-            )
-            GLES20.glTexParameteri(
-                GLES20.GL_TEXTURE_2D,
-                GLES20.GL_TEXTURE_MAG_FILTER,
-                GLES20.GL_LINEAR,
-            )
-            GLES20.glTexParameteri(
-                GLES20.GL_TEXTURE_2D,
-                GLES20.GL_TEXTURE_WRAP_S,
-                GLES20.GL_CLAMP_TO_EDGE,
-            )
-            GLES20.glTexParameteri(
-                GLES20.GL_TEXTURE_2D,
-                GLES20.GL_TEXTURE_WRAP_T,
-                GLES20.GL_CLAMP_TO_EDGE,
-            )
-            GLUtils.texImage2D(GLES20.GL_TEXTURE_2D, 0, bitmap, 0)
+            textureConfig = bitmap.config
             updateVertexBuffer()
         }
 

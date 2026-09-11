@@ -1,5 +1,29 @@
 # PLAN
 
+## Task: Reuse preview texture storage on source changes
+
+Status: DONE
+Created: 2026-09-11
+Completed: 2026-09-11
+
+### Requirements
+
+- Update same-size ARGB_8888 preview images without reallocating texture storage.
+- Reallocate when dimensions or bitmap config change.
+- Set immutable texture parameters only when creating the texture.
+
+### Checklist
+
+- [x] Track the uploaded texture config.
+- [x] Use `texSubImage2D` only for the safe same-size ARGB path.
+- [x] Run focused unit tests, compile, and review diff.
+
+### Notes
+
+- Preview source cùng kích thước ARGB_8888 dùng `texSubImage2D`, tránh cấp phát lại storage.
+- Đổi kích thước/config vẫn dùng `texImage2D`; texture parameters chỉ set lúc tạo.
+- `:filter:testDebugUnitTest`, filter/app compilation, and `git diff --check` passed.
+
 ## Task: Mark filter RecyclerView size as fixed
 
 Status: DONE
