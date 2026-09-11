@@ -1,5 +1,29 @@
 # PLAN
 
+## Task: Fast-path CPU identity sampling
+
+Status: DONE
+Created: 2026-09-11
+Completed: 2026-09-11
+
+### Requirements
+
+- Read source and neighbor pixels directly when no active face warp exists.
+- Preserve bilinear sampling for active slimming or eye-enlargement warps.
+- Keep edge detection and filter output behavior unchanged.
+
+### Checklist
+
+- [x] Detect active warp from controls and valid face geometry.
+- [x] Use direct pixel reads for identity sampling and neighbors.
+- [x] Run focused unit tests, compile, and review diff.
+
+### Notes
+
+- CPU fallback đọc trực tiếp pixel nguồn và 4 neighbor khi không có face warp hoạt động; cờ warp được tính một lần mỗi bitmap.
+- Face slimming/eye enlargement hợp lệ vẫn giữ bilinear sampling.
+- `:filter:testDebugUnitTest`, filter/app compilation, and `git diff --check` passed.
+
 ## Task: Skip neutral CPU adjustment stages
 
 Status: DONE

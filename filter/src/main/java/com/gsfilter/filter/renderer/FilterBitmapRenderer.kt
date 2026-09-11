@@ -94,6 +94,7 @@ object FilterBitmapRenderer {
         val texelX = 1f / width
         val texelY = 1f / height
         val exposure = 2.0.pow(params.exposure.toDouble()).toFloat()
+        val hasWarp = hasActiveWarp(params)
         for (y in 0 until height) {
             for (x in 0 until width) {
                 val index = y * width + x
@@ -109,6 +110,7 @@ object FilterBitmapRenderer {
                     texelX,
                     texelY,
                     exposure,
+                    hasWarp,
                 )
             }
         }
@@ -134,6 +136,7 @@ object FilterBitmapRenderer {
         1f / width,
         1f / height,
         2.0.pow(params.exposure.toDouble()).toFloat(),
+        hasActiveWarp(params),
     )
 
     private fun filterPixel(
@@ -148,13 +151,24 @@ object FilterBitmapRenderer {
         texelX: Float,
         texelY: Float,
         exposure: Float,
+        hasWarp: Boolean,
     ): Int {
         val textureX = (x + 0.5f) / width
         val textureY = (y + 0.5f) / height
-        warpSourceCoordinate(textureX, textureY, params, warpCoordinate)
+        if (hasWarp) {
+            warpSourceCoordinate(textureX, textureY, params, warpCoordinate)
+        } else {
+            warpCoordinate[0] = textureX
+            warpCoordinate[1] = textureY
+        }
         val sourceX = warpCoordinate[0]
         val sourceY = warpCoordinate[1]
-        val color = sampleBilinear(pixels, sourceX, sourceY, width, height)
+        val pixelIndex = y * width + x
+        val color = if (hasWarp) {
+            sampleBilinear(pixels, sourceX, sourceY, width, height)
+        } else {
+            pixels[pixelIndex]
+        }
 
         val sourceRed = red(color)
         val sourceGreen = green(color)
@@ -170,10 +184,18 @@ object FilterBitmapRenderer {
         val up: Int
         val down: Int
         if (needsNeighborhood) {
-            left = sampleBilinear(pixels, sourceX - texelX, sourceY, width, height)
-            right = sampleBilinear(pixels, sourceX + texelX, sourceY, width, height)
-            up = sampleBilinear(pixels, sourceX, sourceY - texelY, width, height)
-            down = sampleBilinear(pixels, sourceX, sourceY + texelY, width, height)
+            if (hasWarp) {
+                left = sampleBilinear(pixels, sourceX - texelX, sourceY, width, height)
+                right = sampleBilinear(pixels, sourceX + texelX, sourceY, width, height)
+                up = sampleBilinear(pixels, sourceX, sourceY - texelY, width, height)
+                down = sampleBilinear(pixels, sourceX, sourceY + texelY, width, height)
+            } else {
+                val rowStart = y * width
+                left = pixels[rowStart + (x - 1).coerceAtLeast(0)]
+                right = pixels[rowStart + (x + 1).coerceAtMost(width - 1)]
+                up = pixels[((y - 1).coerceAtLeast(0) * width) + x]
+                down = pixels[((y + 1).coerceAtMost(height - 1) * width) + x]
+            }
         } else {
             left = color
             right = color
@@ -699,6 +721,14 @@ object FilterBitmapRenderer {
                 params.eyeEnlargement,
             )
         }
+    }
+
+    private fun hasActiveWarp(params: ShaderFilterParams): Boolean {
+        val features = params.makeupFeatures ?: return false
+        return (params.faceSlimming > 0f && features.faceRadiusX > 0f && features.faceRadiusY > 0f) ||
+            (params.eyeEnlargement > 0f &&
+                ((features.leftEyeRadiusX > 0f && features.leftEyeRadiusY > 0f) ||
+                    (features.rightEyeRadiusX > 0f && features.rightEyeRadiusY > 0f)))
     }
 
     private fun applyEyeWarp(
