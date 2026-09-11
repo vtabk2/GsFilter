@@ -89,6 +89,8 @@ class FilterPreviewView @JvmOverloads constructor(
         private var renderWidth = 0
         private var renderHeight = 0
         private var params = ShaderFilterParams.from(FilterRecipe(), Adjustments())
+        private var makeupUniformsEnabled = false
+        private var adjustmentUniformsNeedUpload = true
 
         override fun onSurfaceCreated(gl: GL10?, config: EGLConfig?) {
             program = GlFilterProgram.buildProgram()
@@ -102,6 +104,8 @@ class FilterPreviewView @JvmOverloads constructor(
             lutTexture = FilterLut.None
             imageWidth = 0
             imageHeight = 0
+            makeupUniformsEnabled = false
+            adjustmentUniformsNeedUpload = true
             pendingBitmap = sourceBitmap
             GLES20.glClearColor(0.93f, 0.93f, 0.93f, 1f)
         }
@@ -120,6 +124,10 @@ class FilterPreviewView @JvmOverloads constructor(
                 return
             }
             val currentHandles = handles ?: return
+            val makeupControlsEnabled = GlFilterProgram.hasMakeupControls(params)
+            val uploadMakeupUniforms = makeupUniformsEnabled || makeupControlsEnabled
+            val adjustmentValuesEnabled = GlFilterProgram.hasAdjustmentValues(params)
+            val uploadAdjustmentUniforms = adjustmentUniformsNeedUpload || adjustmentValuesEnabled
 
             GlFilterProgram.bindUniforms(
                 handles = currentHandles,
@@ -129,7 +137,11 @@ class FilterPreviewView @JvmOverloads constructor(
                 renderHeight = renderHeight,
                 params = params,
                 bindTextureSampler = false,
+                uploadMakeupUniforms = uploadMakeupUniforms,
+                uploadAdjustmentUniforms = uploadAdjustmentUniforms,
             )
+            makeupUniformsEnabled = makeupControlsEnabled
+            adjustmentUniformsNeedUpload = adjustmentValuesEnabled
             GLES20.glDrawArrays(GLES20.GL_TRIANGLE_STRIP, 0, GlFilterProgram.VERTEX_COUNT)
         }
 

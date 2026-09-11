@@ -1,5 +1,29 @@
 # PLAN
 
+## Task: Skip neutral preview makeup uploads
+
+Status: DONE
+Created: 2026-09-11
+Completed: 2026-09-11
+
+### Requirements
+
+- Skip repeated zero makeup uniform uploads in the preview renderer.
+- Upload the group again when makeup controls become active.
+- Preserve adjustment and preview rendering behavior.
+
+### Checklist
+
+- [x] Track makeup uniform state per preview GL context.
+- [x] Pass the existing upload gate to the shared binder.
+- [x] Run focused unit tests, compile, and review diff.
+
+### Notes
+
+- Preview bỏ repeated zero makeup uniform uploads, chỉ upload lại khi trạng thái makeup thay đổi.
+- Gate dùng chung với offscreen renderer; context recreate reset đúng trạng thái.
+- `:filter:testDebugUnitTest`, filter/app compilation, and `git diff --check` passed.
+
 ## Task: Hoist preview program and sampler state
 
 Status: DONE
