@@ -99,7 +99,7 @@ object FilterGpuBitmapRenderer {
 
         return try {
             session.egl.makeCurrent()
-            uploadTexture(renderSource, session.inputTextureId)
+            uploadTexture(renderSource, session)
             if (params.lutStrength > 0f) {
                 lutTextureId = GlLutTexture.upload(params.lut)
             }
@@ -150,9 +150,30 @@ object FilterGpuBitmapRenderer {
         return RenderSession(width, height).also { cachedSession = it }
     }
 
-    private fun uploadTexture(bitmap: Bitmap, textureId: Int) {
+    private fun uploadTexture(bitmap: Bitmap, session: RenderSession) {
+        val textureId = session.inputTextureId
         GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, textureId)
-        GLUtils.texImage2D(GLES20.GL_TEXTURE_2D, 0, bitmap, 0)
+        if (
+            bitmap.config == Bitmap.Config.ARGB_8888 &&
+            session.inputTextureConfig == bitmap.config &&
+            session.inputTextureWidth == bitmap.width &&
+            session.inputTextureHeight == bitmap.height
+        ) {
+            GLUtils.texSubImage2D(
+                GLES20.GL_TEXTURE_2D,
+                0,
+                0,
+                0,
+                bitmap,
+                GLES20.GL_RGBA,
+                GLES20.GL_UNSIGNED_BYTE,
+            )
+        } else {
+            GLUtils.texImage2D(GLES20.GL_TEXTURE_2D, 0, bitmap, 0)
+            session.inputTextureConfig = bitmap.config
+            session.inputTextureWidth = bitmap.width
+            session.inputTextureHeight = bitmap.height
+        }
     }
 
     private fun createTexture(): Int {
@@ -220,6 +241,9 @@ object FilterGpuBitmapRenderer {
             private set
         var inputTextureId = 0
             private set
+        var inputTextureWidth = 0
+        var inputTextureHeight = 0
+        var inputTextureConfig: Bitmap.Config? = null
         var makeupUniformsEnabled = false
         var adjustmentUniformsNeedUpload = true
         lateinit var handles: GlFilterProgram.ProgramHandles

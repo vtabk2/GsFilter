@@ -1,5 +1,29 @@
 # PLAN
 
+## Task: Reuse offscreen texture storage
+
+Status: DONE
+Created: 2026-09-11
+Completed: 2026-09-11
+
+### Requirements
+
+- Update existing texture storage without reallocating when source dimensions match.
+- Reallocate safely when dimensions change.
+- Preserve texture filtering, upload format, and fallback behavior.
+
+### Checklist
+
+- [x] Track the dimensions currently stored in the session input texture.
+- [x] Use `texSubImage2D` for same-size uploads and `texImage2D` otherwise.
+- [x] Run focused unit tests, compile, and review diff.
+
+### Notes
+
+- Same-size ARGB_8888 source uploads now update existing texture storage without reallocating it.
+- Dimension or config changes use the original `texImage2D` path.
+- `:filter:testDebugUnitTest`, filter/app compilation, and `git diff --check` passed.
+
 ## Task: Cancel queued GPU thumbnail renders
 
 Status: DONE
