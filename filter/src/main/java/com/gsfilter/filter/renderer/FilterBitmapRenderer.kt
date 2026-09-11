@@ -97,7 +97,10 @@ object FilterBitmapRenderer {
         val hasWarp = hasActiveWarp(params)
         val sharpAmount = (params.sharpness * 0.65f) + (params.clarity * 0.35f)
         val needsNeighborhood = params.skinSmoothing != 0f || sharpAmount != 0f
-        val needsEdge = params.skinSmoothing != 0f || params.effect != FilterEffect.Color
+        val needsEdge = params.skinSmoothing != 0f ||
+            (params.effect != FilterEffect.Color &&
+                params.intensity != 0f &&
+                params.effectStrength != 0f)
         val hasBeauty = params.skinSmoothing != 0f ||
             params.skinWhitening != 0f ||
             params.blush != 0f ||

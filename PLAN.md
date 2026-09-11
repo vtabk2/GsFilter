@@ -1,5 +1,27 @@
 # PLAN
 
+## Task: Skip inactive Art edge sampling
+
+Status: IN PROGRESS
+Created: 2026-09-11
+
+### Requirements
+
+- Avoid CPU/GPU edge sampling when the Art effect cannot affect output.
+- Preserve edge sampling for active Art effects and skin smoothing.
+- Keep the change local to the existing render paths.
+
+### Checklist
+
+- [x] Gate CPU edge sampling by active effect parameters.
+- [x] Gate GPU edge sampling by active effect parameters.
+- [ ] Run unit tests, compile, and review the diff.
+
+### Notes
+
+- Art thumbnails with zero intensity or zero effect strength no longer perform the 8-sample edge pass.
+- `git diff --check` remains the fallback verification while Gradle daemon startup is unavailable in the current shell.
+
 ## Task: Match Art texel scale to source/output ratio
 
 Status: IN PROGRESS

@@ -1058,7 +1058,10 @@ internal object GlFilterProgram {
             if (uEffect > 0.5) {
                 vec3 beforeEffect = rgb;
                 float sourceGray = dot(color.rgb, vec3(0.299, 0.587, 0.114));
-                float edge = edgeAt(vTexCoord);
+                float edge = 0.0;
+                if (uIntensity > 0.0 && uEffectStrength > 0.0) {
+                    edge = edgeAt(vTexCoord);
+                }
                 if (uEffect > 5.5) {
                     float dark = 1.0 - sourceGray;
                     float hatch = stripe((vTexCoord.x + vTexCoord.y) * 34.0) * step(0.18, dark);
