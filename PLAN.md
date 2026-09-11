@@ -1,5 +1,29 @@
 # PLAN
 
+## Task: Avoid redundant filter-control rerenders
+
+Status: DONE
+Created: 2026-09-11
+Completed: 2026-09-11
+
+### Requirements
+
+- Keep filter items refreshed when the source thumbnail changes.
+- Avoid rerendering unchanged chips, sliders, and beauty controls.
+- Preserve scroll-to-selected behavior for category/filter selection.
+
+### Checklist
+
+- [x] Separate filter-item list rendering from control rendering.
+- [x] Skip selected-item scrolling for thumbnail-only updates.
+- [x] Run focused unit tests, compile, and review diff.
+
+### Notes
+
+- Thumbnail-only updates chỉ submit lại filter items, không rerender chip/slider/beauty controls.
+- RecyclerView chỉ scroll tới filter đã chọn khi category hoặc filter thực sự thay đổi.
+- `:filter:testDebugUnitTest`, filter/app compilation, and `git diff --check` passed.
+
 ## Task: Reuse LUT texture storage across filter changes
 
 Status: DONE

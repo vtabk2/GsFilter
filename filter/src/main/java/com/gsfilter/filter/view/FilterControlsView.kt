@@ -212,6 +212,7 @@ class FilterControlsView @JvmOverloads constructor(
                 this.thumbnailGenerationId != nextThumbnailGenerationId
         val shouldRenderFilterIntensity =
             this.selectedFilter != nextFilter || this.selectedRecipe != selectedRecipe
+        val selectionChanged = this.selectedCategory != nextCategory || this.selectedFilter != nextFilter
         if (
             !shouldRenderFilters &&
             !shouldRenderFilterIntensity
@@ -226,7 +227,15 @@ class FilterControlsView @JvmOverloads constructor(
         this.thumbnailKey = thumbnailKey
         this.thumbnailGenerationId = nextThumbnailGenerationId
         if (shouldRenderFilters) {
-            renderState()
+            if (selectionChanged) {
+                renderOriginalAction()
+                renderCategories(this.selectedCategory)
+            }
+            if (shouldRenderFilterIntensity) {
+                renderFilterIntensity()
+                renderBeauty()
+            }
+            renderFilterItems(scrollToSelected = selectionChanged)
         } else {
             renderFilterIntensity()
             renderBeauty()
@@ -247,6 +256,10 @@ class FilterControlsView @JvmOverloads constructor(
         renderCategories(selectedCategory)
         renderFilterIntensity()
         renderBeauty()
+        renderFilterItems(scrollToSelected = true)
+    }
+
+    private fun renderFilterItems(scrollToSelected: Boolean) {
         val items = catalog.filtersForCategory(selectedCategory.id).map { filter ->
             FilterItem(
                 filter = filter,
@@ -258,6 +271,9 @@ class FilterControlsView @JvmOverloads constructor(
             )
         }
         filterAdapter.submitList(items) {
+            if (!scrollToSelected) {
+                return@submitList
+            }
             val selectedIndex = items.indexOfFirst { it.filter.id == this.selectedFilter.id }
             if (selectedIndex >= 0) {
                 filterRecyclerView?.scrollToPosition(selectedIndex)
