@@ -276,6 +276,7 @@ object FilterGpuBitmapRenderer {
                 inputTextureId = createTexture()
                 GLES20.glUseProgram(program)
                 GLES20.glUniform1i(handles.texture, 0)
+                GLES20.glUniform1i(handles.lutTexture, 1)
                 GLES20.glViewport(0, 0, width, height)
                 GlFilterProgram.bindAttributes(handles, vertexBuffer, textureBuffer)
                 initialized = true

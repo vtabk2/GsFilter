@@ -1,5 +1,29 @@
 # PLAN
 
+## Task: Hoist fixed LUT sampler binding
+
+Status: DONE
+Created: 2026-09-11
+Completed: 2026-09-11
+
+### Requirements
+
+- Bind `uLutTexture` to texture unit 1 once per GL program.
+- Keep LUT strength at zero as the switch for non-LUT filters.
+- Preserve preview and offscreen sampler state after context recreation.
+
+### Checklist
+
+- [x] Initialize the LUT sampler in both GL renderers.
+- [x] Remove the per-render sampler assignment.
+- [x] Run focused unit tests, compile, and review diff.
+
+### Notes
+
+- `uLutTexture` được bind vào unit 1 một lần trong preview/offscreen context.
+- `lutStrength` vẫn điều khiển việc bật/tắt LUT như trước.
+- `:filter:testDebugUnitTest`, filter/app compilation, and `git diff --check` passed.
+
 ## Task: Skip neutral preview makeup uploads
 
 Status: DONE

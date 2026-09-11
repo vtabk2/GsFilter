@@ -173,7 +173,6 @@ internal object GlFilterProgram {
         if (lutStrength > 0f) {
             GLES20.glActiveTexture(GLES20.GL_TEXTURE1)
             GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, lutTextureId)
-            GLES20.glUniform1i(handles.lutTexture, 1)
         }
         GLES20.glUniform1f(handles.lutStrength, lutStrength)
         if (uploadMakeupUniforms) {

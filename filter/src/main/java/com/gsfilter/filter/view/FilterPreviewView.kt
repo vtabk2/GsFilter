@@ -98,6 +98,7 @@ class FilterPreviewView @JvmOverloads constructor(
             handles = currentHandles
             GLES20.glUseProgram(program)
             GLES20.glUniform1i(currentHandles.texture, 0)
+            GLES20.glUniform1i(currentHandles.lutTexture, 1)
             GlFilterProgram.bindAttributes(currentHandles, vertexBuffer, textureBuffer)
             textureId = 0
             lutTextureId = 0
