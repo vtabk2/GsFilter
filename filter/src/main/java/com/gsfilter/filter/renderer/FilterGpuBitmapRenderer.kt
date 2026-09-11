@@ -16,6 +16,9 @@ import com.gsfilter.filter.gl.GlFilterProgram
 import com.gsfilter.filter.gl.GlLutTexture
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
+import java.util.concurrent.CancellationException
+import java.util.concurrent.TimeUnit
+import java.util.concurrent.locks.ReentrantLock
 
 object FilterGpuBitmapRenderer {
 
@@ -31,7 +34,51 @@ object FilterGpuBitmapRenderer {
         scaleSource: Boolean = true,
         texelScale: Float = 1f,
         makeupFeatures: MakeupFeatures? = null,
-    ): Bitmap = synchronized(renderLock) {
+        isCancelled: () -> Boolean = { false },
+    ): Bitmap {
+        acquireRenderLock(isCancelled)
+        return try {
+            if (isCancelled()) {
+                throw CancellationException("Thumbnail render cancelled")
+            }
+            renderLocked(
+                source = source,
+                recipe = recipe,
+                adjustments = adjustments,
+                maxWidth = maxWidth,
+                maxHeight = maxHeight,
+                scaleSource = scaleSource,
+                texelScale = texelScale,
+                makeupFeatures = makeupFeatures,
+            )
+        } finally {
+            renderLock.unlock()
+        }
+    }
+
+    private fun acquireRenderLock(isCancelled: () -> Boolean) {
+        try {
+            while (!renderLock.tryLock(LOCK_WAIT_MILLIS, TimeUnit.MILLISECONDS)) {
+                if (isCancelled()) {
+                    throw CancellationException("Thumbnail render cancelled")
+                }
+            }
+        } catch (error: InterruptedException) {
+            Thread.currentThread().interrupt()
+            throw CancellationException("Thumbnail render interrupted").apply { initCause(error) }
+        }
+    }
+
+    private fun renderLocked(
+        source: Bitmap,
+        recipe: FilterRecipe,
+        adjustments: Adjustments,
+        maxWidth: Int?,
+        maxHeight: Int?,
+        scaleSource: Boolean,
+        texelScale: Float,
+        makeupFeatures: MakeupFeatures?,
+    ): Bitmap {
         val renderSize = FilterBitmapRenderer.targetSize(source.width, source.height, maxWidth, maxHeight)
         val renderSource =
             if (scaleSource) {
@@ -310,7 +357,8 @@ object FilterGpuBitmapRenderer {
     private const val BYTES_PER_PIXEL = 4
     private const val MAX_CACHED_READBACK_PIXELS = 1_048_576
     // ponytail: one offscreen GL render at a time; split locks if profiling proves parallel EGL helps.
-    private val renderLock = Any()
+    private val renderLock = ReentrantLock()
+    private const val LOCK_WAIT_MILLIS = 8L
     // Accessed only from getBitmap(), while renderLock is held.
     private val readbackBuffers = ReadbackBuffers()
     // Accessed only from getBitmap(), while renderLock is held.

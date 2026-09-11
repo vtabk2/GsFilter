@@ -1,5 +1,29 @@
 # PLAN
 
+## Task: Cancel queued GPU thumbnail renders
+
+Status: DONE
+Created: 2026-09-11
+Completed: 2026-09-11
+
+### Requirements
+
+- Let canceled thumbnail fetchers stop while waiting for the shared GPU renderer.
+- Keep one-render-at-a-time EGL access and safe cleanup.
+- Preserve existing fallback behavior for active requests.
+
+### Checklist
+
+- [x] Propagate the fetcher cancellation state into thumbnail rendering.
+- [x] Replace blocking monitor wait with bounded cancellable lock acquisition.
+- [x] Run focused unit tests, compile, and review diff.
+
+### Notes
+
+- Canceled Glide fetchers now stop while waiting for the shared GPU render lock.
+- Active renders still complete normally and release EGL/temporary bitmap resources.
+- `:filter:testDebugUnitTest`, filter/app compilation, and `git diff --check` passed.
+
 ## Task: Remove redundant offscreen framebuffer clear
 
 Status: DONE

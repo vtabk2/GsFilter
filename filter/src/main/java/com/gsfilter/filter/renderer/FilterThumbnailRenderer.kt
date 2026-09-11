@@ -5,6 +5,7 @@ import com.gsfilter.filter.Adjustments
 import com.gsfilter.filter.FilterEffect
 import com.gsfilter.filter.FilterRecipe
 import com.gsfilter.filter.ShaderFilterParams
+import java.util.concurrent.CancellationException
 
 object FilterThumbnailRenderer {
 
@@ -14,12 +15,21 @@ object FilterThumbnailRenderer {
         adjustments: Adjustments = Adjustments(),
         maxWidth: Int = THUMBNAIL_MAX_SIZE,
         maxHeight: Int = THUMBNAIL_MAX_SIZE,
+        isCancelled: () -> Boolean = { false },
     ): Bitmap {
+        throwIfCancelled(isCancelled)
         val thumbnailRecipe = thumbnailRecipe(recipe)
         return if (shouldUseFullSourceTexture(thumbnailRecipe)) {
-            renderWithFullSourceTexture(source, thumbnailRecipe, adjustments, maxWidth, maxHeight)
+            renderWithFullSourceTexture(
+                source,
+                thumbnailRecipe,
+                adjustments,
+                maxWidth,
+                maxHeight,
+                isCancelled,
+            )
         } else {
-            renderScaledFirst(source, thumbnailRecipe, adjustments, maxWidth, maxHeight)
+            renderScaledFirst(source, thumbnailRecipe, adjustments, maxWidth, maxHeight, isCancelled)
         }
     }
 
@@ -29,6 +39,7 @@ object FilterThumbnailRenderer {
         adjustments: Adjustments,
         maxWidth: Int,
         maxHeight: Int,
+        isCancelled: () -> Boolean,
     ): Bitmap {
         val renderSource = FilterBitmapRenderer.scaledSource(
             source = source,
@@ -44,9 +55,13 @@ object FilterThumbnailRenderer {
                 maxHeight = maxHeight,
                 scaleSource = false,
                 texelScale = texelScaleFor(recipe),
+                isCancelled = isCancelled,
             )
-        } catch (_: RuntimeException) {
-            renderScaledFirst(source, recipe, adjustments, maxWidth, maxHeight)
+        } catch (error: RuntimeException) {
+            if (isCancelled()) {
+                throw error
+            }
+            renderScaledFirst(source, recipe, adjustments, maxWidth, maxHeight, isCancelled)
         } finally {
             FilterBitmapRenderer.recycleIfTemporary(renderSource, source)
         }
@@ -58,8 +73,10 @@ object FilterThumbnailRenderer {
         adjustments: Adjustments,
         maxWidth: Int,
         maxHeight: Int,
+        isCancelled: () -> Boolean,
     ): Bitmap =
         try {
+            throwIfCancelled(isCancelled)
             FilterGpuBitmapRenderer.getBitmap(
                 source = source,
                 recipe = recipe,
@@ -67,8 +84,13 @@ object FilterThumbnailRenderer {
                 maxWidth = maxWidth,
                 maxHeight = maxHeight,
                 texelScale = texelScaleFor(recipe),
+                isCancelled = isCancelled,
             )
-        } catch (_: RuntimeException) {
+        } catch (error: RuntimeException) {
+            if (isCancelled()) {
+                throw error
+            }
+            throwIfCancelled(isCancelled)
             FilterBitmapRenderer.getBitmap(
                 source = source,
                 recipe = recipe,
@@ -77,6 +99,12 @@ object FilterThumbnailRenderer {
                 maxHeight = maxHeight,
             )
         }
+
+    private fun throwIfCancelled(isCancelled: () -> Boolean) {
+        if (isCancelled()) {
+            throw CancellationException("Thumbnail render cancelled")
+        }
+    }
 
     internal fun shouldUseFullSourceTexture(recipe: FilterRecipe): Boolean =
         recipe.effect != FilterEffect.Color
