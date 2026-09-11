@@ -1,5 +1,28 @@
 # PLAN
 
+## Task: Remove contour list allocations during uniform upload
+
+Status: DONE
+Created: 2026-09-11
+Completed: 2026-09-11
+
+### Requirements
+
+- Upload the same capped contour points without creating temporary lists.
+- Preserve point order and the existing maximum point counts.
+- Keep the inactive-art fast path unchanged.
+
+### Checklist
+
+- [x] Replace capped `take()` iterations with indexed loops.
+- [x] Run focused unit tests, compile, and review diff.
+
+### Notes
+
+- Contour uploads now write directly into reusable uniform arrays without temporary lists.
+- Point caps and ordering are unchanged.
+- `:filter:testDebugUnitTest`, filter/app compilation, and `git diff --check` passed.
+
 ## Task: Skip unused makeup contour uploads
 
 Status: DONE

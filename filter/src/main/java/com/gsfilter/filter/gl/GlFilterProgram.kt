@@ -262,7 +262,8 @@ internal object GlFilterProgram {
             )
             val lipPointValues = uniforms.lipPoints
             val lipPointCount = features.lipContour.size.coerceAtMost(MAX_LIP_POINTS)
-            features.lipContour.take(MAX_LIP_POINTS).forEachIndexed { index, point ->
+            repeat(lipPointCount) { index ->
+                val point = features.lipContour[index]
                 lipPointValues[index * 2] = point.x
                 lipPointValues[(index * 2) + 1] = point.y
             }
@@ -270,7 +271,8 @@ internal object GlFilterProgram {
             GLES20.glUniform1i(handles.lipPointCount, lipPointCount)
             val upperLipPointValues = uniforms.upperLipPoints
             val upperLipPointCount = features.upperLipContour.size.coerceAtMost(MAX_LIP_POINTS)
-            features.upperLipContour.take(MAX_LIP_POINTS).forEachIndexed { index, point ->
+            repeat(upperLipPointCount) { index ->
+                val point = features.upperLipContour[index]
                 upperLipPointValues[index * 2] = point.x
                 upperLipPointValues[(index * 2) + 1] = point.y
             }
@@ -278,7 +280,8 @@ internal object GlFilterProgram {
             GLES20.glUniform1i(handles.upperLipPointCount, upperLipPointCount)
             val lowerLipPointValues = uniforms.lowerLipPoints
             val lowerLipPointCount = features.lowerLipContour.size.coerceAtMost(MAX_LIP_POINTS)
-            features.lowerLipContour.take(MAX_LIP_POINTS).forEachIndexed { index, point ->
+            repeat(lowerLipPointCount) { index ->
+                val point = features.lowerLipContour[index]
                 lowerLipPointValues[index * 2] = point.x
                 lowerLipPointValues[(index * 2) + 1] = point.y
             }
@@ -286,7 +289,8 @@ internal object GlFilterProgram {
             GLES20.glUniform1i(handles.lowerLipPointCount, lowerLipPointCount)
             val leftEyebrowPointValues = uniforms.leftEyebrowPoints
             val leftEyebrowPointCount = features.leftEyebrowContour.size.coerceAtMost(MAX_CONTOUR_POINTS)
-            features.leftEyebrowContour.take(MAX_CONTOUR_POINTS).forEachIndexed { index, point ->
+            repeat(leftEyebrowPointCount) { index ->
+                val point = features.leftEyebrowContour[index]
                 leftEyebrowPointValues[index * 2] = point.x
                 leftEyebrowPointValues[(index * 2) + 1] = point.y
             }
@@ -294,7 +298,8 @@ internal object GlFilterProgram {
             GLES20.glUniform1i(handles.leftEyebrowPointCount, leftEyebrowPointCount)
             val rightEyebrowPointValues = uniforms.rightEyebrowPoints
             val rightEyebrowPointCount = features.rightEyebrowContour.size.coerceAtMost(MAX_CONTOUR_POINTS)
-            features.rightEyebrowContour.take(MAX_CONTOUR_POINTS).forEachIndexed { index, point ->
+            repeat(rightEyebrowPointCount) { index ->
+                val point = features.rightEyebrowContour[index]
                 rightEyebrowPointValues[index * 2] = point.x
                 rightEyebrowPointValues[(index * 2) + 1] = point.y
             }
