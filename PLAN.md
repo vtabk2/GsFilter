@@ -1,5 +1,30 @@
 # PLAN
 
+## Task: Add Popular category visibility configuration
+
+Status: DONE
+Created: 2026-09-11
+Completed: 2026-09-11
+
+### Requirements
+
+- Add an XML boolean configuration for showing or hiding the `popular` category.
+- Keep Popular visible by default for backward compatibility.
+- Keep filters available in their other categories and normalize hidden-category selection state.
+
+### Checklist
+
+- [x] Add `gsFilterShowPopular` and apply it to category chips/state.
+- [x] Add focused coverage or verification for hidden-category fallback.
+- [x] Run focused unit tests, compile, and review diff.
+
+### Notes
+
+- `FilterControlsView` exposes `app:gsFilterShowPopular`, defaulting to `true`.
+- When disabled, the Popular chip is hidden and a Popular selection falls back to the first visible category.
+- The sample layout sets the option explicitly to `true`; change it to `false` to hide Popular.
+- `:filter:testDebugUnitTest`, filter/app compilation, and `git diff --check` passed.
+
 ## Task: Skip unused CPU blur averaging
 
 Status: DONE

@@ -147,7 +147,7 @@ class FilterControlsView @JvmOverloads constructor(
     fun setCatalog(catalog: FilterPack) {
         catalogLoadVersion++
         this.catalog = catalog
-        selectedCategory = catalog.categoryById(selectedCategory.id) ?: catalog.defaultCategory
+        selectedCategory = visibleCategoryById(selectedCategory.id) ?: visibleCategories().first()
         selectedFilter = catalog.filterById(selectedFilter.id) ?: catalog.defaultFilter
         selectedRecipe = selectedFilter.recipe
         renderCategoryChips()
@@ -201,7 +201,7 @@ class FilterControlsView @JvmOverloads constructor(
         thumbnailKey: String?,
         selectedRecipe: FilterRecipe,
     ) {
-        val nextCategory = catalog.categoryById(selectedCategory.id) ?: catalog.defaultCategory
+        val nextCategory = visibleCategoryById(selectedCategory.id) ?: visibleCategories().first()
         val nextFilter = catalog.filterById(selectedFilter.id) ?: selectedFilter
         val nextThumbnailGenerationId = thumbnailBitmap?.generationId ?: 0
         val shouldRenderFilters =
@@ -455,7 +455,7 @@ class FilterControlsView @JvmOverloads constructor(
         val container = categoryContainer ?: return
         categoryChips.clear()
         container.removeAllViews()
-        catalog.categories.forEachIndexed { index, category ->
+        visibleCategories().forEachIndexed { index, category ->
             val chip = createCategoryChip(
                 index = index,
                 text = category.displayName(context).toString(),
@@ -467,7 +467,7 @@ class FilterControlsView @JvmOverloads constructor(
     }
 
     private fun selectCategory(category: FilterCategory) {
-        val selectedFilterCategory = catalog.categoryForFilter(selectedFilter)
+        val selectedFilterCategory = visibleCategories().firstOrNull { it.id in selectedFilter.categoryIds }
         val nextCategory =
             if (
                 selectedCategory.id == category.id &&
@@ -486,6 +486,16 @@ class FilterControlsView @JvmOverloads constructor(
         renderState()
         onCategorySelected?.invoke(selectedCategory)
     }
+
+    private fun visibleCategories(): List<FilterCategory> {
+        if (style.showPopular) {
+            return catalog.categories
+        }
+        return catalog.categories.filterNot { it.id == POPULAR_CATEGORY_ID }.ifEmpty { catalog.categories }
+    }
+
+    private fun visibleCategoryById(id: String): FilterCategory? =
+        visibleCategories().firstOrNull { it.id == id }
 
     private fun selectFilter(filter: FilterOption) {
         selectedFilter = filter
@@ -606,6 +616,7 @@ class FilterControlsView @JvmOverloads constructor(
         const val TAB_INDICATOR_WIDTH_FULL = 0
         const val TAB_INDICATOR_WIDTH_MIN = 1
         const val TAB_INDICATOR_WIDTH_TEXT = 2
+        const val POPULAR_CATEGORY_ID = "popular"
     }
 
     enum class ControlTab {
@@ -664,6 +675,7 @@ class FilterControlsView @JvmOverloads constructor(
         val compactTabs: Boolean,
         val tabSpacing: Int,
         val showIntensity: Boolean,
+        val showPopular: Boolean,
         val intensityTextColor: Int,
         val intensityProgressColor: Int,
         val intensityTrackColor: Int,
@@ -787,6 +799,7 @@ class FilterControlsView @JvmOverloads constructor(
                 context.resources.getDimensionPixelSize(R.dimen.gs_filter_item_spacing),
             ),
             showIntensity = array.getBoolean(R.styleable.FilterControlsView_gsFilterShowIntensity, true),
+            showPopular = array.getBoolean(R.styleable.FilterControlsView_gsFilterShowPopular, true),
             intensityTextColor = array.getColor(
                 R.styleable.FilterControlsView_gsFilterIntensityTextColor,
                 array.getColor(
