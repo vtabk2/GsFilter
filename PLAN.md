@@ -1,5 +1,29 @@
 # PLAN
 
+## Task: Mark filter RecyclerView size as fixed
+
+Status: DONE
+Created: 2026-09-11
+Completed: 2026-09-11
+
+### Requirements
+
+- Tell RecyclerView its own size does not depend on adapter item count.
+- Preserve the existing fixed item dimensions and horizontal layout.
+- Avoid changing cache sizes or visible item behavior.
+
+### Checklist
+
+- [x] Enable `hasFixedSize` for the filter list.
+- [x] Verify the item XML keeps fixed width and height.
+- [x] Run focused unit tests, compile, and review diff.
+
+### Notes
+
+- Filter RecyclerView dùng item width/height cố định nên giảm layout pass khi đổi category.
+- Không thay đổi cache, thứ tự hoặc số item hiển thị.
+- `:filter:testDebugUnitTest`, filter/app compilation, and `git diff --check` passed.
+
 ## Task: Hoist fixed LUT sampler binding
 
 Status: DONE

@@ -361,6 +361,7 @@ class FilterControlsView @JvmOverloads constructor(
         buttonOriginalFilter?.setOnClickListener { selectFilter(catalog.defaultFilter) }
         filterRecyclerView?.layoutManager = LinearLayoutManager(context, RecyclerView.HORIZONTAL, false)
         filterRecyclerView?.adapter = filterAdapter
+        filterRecyclerView?.setHasFixedSize(true)
         filterRecyclerView?.itemAnimator = null
         filterIntensityLabel?.setTextColor(style.intensityTextColor)
         filterIntensityValue?.setTextColor(style.intensityTextColor)
