@@ -92,7 +92,9 @@ class FilterPreviewView @JvmOverloads constructor(
 
         override fun onSurfaceCreated(gl: GL10?, config: EGLConfig?) {
             program = GlFilterProgram.buildProgram()
-            handles = GlFilterProgram.resolveHandles(program)
+            val currentHandles = GlFilterProgram.resolveHandles(program)
+            handles = currentHandles
+            GlFilterProgram.bindAttributes(currentHandles, vertexBuffer, textureBuffer)
             textureId = 0
             lutTextureId = 0
             lutTexture = FilterLut.None
@@ -118,7 +120,6 @@ class FilterPreviewView @JvmOverloads constructor(
             val currentHandles = handles ?: return
 
             GLES20.glUseProgram(program)
-            GlFilterProgram.bindAttributes(currentHandles, vertexBuffer, textureBuffer)
             GlFilterProgram.bindUniforms(
                 handles = currentHandles,
                 textureId = textureId,
@@ -128,7 +129,6 @@ class FilterPreviewView @JvmOverloads constructor(
                 params = params,
             )
             GLES20.glDrawArrays(GLES20.GL_TRIANGLE_STRIP, 0, GlFilterProgram.VERTEX_COUNT)
-            GlFilterProgram.disableAttributes(currentHandles)
         }
 
         fun setSourceBitmap(bitmap: Bitmap?) {

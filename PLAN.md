@@ -1,5 +1,29 @@
 # PLAN
 
+## Task: Reuse preview vertex attribute bindings
+
+Status: DONE
+Created: 2026-09-11
+Completed: 2026-09-11
+
+### Requirements
+
+- Bind preview vertex and texture attributes once per GL program/context.
+- Preserve drawing behavior and context recreation handling.
+- Remove per-frame enable/disable calls.
+
+### Checklist
+
+- [x] Bind attributes during preview surface creation.
+- [x] Remove redundant per-frame attribute calls.
+- [x] Run focused unit tests, compile, and review diff.
+
+### Notes
+
+- Preview bind vertex/texture attributes một lần mỗi GL context.
+- Context recreate vẫn bind lại trong `onSurfaceCreated`.
+- `:filter:testDebugUnitTest`, filter/app compilation, and `git diff --check` passed.
+
 ## Task: Reuse one GPU LUT texture per session
 
 Status: DONE
