@@ -1,5 +1,29 @@
 # PLAN
 
+## Task: Reuse one GPU LUT texture per session
+
+Status: DONE
+Created: 2026-09-11
+Completed: 2026-09-11
+
+### Requirements
+
+- Reuse a LUT texture when consecutive renders use the same LUT.
+- Delete the previous LUT texture when replacing it.
+- Release the cached texture with the EGL session.
+
+### Checklist
+
+- [x] Move LUT texture ownership into `RenderSession`.
+- [x] Rebind the cached texture for each render without re-uploading it.
+- [x] Run focused unit tests, compile, and review diff.
+
+### Notes
+
+- Offscreen session giữ tối đa một LUT texture và tái sử dụng khi LUT không đổi.
+- LUT cũ được xoá khi thay thế hoặc khi EGL session release.
+- `:filter:testDebugUnitTest`, filter/app compilation, and `git diff --check` passed.
+
 ## Task: Bulk GPU readback conversion
 
 Status: DONE

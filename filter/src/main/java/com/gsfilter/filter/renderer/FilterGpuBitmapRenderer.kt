@@ -9,6 +9,7 @@ import android.opengl.EGLSurface
 import android.opengl.GLES20
 import android.opengl.GLUtils
 import com.gsfilter.filter.Adjustments
+import com.gsfilter.filter.FilterLut
 import com.gsfilter.filter.FilterRecipe
 import com.gsfilter.filter.MakeupFeatures
 import com.gsfilter.filter.ShaderFilterParams
@@ -95,15 +96,12 @@ object FilterGpuBitmapRenderer {
         val uploadMakeupUniforms = session.makeupUniformsEnabled || makeupControlsEnabled
         val adjustmentValuesEnabled = GlFilterProgram.hasAdjustmentValues(params)
         val uploadAdjustmentUniforms = session.adjustmentUniformsNeedUpload || adjustmentValuesEnabled
-        var lutTextureId = 0
         var invalidateSession = false
 
         return try {
             session.egl.makeCurrent()
             uploadTexture(renderSource, session)
-            if (params.lutStrength > 0f) {
-                lutTextureId = GlLutTexture.upload(params.lut)
-            }
+            val lutTextureId = if (params.lutStrength > 0f) session.lutTextureFor(params.lut) else 0
 
             val handles = session.handles
             GlFilterProgram.bindUniforms(
@@ -127,9 +125,6 @@ object FilterGpuBitmapRenderer {
             invalidateSession = true
             throw error
         } finally {
-            if (lutTextureId != 0) {
-                GLES20.glDeleteTextures(1, intArrayOf(lutTextureId), 0)
-            }
             session.egl.detach()
             if (invalidateSession && cachedSession === session) {
                 cachedSession = null
@@ -265,6 +260,8 @@ object FilterGpuBitmapRenderer {
         var inputTextureConfig: Bitmap.Config? = null
         var inputBitmap: WeakReference<Bitmap>? = null
         var inputBitmapGenerationId = 0
+        var lutTextureId = 0
+        var lut: FilterLut? = null
         var makeupUniformsEnabled = false
         var adjustmentUniformsNeedUpload = true
         lateinit var handles: GlFilterProgram.ProgramHandles
@@ -290,9 +287,27 @@ object FilterGpuBitmapRenderer {
             }
         }
 
+        fun lutTextureFor(nextLut: FilterLut): Int {
+            if (lut == nextLut && lutTextureId != 0) {
+                return lutTextureId
+            }
+            if (lutTextureId != 0) {
+                GLES20.glDeleteTextures(1, intArrayOf(lutTextureId), 0)
+            }
+            lutTextureId = 0
+            lut = null
+            lutTextureId = GlLutTexture.upload(nextLut)
+            lut = nextLut
+            return lutTextureId
+        }
+
         fun release() {
             try {
                 egl.makeCurrent()
+                if (lutTextureId != 0) {
+                    GLES20.glDeleteTextures(1, intArrayOf(lutTextureId), 0)
+                    lutTextureId = 0
+                }
                 if (program != 0) {
                     GLES20.glDeleteProgram(program)
                     program = 0
