@@ -1,5 +1,28 @@
 # PLAN
 
+## Task: Hoist fixed GPU sampler binding
+
+Status: DONE
+Created: 2026-09-11
+Completed: 2026-09-11
+
+### Requirements
+
+- Bind the input sampler to texture unit 0 once per offscreen program.
+- Preserve preview behavior, which uses the shared uniform binder directly.
+- Avoid changing texture upload or LUT state handling.
+
+### Checklist
+
+- [x] Add an opt-out for the already-initialized sampler binding.
+- [x] Initialize the offscreen sampler binding once per session.
+- [x] Run focused unit tests, compile, and review diff.
+
+### Notes
+
+- Offscreen program bind `uTexture` một lần trong `RenderSession`; preview vẫn bind mặc định.
+- `:filter:testDebugUnitTest`, filter/app compilation, and `git diff --check` passed.
+
 ## Task: Remove redundant GPU edge-coordinate clamps
 
 Status: DONE

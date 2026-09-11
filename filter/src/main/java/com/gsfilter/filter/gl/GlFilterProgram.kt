@@ -162,10 +162,13 @@ internal object GlFilterProgram {
         texelScale: Float = 1f,
         uploadMakeupUniforms: Boolean = true,
         uploadAdjustmentUniforms: Boolean = true,
+        bindTextureSampler: Boolean = true,
     ) {
         GLES20.glActiveTexture(GLES20.GL_TEXTURE0)
         GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, textureId)
-        GLES20.glUniform1i(handles.texture, 0)
+        if (bindTextureSampler) {
+            GLES20.glUniform1i(handles.texture, 0)
+        }
         val lutStrength = if (lutTextureId != 0) params.lutStrength else 0f
         if (lutStrength > 0f) {
             GLES20.glActiveTexture(GLES20.GL_TEXTURE1)

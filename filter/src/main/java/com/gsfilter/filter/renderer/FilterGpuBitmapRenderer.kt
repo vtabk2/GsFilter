@@ -116,6 +116,7 @@ object FilterGpuBitmapRenderer {
                 texelScale = texelScale,
                 uploadMakeupUniforms = uploadMakeupUniforms,
                 uploadAdjustmentUniforms = uploadAdjustmentUniforms,
+                bindTextureSampler = false,
             )
             session.makeupUniformsEnabled = makeupControlsEnabled
             session.adjustmentUniformsNeedUpload = adjustmentValuesEnabled
@@ -269,6 +270,7 @@ object FilterGpuBitmapRenderer {
                 handles = GlFilterProgram.resolveHandles(program)
                 inputTextureId = createTexture()
                 GLES20.glUseProgram(program)
+                GLES20.glUniform1i(handles.texture, 0)
                 GLES20.glViewport(0, 0, width, height)
                 GlFilterProgram.bindAttributes(handles, vertexBuffer, textureBuffer)
                 initialized = true
