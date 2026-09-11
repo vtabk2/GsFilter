@@ -5,9 +5,18 @@ import com.gsfilter.filter.Adjustments
 import com.gsfilter.filter.FilterEffect
 import com.gsfilter.filter.FilterRecipe
 import com.gsfilter.filter.ShaderFilterParams
+import java.lang.ref.WeakReference
 import java.util.concurrent.CancellationException
 
 object FilterThumbnailRenderer {
+
+    // ponytail: one-slot cache bounds memory; expand only with profiling.
+    private val artSourceCacheLock = Any()
+    private var cachedArtSource: Bitmap? = null
+    private var cachedArtSourceOriginal: WeakReference<Bitmap>? = null
+    private var cachedArtSourceGenerationId = 0
+    private var cachedArtSourceMaxWidth = 0
+    private var cachedArtSourceMaxHeight = 0
 
     fun render(
         source: Bitmap,
@@ -40,13 +49,9 @@ object FilterThumbnailRenderer {
         maxWidth: Int,
         maxHeight: Int,
         isCancelled: () -> Boolean,
-    ): Bitmap {
-        val renderSource = FilterBitmapRenderer.scaledSource(
-            source = source,
-            maxWidth = maxWidth * ART_SOURCE_SCALE,
-            maxHeight = maxHeight * ART_SOURCE_SCALE,
-        )
-        return try {
+    ): Bitmap = synchronized(artSourceCacheLock) {
+        val renderSource = scaledArtSource(source, maxWidth, maxHeight)
+        try {
             throwIfCancelled(isCancelled)
             FilterGpuBitmapRenderer.getBitmap(
                 source = renderSource,
@@ -63,9 +68,39 @@ object FilterThumbnailRenderer {
                 throw error
             }
             renderScaledFirst(source, recipe, adjustments, maxWidth, maxHeight, isCancelled)
-        } finally {
-            FilterBitmapRenderer.recycleIfTemporary(renderSource, source)
         }
+    }
+
+    private fun scaledArtSource(source: Bitmap, maxWidth: Int, maxHeight: Int): Bitmap {
+        val generationId = source.generationId
+        val cachedSource = cachedArtSource
+        if (
+            cachedSource != null &&
+            cachedArtSourceOriginal?.get() === source &&
+            cachedArtSourceGenerationId == generationId &&
+            cachedArtSourceMaxWidth == maxWidth &&
+            cachedArtSourceMaxHeight == maxHeight
+        ) {
+            return cachedSource
+        }
+
+        cachedArtSource?.recycle()
+        cachedArtSource = null
+        cachedArtSourceOriginal = null
+        val scaled = FilterBitmapRenderer.scaledSource(
+            source = source,
+            maxWidth = maxWidth * ART_SOURCE_SCALE,
+            maxHeight = maxHeight * ART_SOURCE_SCALE,
+        )
+        if (scaled === source) {
+            return source
+        }
+        cachedArtSource = scaled
+        cachedArtSourceOriginal = WeakReference(source)
+        cachedArtSourceGenerationId = generationId
+        cachedArtSourceMaxWidth = maxWidth
+        cachedArtSourceMaxHeight = maxHeight
+        return scaled
     }
 
     private fun renderScaledFirst(

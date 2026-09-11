@@ -1,5 +1,29 @@
 # PLAN
 
+## Task: Reuse scaled art thumbnail source
+
+Status: DONE
+Created: 2026-09-11
+Completed: 2026-09-11
+
+### Requirements
+
+- Reuse the same scaled art source across filters for one source image and size.
+- Invalidate when source pixels, source identity, or target bounds change.
+- Bound memory to one scaled bitmap and preserve cancellation cleanup.
+
+### Checklist
+
+- [x] Add a one-slot synchronized scaled-source cache.
+- [x] Keep the cached bitmap out of per-render recycle cleanup.
+- [x] Run focused unit tests, compile, and review diff.
+
+### Notes
+
+- Các filter art cùng source/bounds dùng lại một bitmap 2× thay vì scale lại từng request.
+- Cache chỉ giữ một scaled bitmap, source chỉ được tham chiếu bằng `WeakReference`.
+- `:filter:testDebugUnitTest`, filter/app compilation, and `git diff --check` passed.
+
 ## Task: Abort cancelled art scaling before GPU work
 
 Status: DONE
