@@ -1,5 +1,29 @@
 # PLAN
 
+## Task: Reduce CPU edge sampling overhead
+
+Status: DONE
+Created: 2026-09-11
+Completed: 2026-09-11
+
+### Requirements
+
+- Keep the existing edge/Sobel formula and output unchanged.
+- Avoid repeated coordinate clamping and row-index arithmetic per neighbor.
+- Do not add a full-image cache or increase peak bitmap memory.
+
+### Checklist
+
+- [x] Cache clamped x/y positions and row offsets in `edgeAt`.
+- [x] Remove the no-longer-needed coordinate helper.
+- [x] Run focused unit tests, compile, and review diff.
+
+### Notes
+
+- `edgeAt` giữ nguyên công thức Sobel nhưng tái sử dụng tọa độ clamp và row offsets.
+- Không tạo full-image cache nên không tăng peak bitmap memory.
+- `:filter:testDebugUnitTest`, filter/app compilation, and `git diff --check` passed.
+
 ## Task: Hoist CPU render flags out of the pixel loop
 
 Status: DONE

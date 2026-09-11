@@ -793,23 +793,25 @@ object FilterBitmapRenderer {
     private fun gray(red: Float, green: Float, blue: Float): Float = (red * 0.299f) + (green * 0.587f) + (blue * 0.114f)
 
     private fun edgeAt(pixels: IntArray, x: Int, y: Int, width: Int, height: Int): Float {
-        val topLeft = lumaAt(pixels, x - 1, y - 1, width, height)
-        val top = lumaAt(pixels, x, y - 1, width, height)
-        val topRight = lumaAt(pixels, x + 1, y - 1, width, height)
-        val left = lumaAt(pixels, x - 1, y, width, height)
-        val right = lumaAt(pixels, x + 1, y, width, height)
-        val bottomLeft = lumaAt(pixels, x - 1, y + 1, width, height)
-        val bottom = lumaAt(pixels, x, y + 1, width, height)
-        val bottomRight = lumaAt(pixels, x + 1, y + 1, width, height)
+        val leftX = (x - 1).coerceAtLeast(0)
+        val rightX = (x + 1).coerceAtMost(width - 1)
+        val topRow = (y - 1).coerceAtLeast(0) * width
+        val middleRow = y * width
+        val bottomRow = (y + 1).coerceAtMost(height - 1) * width
+        val topLeft = luma(pixels[topRow + leftX])
+        val top = luma(pixels[topRow + x])
+        val topRight = luma(pixels[topRow + rightX])
+        val left = luma(pixels[middleRow + leftX])
+        val right = luma(pixels[middleRow + rightX])
+        val bottomLeft = luma(pixels[bottomRow + leftX])
+        val bottom = luma(pixels[bottomRow + x])
+        val bottomRight = luma(pixels[bottomRow + rightX])
         val horizontal = -topLeft - (2f * left) - bottomLeft + topRight + (2f * right) + bottomRight
         val vertical = -topLeft - (2f * top) - topRight + bottomLeft + (2f * bottom) + bottomRight
         return clamp(sqrt((horizontal * horizontal) + (vertical * vertical)), 0f, 1f)
     }
 
-    private fun lumaAt(pixels: IntArray, x: Int, y: Int, width: Int, height: Int): Float {
-        val color = pixels[y.coerceIn(0, height - 1) * width + x.coerceIn(0, width - 1)]
-        return gray(red(color), green(color), blue(color))
-    }
+    private fun luma(color: Int): Float = gray(red(color), green(color), blue(color))
 
     private fun lineFromEdge(edge: Float, params: ShaderFilterParams, softness: Float): Float {
         val threshold = mix(0.04f, 0.34f, params.effectThreshold)
