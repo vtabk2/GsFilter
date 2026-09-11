@@ -1,5 +1,29 @@
 # PLAN
 
+## Task: Reuse GPU vertex attribute bindings
+
+Status: DONE
+Created: 2026-09-11
+Completed: 2026-09-11
+
+### Requirements
+
+- Bind the static position and texture-coordinate attributes once per GPU session.
+- Preserve the preview path and existing render output.
+- Release the session normally when dimensions change or GL fails.
+
+### Checklist
+
+- [x] Bind offscreen attributes during session initialization.
+- [x] Remove per-thumbnail attribute setup/teardown.
+- [x] Run focused unit tests, compile, and review diff.
+
+### Notes
+
+- Offscreen position and texture-coordinate attributes are configured once per reused GPU session.
+- Each thumbnail now skips repeated attribute pointer and enable/disable calls.
+- `:filter:testDebugUnitTest`, filter/app compilation, and `git diff --check` passed.
+
 ## Task: Avoid redundant adjustment uniform writes
 
 Status: DONE

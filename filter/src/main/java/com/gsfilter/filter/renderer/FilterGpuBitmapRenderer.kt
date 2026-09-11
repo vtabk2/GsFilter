@@ -62,7 +62,6 @@ object FilterGpuBitmapRenderer {
             GLES20.glUseProgram(session.program)
 
             val handles = session.handles
-            GlFilterProgram.bindAttributes(handles, vertexBuffer, textureBuffer)
             GlFilterProgram.bindUniforms(
                 handles = handles,
                 textureId = session.inputTextureId,
@@ -77,7 +76,6 @@ object FilterGpuBitmapRenderer {
             session.makeupUniformsEnabled = makeupControlsEnabled
             session.adjustmentUniformsNeedUpload = adjustmentValuesEnabled
             GLES20.glDrawArrays(GLES20.GL_TRIANGLE_STRIP, 0, GlFilterProgram.VERTEX_COUNT)
-            GlFilterProgram.disableAttributes(handles)
 
             readBitmap(width, height)
         } catch (error: RuntimeException) {
@@ -189,6 +187,8 @@ object FilterGpuBitmapRenderer {
                 program = GlFilterProgram.buildProgram()
                 handles = GlFilterProgram.resolveHandles(program)
                 inputTextureId = createTexture()
+                GLES20.glUseProgram(program)
+                GlFilterProgram.bindAttributes(handles, vertexBuffer, textureBuffer)
                 initialized = true
             } finally {
                 egl.detach()
