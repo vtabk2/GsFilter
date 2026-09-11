@@ -15,6 +15,7 @@ import com.gsfilter.filter.ShaderFilterParams
 import com.gsfilter.filter.gl.GlFilterProgram
 import com.gsfilter.filter.gl.GlLutTexture
 import java.nio.ByteBuffer
+import java.nio.ByteOrder
 
 object FilterGpuBitmapRenderer {
 
@@ -122,17 +123,17 @@ object FilterGpuBitmapRenderer {
         val pixels = readbackBuffers.pixels
         buffer.clear()
         GLES20.glReadPixels(0, 0, width, height, GLES20.GL_RGBA, GLES20.GL_UNSIGNED_BYTE, buffer)
+        var offset = 0
+        var targetIndex = (height - 1) * width
         for (y in 0 until height) {
-            val targetY = height - 1 - y
-            for (x in 0 until width) {
-                val offset = ((y * width) + x) * BYTES_PER_PIXEL
-                val red = buffer.get(offset).toInt() and CHANNEL_MASK
-                val green = buffer.get(offset + 1).toInt() and CHANNEL_MASK
-                val blue = buffer.get(offset + 2).toInt() and CHANNEL_MASK
-                val alpha = buffer.get(offset + 3).toInt() and CHANNEL_MASK
-                pixels[(targetY * width) + x] =
-                    (alpha shl 24) or (red shl 16) or (green shl 8) or blue
+            var rowIndex = targetIndex
+            repeat(width) {
+                val rgba = buffer.getInt(offset)
+                pixels[rowIndex] = (rgba shl 24) or (rgba ushr 8)
+                rowIndex++
+                offset += BYTES_PER_PIXEL
             }
+            targetIndex -= width
         }
         return Bitmap.createBitmap(pixels, width, height, Bitmap.Config.ARGB_8888)
     }
@@ -144,7 +145,7 @@ object FilterGpuBitmapRenderer {
         fun ensure(pixelCount: Int) {
             val byteCount = pixelCount * BYTES_PER_PIXEL
             if ((buffer?.capacity() ?: 0) < byteCount) {
-                buffer = ByteBuffer.allocateDirect(byteCount)
+                buffer = ByteBuffer.allocateDirect(byteCount).order(ByteOrder.BIG_ENDIAN)
             }
             if (pixels.size < pixelCount) {
                 pixels = IntArray(pixelCount)
@@ -299,7 +300,6 @@ object FilterGpuBitmapRenderer {
     }
 
     private const val BYTES_PER_PIXEL = 4
-    private const val CHANNEL_MASK = 255
     private const val MAX_CACHED_READBACK_PIXELS = 1_048_576
     // ponytail: one offscreen GL render at a time; split locks if profiling proves parallel EGL helps.
     private val renderLock = Any()

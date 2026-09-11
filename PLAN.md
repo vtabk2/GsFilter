@@ -1,5 +1,28 @@
 # PLAN
 
+## Task: Reduce GPU thumbnail readback conversion overhead
+
+Status: DONE
+Created: 2026-09-11
+Completed: 2026-09-11
+
+### Requirements
+
+- Preserve RGBA-to-ARGB conversion and vertical image flip.
+- Reduce per-pixel `ByteBuffer` access during GPU readback.
+- Keep the existing reusable readback buffers.
+
+### Checklist
+
+- [x] Convert each pixel with one packed read instead of four byte reads.
+- [x] Run focused unit tests, compile, and review diff.
+
+### Notes
+
+- GPU readback now uses one packed RGBA read per pixel, then performs the same vertical flip and ARGB conversion.
+- Reusable direct buffers remain unchanged.
+- `:filter:testDebugUnitTest`, filter/app compilation, and `git diff --check` passed.
+
 ## Task: Reuse thumbnail input texture objects
 
 Status: DONE
