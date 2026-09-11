@@ -244,18 +244,16 @@ class FilterPreviewView @JvmOverloads constructor(
             renderHeight = ((surfaceHeight * scaleY) + 0.5f).toInt().coerceAtLeast(1)
 
             vertexBuffer.clear()
-            vertexBuffer.put(
-                floatArrayOf(
-                    -scaleX,
-                    -scaleY,
-                    scaleX,
-                    -scaleY,
-                    -scaleX,
-                    scaleY,
-                    scaleX,
-                    scaleY,
-                ),
-            ).position(0)
+            vertexBuffer
+                .put(-scaleX)
+                .put(-scaleY)
+                .put(scaleX)
+                .put(-scaleY)
+                .put(-scaleX)
+                .put(scaleY)
+                .put(scaleX)
+                .put(scaleY)
+                .position(0)
         }
     }
 }

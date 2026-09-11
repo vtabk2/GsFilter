@@ -1,5 +1,29 @@
 # PLAN
 
+## Task: Avoid preview vertex-array allocation
+
+Status: DONE
+Created: 2026-09-11
+Completed: 2026-09-11
+
+### Requirements
+
+- Preserve the existing aspect-ratio vertex coordinates.
+- Write coordinates directly into the reusable direct buffer.
+- Avoid changing render timing or buffer ownership.
+
+### Checklist
+
+- [x] Replace the temporary vertex array with direct buffer writes.
+- [x] Keep the zero-size fallback buffer reset unchanged.
+- [x] Run focused unit tests, compile, and review diff.
+
+### Notes
+
+- Preview ghi trực tiếp 8 vertex values vào reusable direct buffer, không tạo `FloatArray` tạm.
+- Nhánh zero-size và geometry/aspect ratio giữ nguyên.
+- `:filter:testDebugUnitTest`, filter/app compilation, and `git diff --check` passed.
+
 ## Task: Reuse scaled art thumbnail source
 
 Status: DONE
