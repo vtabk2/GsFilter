@@ -1,5 +1,28 @@
 # PLAN
 
+## Task: Remove redundant offscreen framebuffer clear
+
+Status: DONE
+Created: 2026-09-11
+Completed: 2026-09-11
+
+### Requirements
+
+- Preserve output for the fullscreen offscreen render.
+- Avoid clearing pixels that the fullscreen draw always overwrites.
+- Keep preview rendering unchanged.
+
+### Checklist
+
+- [x] Remove the per-thumbnail offscreen clear calls.
+- [x] Run focused unit tests, compile, and review diff.
+
+### Notes
+
+- Offscreen render no longer clears the pbuffer before the fullscreen draw.
+- The draw covers the entire viewport, so the rendered output is unchanged.
+- `:filter:testDebugUnitTest`, filter/app compilation, and `git diff --check` passed.
+
 ## Task: Reuse GPU vertex attribute bindings
 
 Status: DONE
