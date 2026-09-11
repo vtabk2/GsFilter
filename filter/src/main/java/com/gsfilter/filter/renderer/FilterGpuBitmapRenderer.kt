@@ -293,11 +293,10 @@ object FilterGpuBitmapRenderer {
                 return lutTextureId
             }
             if (lutTextureId != 0) {
-                GLES20.glDeleteTextures(1, intArrayOf(lutTextureId), 0)
+                GlLutTexture.update(lutTextureId, nextLut)
+            } else {
+                lutTextureId = GlLutTexture.upload(nextLut)
             }
-            lutTextureId = 0
-            lut = null
-            lutTextureId = GlLutTexture.upload(nextLut)
             lut = nextLut
             return lutTextureId
         }

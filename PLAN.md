@@ -1,5 +1,29 @@
 # PLAN
 
+## Task: Reuse LUT texture storage across filter changes
+
+Status: DONE
+Created: 2026-09-11
+Completed: 2026-09-11
+
+### Requirements
+
+- Preserve LUT output and texture filtering/wrap parameters.
+- Reuse the existing LUT texture when only LUT content changes.
+- Keep the single-texture-per-render-session memory bound.
+
+### Checklist
+
+- [x] Update existing LUT texture storage with `texSubImage2D`.
+- [x] Keep texture creation as the fallback for a new session.
+- [x] Run focused unit tests, compile, and review diff.
+
+### Notes
+
+- Khi đổi LUT trong cùng render session, texture được tái sử dụng và cập nhật bằng `texSubImage2D`.
+- Vẫn giữ một LUT texture mỗi session; session mới vẫn tạo texture như trước.
+- `:filter:testDebugUnitTest`, filter/app compilation, and `git diff --check` passed.
+
 ## Task: Avoid preview vertex-array allocation
 
 Status: DONE

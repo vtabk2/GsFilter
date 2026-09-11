@@ -20,6 +20,19 @@ internal object GlLutTexture {
         return textureId
     }
 
+    fun update(textureId: Int, lut: FilterLut) {
+        GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, textureId)
+        GLUtils.texSubImage2D(
+            GLES20.GL_TEXTURE_2D,
+            0,
+            0,
+            0,
+            bitmap(lut),
+            GLES20.GL_RGBA,
+            GLES20.GL_UNSIGNED_BYTE,
+        )
+    }
+
     private fun bitmap(lut: FilterLut): Bitmap =
         synchronized(bitmapLock) {
             bitmaps.getOrPut(lut) {
