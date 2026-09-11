@@ -1,5 +1,29 @@
 # PLAN
 
+## Task: Skip neutral CPU adjustment stages
+
+Status: DONE
+Created: 2026-09-11
+Completed: 2026-09-11
+
+### Requirements
+
+- Skip neutral adjustment, vignette, and grain work in CPU fallback renders.
+- Preserve stage order and formulas whenever a stage is active.
+- Keep art edge detection and effect output unchanged.
+
+### Checklist
+
+- [x] Gate neutral color and tonal adjustment stages.
+- [x] Gate neutral finishing stages.
+- [x] Run focused unit tests, compile, and review diff.
+
+### Notes
+
+- CPU fallback skips neutral color, tonal, vignette, and grain calculations.
+- Active adjustment stages retain their existing formulas and order.
+- `:filter:testDebugUnitTest`, filter/app compilation, and `git diff --check` passed.
+
 ## Task: Reuse offscreen program and viewport state
 
 Status: DONE

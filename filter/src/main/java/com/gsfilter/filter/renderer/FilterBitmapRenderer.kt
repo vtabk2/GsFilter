@@ -421,56 +421,78 @@ object FilterBitmapRenderer {
             blue = mix(blue, 0.22f, lipstickAmount)
         }
 
-        red += (red - blurredRed) * sharpAmount
-        green += (green - blurredGreen) * sharpAmount
-        blue += (blue - blurredBlue) * sharpAmount
+        if (sharpAmount != 0f) {
+            red += (red - blurredRed) * sharpAmount
+            green += (green - blurredGreen) * sharpAmount
+            blue += (blue - blurredBlue) * sharpAmount
+        }
 
-        red += params.redShift
-        green += params.greenShift
-        blue += params.blueShift
+        if (params.redShift != 0f || params.greenShift != 0f || params.blueShift != 0f) {
+            red += params.redShift
+            green += params.greenShift
+            blue += params.blueShift
+        }
 
-        var gray = gray(red, green, blue)
-        red = mix(red, gray, params.isMonochrome)
-        green = mix(green, gray, params.isMonochrome)
-        blue = mix(blue, gray, params.isMonochrome)
+        if (params.isMonochrome != 0f) {
+            val gray = gray(red, green, blue)
+            red = mix(red, gray, params.isMonochrome)
+            green = mix(green, gray, params.isMonochrome)
+            blue = mix(blue, gray, params.isMonochrome)
+        }
 
-        red += params.brightness
-        green += params.brightness
-        blue += params.brightness
+        if (params.brightness != 0f) {
+            red += params.brightness
+            green += params.brightness
+            blue += params.brightness
+        }
 
-        red *= exposure
-        green *= exposure
-        blue *= exposure
+        if (exposure != 1f) {
+            red *= exposure
+            green *= exposure
+            blue *= exposure
+        }
 
-        gray = gray(red, green, blue)
-        val shadowMask = 1f - smoothstep(0f, 0.6f, gray)
-        val highlightMask = smoothstep(0.4f, 1f, gray)
-        red += shadowMask * params.shadows * 0.35f
-        green += shadowMask * params.shadows * 0.35f
-        blue += shadowMask * params.shadows * 0.35f
-        red += highlightMask * params.highlights * 0.35f
-        green += highlightMask * params.highlights * 0.35f
-        blue += highlightMask * params.highlights * 0.35f
+        if (params.shadows != 0f || params.highlights != 0f) {
+            val gray = gray(red, green, blue)
+            val shadowMask = 1f - smoothstep(0f, 0.6f, gray)
+            val highlightMask = smoothstep(0.4f, 1f, gray)
+            red += shadowMask * params.shadows * 0.35f
+            green += shadowMask * params.shadows * 0.35f
+            blue += shadowMask * params.shadows * 0.35f
+            red += highlightMask * params.highlights * 0.35f
+            green += highlightMask * params.highlights * 0.35f
+            blue += highlightMask * params.highlights * 0.35f
+        }
 
-        red = ((red - 0.5f) * params.contrast) + 0.5f
-        green = ((green - 0.5f) * params.contrast) + 0.5f
-        blue = ((blue - 0.5f) * params.contrast) + 0.5f
+        if (params.contrast != 1f) {
+            red = ((red - 0.5f) * params.contrast) + 0.5f
+            green = ((green - 0.5f) * params.contrast) + 0.5f
+            blue = ((blue - 0.5f) * params.contrast) + 0.5f
+        }
 
-        red += (params.temperature * 0.12f) + (params.tint * 0.06f)
-        green -= params.tint * 0.08f
-        blue += (-params.temperature * 0.12f) + (params.tint * 0.06f)
+        if (params.temperature != 0f || params.tint != 0f) {
+            red += (params.temperature * 0.12f) + (params.tint * 0.06f)
+            green -= params.tint * 0.08f
+            blue += (-params.temperature * 0.12f) + (params.tint * 0.06f)
+        }
 
-        gray = gray(red, green, blue)
-        red = mix(gray, red, params.saturation)
-        green = mix(gray, green, params.saturation)
-        blue = mix(gray, blue, params.saturation)
-
-        val maxChannel = max(max(red, green), blue)
-        val channelAverage = (red + green + blue) / 3f
-        val vibranceMask = 1f - clamp(maxChannel - channelAverage, 0f, 1f)
-        red = mix(gray, red, 1f + (params.vibrance * vibranceMask))
-        green = mix(gray, green, 1f + (params.vibrance * vibranceMask))
-        blue = mix(gray, blue, 1f + (params.vibrance * vibranceMask))
+        if (params.saturation != 1f || params.vibrance != 0f) {
+            val gray = gray(red, green, blue)
+            if (params.saturation != 1f) {
+                red = mix(gray, red, params.saturation)
+                green = mix(gray, green, params.saturation)
+                blue = mix(gray, blue, params.saturation)
+            }
+            if (params.vibrance != 0f) {
+                val maxChannel = max(max(red, green), blue)
+                val channelAverage = (red + green + blue) / 3f
+                val vibranceMask = 1f - clamp(maxChannel - channelAverage, 0f, 1f)
+                val vibranceAmount = 1f + (params.vibrance * vibranceMask)
+                red = mix(gray, red, vibranceAmount)
+                green = mix(gray, green, vibranceAmount)
+                blue = mix(gray, blue, vibranceAmount)
+            }
+        }
 
         if (params.lutStrength > 0f) {
             params.lut.apply(red, green, blue, lutOutput)
@@ -547,22 +569,31 @@ object FilterBitmapRenderer {
             blue = mix(beforeEffectBlue, blue, params.intensity)
         }
 
-        val fade = clamp(params.fade * 0.35f, 0f, 0.35f)
-        red = mix(red, 0.5f, fade)
-        green = mix(green, 0.5f, fade)
-        blue = mix(blue, 0.5f, fade)
+        if (params.fade != 0f) {
+            val fade = clamp(params.fade * 0.35f, 0f, 0.35f)
+            red = mix(red, 0.5f, fade)
+            green = mix(green, 0.5f, fade)
+            blue = mix(blue, 0.5f, fade)
+        }
 
-        val edgeDistance = sqrt(((textureX - 0.5f) * (textureX - 0.5f)) + ((textureY - 0.5f) * (textureY - 0.5f)))
-        val edgeMask = smoothstep(0.35f, 0.75f, edgeDistance)
-        val vignette = 1f - (params.vignette * 0.7f * edgeMask)
-        red *= vignette
-        green *= vignette
-        blue *= vignette
+        if (params.vignette != 0f) {
+            val edgeDistance = sqrt(
+                ((textureX - 0.5f) * (textureX - 0.5f)) +
+                    ((textureY - 0.5f) * (textureY - 0.5f)),
+            )
+            val edgeMask = smoothstep(0.35f, 0.75f, edgeDistance)
+            val vignette = 1f - (params.vignette * 0.7f * edgeMask)
+            red *= vignette
+            green *= vignette
+            blue *= vignette
+        }
 
-        val grain = (random(textureX * 1024f, textureY * 768f) - 0.5f) * params.grain * 0.16f
-        red += grain
-        green += grain
-        blue += grain
+        if (params.grain != 0f) {
+            val grain = (random(textureX * 1024f, textureY * 768f) - 0.5f) * params.grain * 0.16f
+            red += grain
+            green += grain
+            blue += grain
+        }
 
         return argb(alpha(color), red, green, blue)
     }
