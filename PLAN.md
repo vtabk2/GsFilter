@@ -1,5 +1,28 @@
 # PLAN
 
+## Task: Skip unused makeup contour uploads
+
+Status: DONE
+Created: 2026-09-11
+Completed: 2026-09-11
+
+### Requirements
+
+- Avoid uploading makeup contour arrays when beauty and face-warp controls are inactive.
+- Preserve geometry reset behavior when makeup or warp controls are active without detected features.
+- Keep shader output unchanged for art thumbnails and beauty previews.
+
+### Checklist
+
+- [x] Gate contour and region-uniform uploads behind active makeup/warp controls.
+- [x] Run focused unit tests, compile, and review diff.
+
+### Notes
+
+- Art thumbnails skip contour-array and region-uniform uploads when all beauty and face-warp controls are zero.
+- Beauty and face-warp renders keep the existing upload/reset behavior.
+- `:filter:testDebugUnitTest`, filter/app compilation, and `git diff --check` passed.
+
 ## Task: Reduce GPU thumbnail readback conversion overhead
 
 Status: DONE
