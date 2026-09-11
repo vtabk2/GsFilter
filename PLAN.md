@@ -1,5 +1,29 @@
 # PLAN
 
+## Task: Skip unchanged GPU source uploads
+
+Status: DONE
+Created: 2026-09-11
+Completed: 2026-09-11
+
+### Requirements
+
+- Reuse the input texture when the same bitmap content is rendered again.
+- Detect bitmap pixel changes through Android's `generationId`.
+- Avoid retaining the source bitmap through the cached GL session.
+
+### Checklist
+
+- [x] Track the last uploaded bitmap weakly and its generation.
+- [x] Skip only safe unchanged uploads.
+- [x] Run focused unit tests, compile, and review diff.
+
+### Notes
+
+- GPU session bỏ qua `texSubImage2D`/`texImage2D` khi cùng bitmap và `generationId` chưa đổi.
+- `WeakReference` tránh giữ source bitmap lớn bởi cached session.
+- `:filter:testDebugUnitTest`, filter/app compilation, and `git diff --check` passed.
+
 ## Task: Reduce CPU edge sampling overhead
 
 Status: DONE

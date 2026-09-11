@@ -14,6 +14,7 @@ import com.gsfilter.filter.MakeupFeatures
 import com.gsfilter.filter.ShaderFilterParams
 import com.gsfilter.filter.gl.GlFilterProgram
 import com.gsfilter.filter.gl.GlLutTexture
+import java.lang.ref.WeakReference
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
 import java.util.concurrent.CancellationException
@@ -149,6 +150,15 @@ object FilterGpuBitmapRenderer {
     }
 
     private fun uploadTexture(bitmap: Bitmap, session: RenderSession) {
+        if (
+            session.inputBitmap?.get() === bitmap &&
+            session.inputBitmapGenerationId == bitmap.generationId &&
+            session.inputTextureWidth == bitmap.width &&
+            session.inputTextureHeight == bitmap.height &&
+            session.inputTextureConfig == bitmap.config
+        ) {
+            return
+        }
         val textureId = session.inputTextureId
         GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, textureId)
         if (
@@ -172,6 +182,8 @@ object FilterGpuBitmapRenderer {
             session.inputTextureWidth = bitmap.width
             session.inputTextureHeight = bitmap.height
         }
+        session.inputBitmap = WeakReference(bitmap)
+        session.inputBitmapGenerationId = bitmap.generationId
     }
 
     private fun createTexture(): Int {
@@ -242,6 +254,8 @@ object FilterGpuBitmapRenderer {
         var inputTextureWidth = 0
         var inputTextureHeight = 0
         var inputTextureConfig: Bitmap.Config? = null
+        var inputBitmap: WeakReference<Bitmap>? = null
+        var inputBitmapGenerationId = 0
         var makeupUniformsEnabled = false
         var adjustmentUniformsNeedUpload = true
         lateinit var handles: GlFilterProgram.ProgramHandles
