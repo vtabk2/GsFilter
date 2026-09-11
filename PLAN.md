@@ -1,5 +1,30 @@
 # PLAN
 
+## Task: Restore filter state per image
+
+Status: DONE
+Created: 2026-09-11
+Completed: 2026-09-11
+
+### Requirements
+
+- Keep filter state independent for each asset image.
+- Restore selected filter, category, intensity, beauty, and adjustments when returning to an image.
+- Re-detect face features for the current bitmap instead of reusing another image's detection result.
+
+### Checklist
+
+- [x] Save the current filter snapshot before switching assets.
+- [x] Restore a valid snapshot after the target asset loads.
+- [x] Add state-restore coverage and run focused tests/compile.
+
+### Notes
+
+- Snapshot được lưu theo `assetPath`, gồm category/filter, intensity theo filter, beauty và adjustments.
+- Ảnh mới chưa có snapshot sẽ bắt đầu từ catalog defaults; ảnh quay lại sẽ khôi phục state cũ.
+- `makeupFeatures` không lưu chéo ảnh và vẫn được detector tính lại theo bitmap hiện tại.
+- `:app:testDebugUnitTest`, `:filter:testDebugUnitTest`, compilation, and `git diff --check` passed.
+
 ## Task: Reuse preview LUT texture storage
 
 Status: DONE

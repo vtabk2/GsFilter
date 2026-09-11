@@ -31,6 +31,8 @@ class FilterViewModel(application: Application) : AndroidViewModel(application) 
     private val faceMakeupDetector = FaceMakeupDetector()
     private var imageAssets: List<String> = emptyList()
     private var imageAssetIndex = 0
+    private var currentAssetPath: String? = null
+    private val savedFilterStates = mutableMapOf<String, SavedFilterState>()
 
     init {
         loadSample()
@@ -40,6 +42,7 @@ class FilterViewModel(application: Application) : AndroidViewModel(application) 
         if (_state.value.isLoading || imageAssets.size < 2) {
             return
         }
+        saveCurrentFilterState()
         imageAssetIndex = (imageAssetIndex + 1) % imageAssets.size
         val assetPath = imageAssets[imageAssetIndex]
         viewModelScope.launch {
@@ -278,8 +281,9 @@ class FilterViewModel(application: Application) : AndroidViewModel(application) 
         }
         try {
             val bitmap = withContext(Dispatchers.IO) { decodeAssetBitmap(assetPath) }
+            val savedFilterState = savedFilterStates[assetPath]
             _state.update {
-                it.copy(
+                it.restoreFilterState(savedFilterState).copy(
                     sourceBitmap = bitmap,
                     filterThumbnailKey = FilterSourceKey.asset(assetPath),
                     isLoading = false,
@@ -288,6 +292,7 @@ class FilterViewModel(application: Application) : AndroidViewModel(application) 
                     imageAssetCount = imageAssets.size,
                 )
             }
+            currentAssetPath = assetPath
             faceMakeupDetector.detect(bitmap) { makeupFeatures ->
                 _state.update { state ->
                     if (state.sourceBitmap === bitmap) {
@@ -309,6 +314,19 @@ class FilterViewModel(application: Application) : AndroidViewModel(application) 
 
     private fun updateAdjustments(update: (Adjustments) -> Adjustments) {
         _state.update { it.copy(adjustments = update(it.adjustments)) }
+    }
+
+    private fun saveCurrentFilterState() {
+        val assetPath = currentAssetPath ?: return
+        val state = _state.value
+        savedFilterStates[assetPath] = SavedFilterState(
+            selectedCategoryId = state.selectedCategory.id,
+            selectedFilterId = state.selectedFilter.id,
+            selectedRecipe = state.selectedRecipe,
+            filterIntensities = state.filterIntensities +
+                (state.selectedFilter.id to state.selectedFilterIntensity),
+            adjustments = state.adjustments,
+        )
     }
 
     private fun decodeAssetBitmap(assetPath: String): Bitmap {

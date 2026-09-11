@@ -72,6 +72,42 @@ data class FilterUiState(
                 recipe
             }
         }
+    }
+
+internal data class SavedFilterState(
+    val selectedCategoryId: String,
+    val selectedFilterId: String,
+    val selectedRecipe: FilterRecipe,
+    val filterIntensities: Map<String, Int>,
+    val adjustments: Adjustments,
+)
+
+internal fun FilterUiState.restoreFilterState(saved: SavedFilterState?): FilterUiState {
+    val savedFilter = saved?.selectedFilterId?.let(catalog::filterById)
+    val filter = savedFilter ?: catalog.defaultFilter
+    val recipe = if (savedFilter != null) saved?.selectedRecipe ?: filter.recipe else filter.recipe
+    val category =
+        saved?.selectedCategoryId?.let(catalog::categoryById)
+            ?: (if (savedFilter != null) catalog.categoryForFilter(filter) else catalog.defaultCategory)
+            ?: catalog.defaultCategory
+
+    return copy(
+        selectedCategory = category,
+        selectedFilter = filter,
+        filterIntensities = saved?.filterIntensities ?: emptyMap(),
+        skinSmoothing = recipe.skinSmoothing,
+        skinWhitening = recipe.skinWhitening,
+        blush = recipe.blush,
+        lipstick = recipe.lipstick,
+        underEye = recipe.underEye,
+        teethWhitening = recipe.teethWhitening,
+        eyeShadow = recipe.eyeShadow,
+        eyeliner = recipe.eyeliner,
+        eyebrow = recipe.eyebrow,
+        faceSlimming = recipe.faceSlimming,
+        eyeEnlargement = recipe.eyeEnlargement,
+        adjustments = saved?.adjustments ?: Adjustments(),
+    )
 }
 
 enum class FilterError {
