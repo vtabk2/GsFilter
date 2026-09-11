@@ -85,11 +85,21 @@ class FilterThumbnailRendererTest {
     }
 
     @Test
-    fun `art thumbnails use a smaller texel scale`() {
-        assertEquals(1f, FilterThumbnailRenderer.texelScaleFor(FilterRecipe()), FLOAT_DELTA)
+    fun `thumbnail texel scale follows source to output ratio`() {
         assertEquals(
-            0.5f,
-            FilterThumbnailRenderer.texelScaleFor(FilterRecipe(effect = FilterEffect.Ink)),
+            1f,
+            FilterThumbnailRenderer.texelScaleFor(FilterRecipe(), 400, 800, 256, 256),
+            FLOAT_DELTA,
+        )
+        assertEquals(
+            0.32f,
+            FilterThumbnailRenderer.texelScaleFor(
+                FilterRecipe(effect = FilterEffect.Ink),
+                400,
+                800,
+                128,
+                256,
+            ),
             FLOAT_DELTA,
         )
     }
@@ -112,7 +122,7 @@ class FilterThumbnailRendererTest {
     }
 
     @Test
-    fun `thumbnail recipe softens ink details`() {
+    fun `thumbnail recipe preserves ink line settings`() {
         val recipe = FilterRecipe(
             effect = FilterEffect.Ink,
             effectStrength = 100,
@@ -120,8 +130,7 @@ class FilterThumbnailRendererTest {
         )
         val thumbnailRecipe = FilterThumbnailRenderer.thumbnailRecipe(recipe)
 
-        assertEquals(75, thumbnailRecipe.effectStrength)
-        assertEquals(46, thumbnailRecipe.effectThreshold)
+        assertEquals(recipe, thumbnailRecipe)
     }
 
     private fun channel(color: Int, shift: Int): Int = (color shr shift) and CHANNEL_MASK

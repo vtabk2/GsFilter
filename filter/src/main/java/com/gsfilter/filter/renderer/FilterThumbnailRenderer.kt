@@ -83,7 +83,7 @@ object FilterThumbnailRenderer {
                 maxWidth = maxWidth,
                 maxHeight = maxHeight,
                 scaleSource = false,
-                texelScale = texelScaleFor(recipe),
+                texelScale = texelScaleFor(recipe, renderSource.width, renderSource.height, maxWidth, maxHeight),
                 isCancelled = isCancelled,
             )
         } catch (error: RuntimeException) {
@@ -163,7 +163,7 @@ object FilterThumbnailRenderer {
                 maxWidth = maxWidth,
                 maxHeight = maxHeight,
                 scaleSource = false,
-                texelScale = texelScaleFor(recipe),
+                texelScale = texelScaleFor(recipe, renderSource.width, renderSource.height, maxWidth, maxHeight),
                 isCancelled = isCancelled,
             )
         } catch (error: RuntimeException) {
@@ -241,38 +241,36 @@ object FilterThumbnailRenderer {
     internal fun maxSizeFor(recipe: FilterRecipe): Int =
         if (recipe.effect == FilterEffect.Color) THUMBNAIL_MAX_SIZE else ART_THUMBNAIL_MAX_SIZE
 
-    internal fun texelScaleFor(recipe: FilterRecipe): Float =
-        if (recipe.effect == FilterEffect.Color) DEFAULT_TEXEL_SCALE else ART_TEXEL_SCALE
+    internal fun texelScaleFor(
+        recipe: FilterRecipe,
+        sourceWidth: Int,
+        sourceHeight: Int,
+        maxWidth: Int,
+        maxHeight: Int,
+    ): Float {
+        if (recipe.effect == FilterEffect.Color) {
+            return DEFAULT_TEXEL_SCALE
+        }
+        val output = FilterBitmapRenderer.targetSize(sourceWidth, sourceHeight, maxWidth, maxHeight)
+        return minOf(
+            output.width.toFloat() / sourceWidth,
+            output.height.toFloat() / sourceHeight,
+        )
+    }
 
     internal fun thumbnailRecipe(recipe: FilterRecipe): FilterRecipe =
         when (recipe.effect) {
             FilterEffect.Color -> recipe
-            FilterEffect.Sketch -> recipe.copy(
-                effectStrength = recipe.effectStrength.scale(80),
-                effectThreshold = recipe.effectThreshold.shift(16),
-            )
-            FilterEffect.Ink -> recipe.copy(
-                effectStrength = recipe.effectStrength.scale(75),
-                effectThreshold = recipe.effectThreshold.shift(26),
-            )
+            FilterEffect.Sketch -> recipe
+            FilterEffect.Ink -> recipe
             FilterEffect.Pencil -> recipe.copy(
-                effectStrength = recipe.effectStrength.scale(82),
-                effectThreshold = recipe.effectThreshold.shift(14),
                 adjustments = recipe.adjustments.copy(grain = recipe.adjustments.grain.scale(50)),
             )
-            FilterEffect.ColorPencil -> recipe.copy(
-                effectStrength = recipe.effectStrength.scale(90),
-                effectThreshold = recipe.effectThreshold.shift(10),
-            )
+            FilterEffect.ColorPencil -> recipe
             FilterEffect.Charcoal -> recipe.copy(
-                effectStrength = recipe.effectStrength.scale(75),
-                effectThreshold = recipe.effectThreshold.shift(18),
                 adjustments = recipe.adjustments.copy(grain = recipe.adjustments.grain.scale(50)),
             )
-            FilterEffect.CrossHatch -> recipe.copy(
-                effectStrength = recipe.effectStrength.scale(80),
-                effectThreshold = recipe.effectThreshold.shift(18),
-            )
+            FilterEffect.CrossHatch -> recipe
         }
 
     internal fun filterPixel(
@@ -289,12 +287,9 @@ object FilterThumbnailRenderer {
 
     private fun Int.scale(percent: Int): Int = (this * percent / PERCENT_MAX).coerceIn(EFFECT_MIN, EFFECT_MAX)
 
-    private fun Int.shift(delta: Int): Int = (this + delta).coerceIn(EFFECT_MIN, EFFECT_MAX)
-
     private const val PERCENT_MAX = 100
     private const val EFFECT_MIN = 0
     private const val EFFECT_MAX = 100
     private const val ART_SOURCE_SCALE = 2
     private const val DEFAULT_TEXEL_SCALE = 1f
-    private const val ART_TEXEL_SCALE = 0.5f
 }

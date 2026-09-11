@@ -1,5 +1,54 @@
 # PLAN
 
+## Task: Match Art texel scale to source/output ratio
+
+Status: IN PROGRESS
+Created: 2026-09-11
+Completed: 2026-09-11
+
+### Requirements
+
+- Scale Art edge samples from the actual source/output ratio.
+- Preserve the existing 0.5 value for the current 2× thumbnail source.
+- Avoid changing Color thumbnail sampling.
+
+### Checklist
+
+- [x] Compute Art texel scale from source and output dimensions.
+- [x] Bump thumbnail cache revision and add focused coverage.
+- [ ] Run unit tests, compile, and review the diff.
+
+### Notes
+
+- Current 2× Art source still produces a `0.5` texel scale.
+- Smaller sources and other UI thumbnail sizes now use their real ratio instead of a fixed value.
+- `git diff --check` passed; Gradle validation is pending because the current shell cannot establish its loopback daemon connection.
+
+## Task: Preserve art line settings in thumbnails
+
+Status: DONE
+Created: 2026-09-11
+Completed: 2026-09-11
+
+### Requirements
+
+- Keep Art thumbnail line intensity and threshold consistent with the main result.
+- Let the existing 2× thumbnail source and 0.5 texel footprint reduce visual stroke size.
+- Preserve the reduced grain treatment for noisy Art presets.
+
+### Checklist
+
+- [x] Stop changing Art effect strength/threshold for thumbnails.
+- [x] Keep existing source/texel scaling and bump cache version.
+- [x] Update focused tests and run verification.
+
+### Notes
+
+- Screenshot comparison confirms that preserving Art line settings fixes the Fine Line thumbnail mismatch.
+- Existing 2× source plus 0.5 texel footprint remains; only grain is reduced for noisy Pencil/Charcoal presets.
+- Thumbnail cache revision is `gpu-preview-v21`.
+- `:filter:testDebugUnitTest :filter:compileDebugKotlin :app:compileDebugKotlin :app:testDebugUnitTest` passed.
+
 ## Task: Skip duplicate preview source uploads
 
 Status: DONE
