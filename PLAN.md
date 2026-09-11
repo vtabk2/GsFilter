@@ -1,5 +1,29 @@
 # PLAN
 
+## Task: Remove redundant GPU edge-coordinate clamps
+
+Status: DONE
+Created: 2026-09-11
+Completed: 2026-09-11
+
+### Requirements
+
+- Preserve edge behavior at texture boundaries.
+- Rely only on the texture's existing `GL_CLAMP_TO_EDGE` sampler state.
+- Reduce per-fragment arithmetic in art effects.
+
+### Checklist
+
+- [x] Remove the duplicate GLSL coordinate clamp.
+- [x] Verify all input texture paths configure edge clamping.
+- [x] Run focused unit tests, compile, and review diff.
+
+### Notes
+
+- `lumaAt` dùng trực tiếp sampler đã cấu hình `GL_CLAMP_TO_EDGE`.
+- Cả offscreen texture và preview texture đều giữ cấu hình clamp ở S/T.
+- `:filter:testDebugUnitTest`, filter/app compilation, and `git diff --check` passed.
+
 ## Task: Skip unchanged GPU source uploads
 
 Status: DONE

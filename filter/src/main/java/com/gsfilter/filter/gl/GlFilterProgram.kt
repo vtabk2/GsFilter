@@ -611,7 +611,7 @@ internal object GlFilterProgram {
         }
 
         float lumaAt(vec2 coord) {
-            vec3 rgb = texture2D(uTexture, clamp(coord, vec2(0.0), vec2(1.0))).rgb;
+            vec3 rgb = texture2D(uTexture, coord).rgb;
             return dot(rgb, vec3(0.299, 0.587, 0.114));
         }
 
