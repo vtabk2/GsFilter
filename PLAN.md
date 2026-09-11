@@ -2947,3 +2947,25 @@ Completed: 2026-09-10
 - GPU art fragments now skip neutral color stages while preserving active stage order.
 - Saturation and vibrance continue sharing the original pre-saturation luma value.
 - `:filter:testDebugUnitTest`, `:filter:compileDebugKotlin`, and `:app:compileDebugKotlin` passed.
+## Task: Skip inactive art finishing stages
+
+Status: DONE
+Created: 2026-09-11
+Completed: 2026-09-11
+
+### Requirements
+
+- Skip neutral fade, vignette, and grain stages in the GPU fragment shader.
+- Preserve output when each stage is active.
+- Keep the art effect and adjustment ordering unchanged.
+
+### Checklist
+
+- [x] Gate fade, vignette, and grain calculations by their uniforms.
+- [x] Run focused unit tests, compile, and review diff.
+
+### Notes
+
+- GPU art fragments skip inactive fade, vignette, and grain calculations.
+- Active finishing stages retain their original formulas and order.
+- `:filter:testDebugUnitTest`, `:filter:compileDebugKotlin`, and `:app:compileDebugKotlin` passed.

@@ -1039,14 +1039,20 @@ internal object GlFilterProgram {
                 rgb = mix(beforeEffect, rgb, uIntensity);
             }
 
-            rgb = mix(rgb, vec3(0.5), clamp(uFade * 0.35, 0.0, 0.35));
+            if (uFade != 0.0) {
+                rgb = mix(rgb, vec3(0.5), clamp(uFade * 0.35, 0.0, 0.35));
+            }
 
-            float edgeDistance = distance(vTexCoord, vec2(0.5));
-            float edgeMask = smoothstep(0.35, 0.75, edgeDistance);
-            rgb = rgb * (1.0 - (uVignette * 0.7 * edgeMask));
+            if (uVignette != 0.0) {
+                float edgeDistance = distance(vTexCoord, vec2(0.5));
+                float edgeMask = smoothstep(0.35, 0.75, edgeDistance);
+                rgb = rgb * (1.0 - (uVignette * 0.7 * edgeMask));
+            }
 
-            float grain = (random(vTexCoord * vec2(1024.0, 768.0)) - 0.5) * uGrain * 0.16;
-            rgb = rgb + grain;
+            if (uGrain != 0.0) {
+                float grain = (random(vTexCoord * vec2(1024.0, 768.0)) - 0.5) * uGrain * 0.16;
+                rgb = rgb + grain;
+            }
 
             gl_FragColor = vec4(clamp(rgb, 0.0, 1.0), color.a);
         }
