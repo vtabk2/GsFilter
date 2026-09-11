@@ -95,6 +95,18 @@ object FilterBitmapRenderer {
         val texelY = 1f / height
         val exposure = 2.0.pow(params.exposure.toDouble()).toFloat()
         val hasWarp = hasActiveWarp(params)
+        val sharpAmount = (params.sharpness * 0.65f) + (params.clarity * 0.35f)
+        val needsNeighborhood = params.skinSmoothing != 0f || sharpAmount != 0f
+        val needsEdge = params.skinSmoothing != 0f || params.effect != FilterEffect.Color
+        val hasBeauty = params.skinSmoothing != 0f ||
+            params.skinWhitening != 0f ||
+            params.blush != 0f ||
+            params.lipstick != 0f ||
+            params.underEye != 0f ||
+            params.teethWhitening != 0f ||
+            params.eyeShadow != 0f ||
+            params.eyeliner != 0f ||
+            params.eyebrow != 0f
         for (y in 0 until height) {
             for (x in 0 until width) {
                 val index = y * width + x
@@ -111,6 +123,10 @@ object FilterBitmapRenderer {
                     texelY,
                     exposure,
                     hasWarp,
+                    sharpAmount,
+                    needsNeighborhood,
+                    needsEdge,
+                    hasBeauty,
                 )
             }
         }
@@ -124,20 +140,35 @@ object FilterBitmapRenderer {
         width: Int,
         height: Int,
         params: ShaderFilterParams,
-    ): Int = filterPixel(
-        pixels,
-        x,
-        y,
-        width,
-        height,
-        params,
-        FloatArray(3),
-        FloatArray(2),
-        1f / width,
-        1f / height,
-        2.0.pow(params.exposure.toDouble()).toFloat(),
-        hasActiveWarp(params),
-    )
+    ): Int {
+        val sharpAmount = (params.sharpness * 0.65f) + (params.clarity * 0.35f)
+        return filterPixel(
+            pixels,
+            x,
+            y,
+            width,
+            height,
+            params,
+            FloatArray(3),
+            FloatArray(2),
+            1f / width,
+            1f / height,
+            2.0.pow(params.exposure.toDouble()).toFloat(),
+            hasActiveWarp(params),
+            sharpAmount,
+            params.skinSmoothing != 0f || sharpAmount != 0f,
+            params.skinSmoothing != 0f || params.effect != FilterEffect.Color,
+            params.skinSmoothing != 0f ||
+                params.skinWhitening != 0f ||
+                params.blush != 0f ||
+                params.lipstick != 0f ||
+                params.underEye != 0f ||
+                params.teethWhitening != 0f ||
+                params.eyeShadow != 0f ||
+                params.eyeliner != 0f ||
+                params.eyebrow != 0f,
+        )
+    }
 
     private fun filterPixel(
         pixels: IntArray,
@@ -152,6 +183,10 @@ object FilterBitmapRenderer {
         texelY: Float,
         exposure: Float,
         hasWarp: Boolean,
+        sharpAmount: Float,
+        needsNeighborhood: Boolean,
+        needsEdge: Boolean,
+        hasBeauty: Boolean,
     ): Int {
         val textureX = (x + 0.5f) / width
         val textureY = (y + 0.5f) / height
@@ -177,8 +212,6 @@ object FilterBitmapRenderer {
         var green = sourceGreen
         var blue = sourceBlue
         val sourceGray = gray(sourceRed, sourceGreen, sourceBlue)
-        val sharpAmount = (params.sharpness * 0.65f) + (params.clarity * 0.35f)
-        val needsNeighborhood = params.skinSmoothing != 0f || sharpAmount != 0f
         val left: Int
         val right: Int
         val up: Int
@@ -215,20 +248,11 @@ object FilterBitmapRenderer {
             blurredGreen = sourceGreen
             blurredBlue = sourceBlue
         }
-        val edge = if (params.skinSmoothing != 0f || params.effect != FilterEffect.Color) {
+        val edge = if (needsEdge) {
             edgeAt(pixels, x, y, width, height)
         } else {
             0f
         }
-        val hasBeauty = params.skinSmoothing != 0f ||
-            params.skinWhitening != 0f ||
-            params.blush != 0f ||
-            params.lipstick != 0f ||
-            params.underEye != 0f ||
-            params.teethWhitening != 0f ||
-            params.eyeShadow != 0f ||
-            params.eyeliner != 0f ||
-            params.eyebrow != 0f
         val faceMask: Float
         val beautyMask: Float
         if (hasBeauty) {

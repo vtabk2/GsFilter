@@ -1,5 +1,28 @@
 # PLAN
 
+## Task: Hoist CPU render flags out of the pixel loop
+
+Status: DONE
+Created: 2026-09-11
+Completed: 2026-09-11
+
+### Requirements
+
+- Compute constant per-render flags once instead of once per pixel.
+- Preserve all active-stage formulas and output behavior.
+- Keep the public single-pixel test helper working.
+
+### Checklist
+
+- [x] Hoist neighborhood, edge, beauty, and sharpness decisions.
+- [x] Pass the cached values through the existing render path.
+- [x] Run focused unit tests, compile, and review diff.
+
+### Notes
+
+- CPU fallback không còn tính lại các cờ render cố định ở từng pixel.
+- `:filter:testDebugUnitTest`, filter/app compilation, and `git diff --check` passed.
+
 ## Task: Fast-path CPU identity sampling
 
 Status: DONE
