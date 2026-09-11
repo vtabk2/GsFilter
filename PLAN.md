@@ -1,5 +1,29 @@
 # PLAN
 
+## Task: Avoid redundant main-screen image updates
+
+Status: DONE
+Created: 2026-09-11
+Completed: 2026-09-11
+
+### Requirements
+
+- Keep the original image updated when the source bitmap changes.
+- Avoid resetting the same ImageView on filter/beauty/adjustment changes.
+- Reuse the computed selected recipe within one state render.
+
+### Checklist
+
+- [x] Guard original ImageView updates by bitmap identity.
+- [x] Compute `selectedRecipe` once per render.
+- [x] Run compile/tests and review diff.
+
+### Notes
+
+- Ảnh gốc chỉ gọi `setImageBitmap` khi bitmap identity thực sự thay đổi.
+- `selectedRecipe` được tính một lần rồi dùng chung cho preview và controls.
+- `:app:testDebugUnitTest`, `:filter:testDebugUnitTest`, compilation, and `git diff --check` passed.
+
 ## Task: Restore filter state per image
 
 Status: DONE

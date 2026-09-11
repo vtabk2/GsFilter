@@ -126,13 +126,14 @@ class MainActivity : ComponentActivity() {
         binding.nextImageButton.isEnabled = state.imageAssetCount > 1 && !state.isLoading && !isSaving
         binding.errorText.isVisible = state.error != null
         binding.errorText.text = state.error?.toMessage().orEmpty()
-        binding.imageOriginal.setImageBitmap(state.sourceBitmap)
+        val selectedRecipe = state.selectedRecipe
         if (renderedBitmap !== state.sourceBitmap) {
             renderedBitmap = state.sourceBitmap
+            binding.imageOriginal.setImageBitmap(state.sourceBitmap)
             binding.filterPreview.setSourceBitmap(state.sourceBitmap)
         }
         binding.filterPreview.setFilterState(
-            recipe = state.selectedRecipe,
+            recipe = selectedRecipe,
             adjustments = state.adjustments,
             makeupFeatures = state.makeupFeatures,
         )
@@ -141,7 +142,7 @@ class MainActivity : ComponentActivity() {
             selectedFilter = state.selectedFilter,
             thumbnailBitmap = state.sourceBitmap,
             thumbnailKey = state.filterThumbnailKey,
-            selectedRecipe = state.selectedRecipe,
+            selectedRecipe = selectedRecipe,
         )
         binding.filterControls.setAdjustments(state.adjustments)
     }
