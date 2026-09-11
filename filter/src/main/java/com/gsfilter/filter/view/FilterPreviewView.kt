@@ -94,6 +94,8 @@ class FilterPreviewView @JvmOverloads constructor(
             program = GlFilterProgram.buildProgram()
             val currentHandles = GlFilterProgram.resolveHandles(program)
             handles = currentHandles
+            GLES20.glUseProgram(program)
+            GLES20.glUniform1i(currentHandles.texture, 0)
             GlFilterProgram.bindAttributes(currentHandles, vertexBuffer, textureBuffer)
             textureId = 0
             lutTextureId = 0
@@ -119,7 +121,6 @@ class FilterPreviewView @JvmOverloads constructor(
             }
             val currentHandles = handles ?: return
 
-            GLES20.glUseProgram(program)
             GlFilterProgram.bindUniforms(
                 handles = currentHandles,
                 textureId = textureId,
@@ -127,6 +128,7 @@ class FilterPreviewView @JvmOverloads constructor(
                 renderWidth = renderWidth,
                 renderHeight = renderHeight,
                 params = params,
+                bindTextureSampler = false,
             )
             GLES20.glDrawArrays(GLES20.GL_TRIANGLE_STRIP, 0, GlFilterProgram.VERTEX_COUNT)
         }

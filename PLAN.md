@@ -1,5 +1,29 @@
 # PLAN
 
+## Task: Hoist preview program and sampler state
+
+Status: DONE
+Created: 2026-09-11
+Completed: 2026-09-11
+
+### Requirements
+
+- Keep the preview program active for its GL context.
+- Bind the fixed input sampler once per program recreation.
+- Preserve dynamic texture and filter uniform updates.
+
+### Checklist
+
+- [x] Initialize program and sampler state during surface creation.
+- [x] Remove redundant per-frame program/sampler calls.
+- [x] Run focused unit tests, compile, and review diff.
+
+### Notes
+
+- Preview giữ program active và bind sampler `uTexture` một lần mỗi GL context.
+- Texture binding và dynamic uniforms vẫn cập nhật mỗi frame như trước.
+- `:filter:testDebugUnitTest`, filter/app compilation, and `git diff --check` passed.
+
 ## Task: Reuse preview vertex attribute bindings
 
 Status: DONE
