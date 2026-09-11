@@ -170,10 +170,11 @@ class FilterPreviewView @JvmOverloads constructor(
                 return lutTextureId
             }
             if (lutTextureId != 0) {
-                GLES20.glDeleteTextures(1, intArrayOf(lutTextureId), 0)
+                GlLutTexture.update(lutTextureId, params.lut)
+            } else {
+                lutTextureId = GlLutTexture.upload(params.lut)
             }
             lutTexture = params.lut
-            lutTextureId = GlLutTexture.upload(params.lut)
             return lutTextureId
         }
 

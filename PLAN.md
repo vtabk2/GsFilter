@@ -1,5 +1,29 @@
 # PLAN
 
+## Task: Reuse preview LUT texture storage
+
+Status: DONE
+Created: 2026-09-11
+Completed: 2026-09-11
+
+### Requirements
+
+- Preserve preview LUT output and existing cleanup when LUT is disabled.
+- Reuse the preview LUT texture when switching between LUTs.
+- Avoid changing preview render scheduling or texture ownership.
+
+### Checklist
+
+- [x] Update an existing preview LUT texture with `texSubImage2D`.
+- [x] Keep texture creation for the first LUT and cleanup for disabled LUTs.
+- [x] Run focused unit tests, compile, and review diff.
+
+### Notes
+
+- Preview đổi giữa các LUT bằng cách cập nhật texture hiện có, không xoá/tạo lại texture.
+- Khi LUT bị tắt, cleanup cũ vẫn được giữ nguyên; LUT đầu tiên vẫn tạo texture mới.
+- `:filter:testDebugUnitTest`, filter/app compilation, and `git diff --check` passed.
+
 ## Task: Avoid redundant filter-control rerenders
 
 Status: DONE

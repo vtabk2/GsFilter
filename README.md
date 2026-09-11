@@ -22,17 +22,6 @@ Phạm vi hiện tại:
 - LUT nội bộ dùng texture 33x33x33 sinh từ `FilterLut`, không cần ship file LUT ngoài.
 - Render nhiều bitmap nên đi qua `FilterRenderer.renderBatch()` để xử lý lần lượt và nhận progress %.
 
-## Chạy app mẫu
-
-Mở project bằng Android Studio, chọn configuration `app`, rồi chạy trên emulator hoặc thiết bị Android API 24+.
-
-Build, test và cài Debug trên Windows:
-
-```powershell
-$env:JAVA_HOME = "<Android Studio>\jbr"
-.\gradlew.bat --no-daemon :filter:testDebugUnitTest :app:testDebugUnitTest :app:compileDebugKotlin :app:installDebug
-```
-
 Ảnh demo được tải từ `app/src/main/assets`. Nút `Next image` chuyển lần lượt qua các ảnh được hỗ trợ trong thư mục assets.
 
 ## Cài đặt thư viện
@@ -78,10 +67,6 @@ dependencies {
     implementation 'com.github.vtabk2:GsFilter:1.0.1'
 }
 ```
-
-`1.0.1` là tag release hiện tại. Khi cần test bản chưa release, có thể thay bằng commit hash hoặc branch JitPack như `main-SNAPSHOT`. Không cần khai báo `GsCore` riêng; GsFilter đã kéo `com.github.vtabk2:GsCore:1.1.0` qua dependency transitive.
-
-Host app cần `minSdk >= 24`.
 
 Nếu dùng `FilterControlsView` và thumbnail rail, host app cần thêm Glide KSP processor để `AppGlideModule` được generate:
 
