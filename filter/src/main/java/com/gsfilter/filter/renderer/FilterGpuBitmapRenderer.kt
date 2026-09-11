@@ -206,20 +206,28 @@ object FilterGpuBitmapRenderer {
         val pixels = readbackBuffers.pixels
         buffer.clear()
         GLES20.glReadPixels(0, 0, width, height, GLES20.GL_RGBA, GLES20.GL_UNSIGNED_BYTE, buffer)
-        var offset = 0
-        var targetIndex = (height - 1) * width
-        for (y in 0 until height) {
-            var rowIndex = targetIndex
-            repeat(width) {
-                val rgba = buffer.getInt(offset)
-                pixels[rowIndex] = (rgba shl 24) or (rgba ushr 8)
-                rowIndex++
-                offset += BYTES_PER_PIXEL
+        buffer.asIntBuffer().get(pixels, 0, pixelCount)
+        var topRow = 0
+        var bottomRow = (height - 1) * width
+        repeat(height / 2) {
+            for (column in 0 until width) {
+                val top = pixels[topRow + column]
+                val bottom = pixels[bottomRow + column]
+                pixels[topRow + column] = argbFromRgba(bottom)
+                pixels[bottomRow + column] = argbFromRgba(top)
             }
-            targetIndex -= width
+            topRow += width
+            bottomRow -= width
+        }
+        if (height % 2 != 0) {
+            for (column in 0 until width) {
+                pixels[topRow + column] = argbFromRgba(pixels[topRow + column])
+            }
         }
         return Bitmap.createBitmap(pixels, width, height, Bitmap.Config.ARGB_8888)
     }
+
+    private fun argbFromRgba(rgba: Int): Int = (rgba shl 24) or (rgba ushr 8)
 
     private class ReadbackBuffers {
         var buffer: ByteBuffer? = null

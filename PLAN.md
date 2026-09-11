@@ -1,5 +1,53 @@
 # PLAN
 
+## Task: Bulk GPU readback conversion
+
+Status: DONE
+Created: 2026-09-11
+Completed: 2026-09-11
+
+### Requirements
+
+- Preserve RGBA-to-ARGB conversion and vertical flip exactly.
+- Replace per-pixel direct-buffer reads with one bulk read.
+- Avoid allocating another full-size pixel buffer.
+
+### Checklist
+
+- [x] Read packed RGBA pixels into the existing output array in bulk.
+- [x] Convert and flip rows in place.
+- [x] Run focused unit tests, compile, and review diff.
+
+### Notes
+
+- Readback dùng một lần `IntBuffer.get()` rồi chuyển RGBA→ARGB và flip hàng tại chỗ.
+- Không thêm pixel buffer kích thước ảnh.
+- `:filter:testDebugUnitTest`, filter/app compilation, and `git diff --check` passed.
+
+## Task: Add no-warp GPU fragment fast-path
+
+Status: DONE
+Created: 2026-09-11
+Completed: 2026-09-11
+
+### Requirements
+
+- Return the original coordinate when both warp controls are inactive.
+- Preserve face slimming and eye enlargement behavior when either is active.
+- Keep coordinate clamping unchanged for active and inactive paths.
+
+### Checklist
+
+- [x] Add the early return in the shared GLSL warp function.
+- [x] Verify active warp paths remain reachable.
+- [x] Run focused unit tests, compile, and review diff.
+
+### Notes
+
+- Khi cả `uFaceSlimming` và `uEyeEnlargement` tắt, shader trả thẳng `coord`.
+- Nhánh active warp vẫn chạy nguyên vẹn, bao gồm clamp cuối hàm.
+- `:filter:testDebugUnitTest`, filter/app compilation, and `git diff --check` passed.
+
 ## Task: Hoist fixed GPU sampler binding
 
 Status: DONE

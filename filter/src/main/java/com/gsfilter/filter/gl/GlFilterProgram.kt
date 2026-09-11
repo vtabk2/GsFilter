@@ -736,6 +736,9 @@ internal object GlFilterProgram {
         }
 
         vec2 warpCoordinate(vec2 coord) {
+            if (uFaceSlimming <= 0.0 && uEyeEnlargement <= 0.0) {
+                return coord;
+            }
             vec2 warped = coord;
             if (uFaceSlimming > 0.0 && uFaceArea.z > 0.0 && uFaceArea.w > 0.0) {
                 vec2 delta = coord - uFaceArea.xy;
