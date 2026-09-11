@@ -1,5 +1,29 @@
 # PLAN
 
+## Task: Avoid redundant makeup uniform writes
+
+Status: DONE
+Created: 2026-09-11
+Completed: 2026-09-11
+
+### Requirements
+
+- Skip makeup scalar/geometry uniform writes when they are already inactive.
+- Reset previously active makeup state exactly once before inactive renders continue.
+- Leave the preview path and active beauty/warp rendering unchanged.
+
+### Checklist
+
+- [x] Track inactive/active makeup state per reused GPU session.
+- [x] Gate redundant uniform writes and reset transitions safely.
+- [x] Run focused unit tests, compile, and review diff.
+
+### Notes
+
+- Repeated inactive art renders skip redundant makeup scalar and geometry uniform writes.
+- A transition from active beauty/warp to inactive state performs one reset before skipping later writes.
+- `:filter:testDebugUnitTest`, filter/app compilation, and `git diff --check` passed.
+
 ## Task: Remove contour list allocations during uniform upload
 
 Status: DONE

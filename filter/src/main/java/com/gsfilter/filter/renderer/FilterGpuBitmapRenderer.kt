@@ -43,6 +43,8 @@ object FilterGpuBitmapRenderer {
         val height = if (scaleSource) renderSource.height else renderSize.height
         val session = sessionFor(width, height)
         val params = ShaderFilterParams.from(recipe, adjustments, makeupFeatures)
+        val makeupControlsEnabled = GlFilterProgram.hasMakeupControls(params)
+        val uploadMakeupUniforms = session.makeupUniformsEnabled || makeupControlsEnabled
         var lutTextureId = 0
         var invalidateSession = false
 
@@ -67,7 +69,9 @@ object FilterGpuBitmapRenderer {
                 renderHeight = height,
                 params = params,
                 texelScale = texelScale,
+                uploadMakeupUniforms = uploadMakeupUniforms,
             )
+            session.makeupUniformsEnabled = makeupControlsEnabled
             GLES20.glDrawArrays(GLES20.GL_TRIANGLE_STRIP, 0, GlFilterProgram.VERTEX_COUNT)
             GlFilterProgram.disableAttributes(handles)
 
@@ -169,6 +173,7 @@ object FilterGpuBitmapRenderer {
             private set
         var inputTextureId = 0
             private set
+        var makeupUniformsEnabled = false
         lateinit var handles: GlFilterProgram.ProgramHandles
             private set
 

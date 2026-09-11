@@ -160,6 +160,7 @@ internal object GlFilterProgram {
         renderHeight: Int,
         params: ShaderFilterParams,
         texelScale: Float = 1f,
+        uploadMakeupUniforms: Boolean = true,
     ) {
         GLES20.glActiveTexture(GLES20.GL_TEXTURE0)
         GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, textureId)
@@ -171,31 +172,22 @@ internal object GlFilterProgram {
             GLES20.glUniform1i(handles.lutTexture, 1)
         }
         GLES20.glUniform1f(handles.lutStrength, lutStrength)
-        GLES20.glUniform1f(handles.skinSmoothing, params.skinSmoothing)
-        GLES20.glUniform1f(handles.skinWhitening, params.skinWhitening)
-        GLES20.glUniform1f(handles.blush, params.blush)
-        GLES20.glUniform1f(handles.lipstick, params.lipstick)
-        GLES20.glUniform1f(handles.underEye, params.underEye)
-        GLES20.glUniform1f(handles.teethWhitening, params.teethWhitening)
-        GLES20.glUniform1f(handles.eyeShadow, params.eyeShadow)
-        GLES20.glUniform1f(handles.eyeliner, params.eyeliner)
-        GLES20.glUniform1f(handles.eyebrow, params.eyebrow)
-        GLES20.glUniform1f(handles.faceSlimming, params.faceSlimming)
-        GLES20.glUniform1f(handles.eyeEnlargement, params.eyeEnlargement)
-        GLES20.glUniform1f(handles.makeupRotation, params.makeupFeatures?.rotationRadians ?: 0f)
-        val makeupGeometryEnabled = params.skinSmoothing != 0f ||
-            params.skinWhitening != 0f ||
-            params.blush != 0f ||
-            params.lipstick != 0f ||
-            params.underEye != 0f ||
-            params.teethWhitening != 0f ||
-            params.eyeShadow != 0f ||
-            params.eyeliner != 0f ||
-            params.eyebrow != 0f ||
-            params.faceSlimming != 0f ||
-            params.eyeEnlargement != 0f
-        if (makeupGeometryEnabled) {
-            params.makeupFeatures?.let { features ->
+        if (uploadMakeupUniforms) {
+            GLES20.glUniform1f(handles.skinSmoothing, params.skinSmoothing)
+            GLES20.glUniform1f(handles.skinWhitening, params.skinWhitening)
+            GLES20.glUniform1f(handles.blush, params.blush)
+            GLES20.glUniform1f(handles.lipstick, params.lipstick)
+            GLES20.glUniform1f(handles.underEye, params.underEye)
+            GLES20.glUniform1f(handles.teethWhitening, params.teethWhitening)
+            GLES20.glUniform1f(handles.eyeShadow, params.eyeShadow)
+            GLES20.glUniform1f(handles.eyeliner, params.eyeliner)
+            GLES20.glUniform1f(handles.eyebrow, params.eyebrow)
+            GLES20.glUniform1f(handles.faceSlimming, params.faceSlimming)
+            GLES20.glUniform1f(handles.eyeEnlargement, params.eyeEnlargement)
+            GLES20.glUniform1f(handles.makeupRotation, params.makeupFeatures?.rotationRadians ?: 0f)
+            val makeupGeometryEnabled = hasMakeupControls(params)
+            if (makeupGeometryEnabled) {
+                params.makeupFeatures?.let { features ->
             val uniforms = requireNotNull(contourUniforms.get())
             val sine = sin(features.rotationRadians)
             val cosine = cos(features.rotationRadians)
@@ -305,28 +297,29 @@ internal object GlFilterProgram {
             }
             GLES20.glUniform2fv(handles.rightEyebrowPoints, MAX_CONTOUR_POINTS, rightEyebrowPointValues, 0)
             GLES20.glUniform1i(handles.rightEyebrowPointCount, rightEyebrowPointCount)
-            } ?: run {
-                val uniforms = requireNotNull(contourUniforms.get())
-                uniforms.clear()
-                GLES20.glUniform4f(handles.blushLeft, 0f, 0f, 0f, 0f)
-                GLES20.glUniform4f(handles.blushRight, 0f, 0f, 0f, 0f)
-                GLES20.glUniform2f(handles.blushStrengths, 0f, 0f)
-                GLES20.glUniform4f(handles.faceArea, 0f, 0f, 0f, 0f)
-                GLES20.glUniform4f(handles.underEyeLeft, 0f, 0f, 0f, 0f)
-                GLES20.glUniform4f(handles.underEyeRight, 0f, 0f, 0f, 0f)
-                GLES20.glUniform4f(handles.eyeLeft, 0f, 0f, 0f, 0f)
-                GLES20.glUniform4f(handles.eyeRight, 0f, 0f, 0f, 0f)
-                GLES20.glUniform4f(handles.lipArea, 0f, 0f, 0f, 0f)
-                GLES20.glUniform2fv(handles.lipPoints, MAX_LIP_POINTS, uniforms.lipPoints, 0)
-                GLES20.glUniform1i(handles.lipPointCount, 0)
-                GLES20.glUniform2fv(handles.upperLipPoints, MAX_LIP_POINTS, uniforms.upperLipPoints, 0)
-                GLES20.glUniform1i(handles.upperLipPointCount, 0)
-                GLES20.glUniform2fv(handles.lowerLipPoints, MAX_LIP_POINTS, uniforms.lowerLipPoints, 0)
-                GLES20.glUniform1i(handles.lowerLipPointCount, 0)
-                GLES20.glUniform2fv(handles.leftEyebrowPoints, MAX_CONTOUR_POINTS, uniforms.leftEyebrowPoints, 0)
-                GLES20.glUniform1i(handles.leftEyebrowPointCount, 0)
-                GLES20.glUniform2fv(handles.rightEyebrowPoints, MAX_CONTOUR_POINTS, uniforms.rightEyebrowPoints, 0)
-                GLES20.glUniform1i(handles.rightEyebrowPointCount, 0)
+                } ?: run {
+                    val uniforms = requireNotNull(contourUniforms.get())
+                    uniforms.clear()
+                    GLES20.glUniform4f(handles.blushLeft, 0f, 0f, 0f, 0f)
+                    GLES20.glUniform4f(handles.blushRight, 0f, 0f, 0f, 0f)
+                    GLES20.glUniform2f(handles.blushStrengths, 0f, 0f)
+                    GLES20.glUniform4f(handles.faceArea, 0f, 0f, 0f, 0f)
+                    GLES20.glUniform4f(handles.underEyeLeft, 0f, 0f, 0f, 0f)
+                    GLES20.glUniform4f(handles.underEyeRight, 0f, 0f, 0f, 0f)
+                    GLES20.glUniform4f(handles.eyeLeft, 0f, 0f, 0f, 0f)
+                    GLES20.glUniform4f(handles.eyeRight, 0f, 0f, 0f, 0f)
+                    GLES20.glUniform4f(handles.lipArea, 0f, 0f, 0f, 0f)
+                    GLES20.glUniform2fv(handles.lipPoints, MAX_LIP_POINTS, uniforms.lipPoints, 0)
+                    GLES20.glUniform1i(handles.lipPointCount, 0)
+                    GLES20.glUniform2fv(handles.upperLipPoints, MAX_LIP_POINTS, uniforms.upperLipPoints, 0)
+                    GLES20.glUniform1i(handles.upperLipPointCount, 0)
+                    GLES20.glUniform2fv(handles.lowerLipPoints, MAX_LIP_POINTS, uniforms.lowerLipPoints, 0)
+                    GLES20.glUniform1i(handles.lowerLipPointCount, 0)
+                    GLES20.glUniform2fv(handles.leftEyebrowPoints, MAX_CONTOUR_POINTS, uniforms.leftEyebrowPoints, 0)
+                    GLES20.glUniform1i(handles.leftEyebrowPointCount, 0)
+                    GLES20.glUniform2fv(handles.rightEyebrowPoints, MAX_CONTOUR_POINTS, uniforms.rightEyebrowPoints, 0)
+                    GLES20.glUniform1i(handles.rightEyebrowPointCount, 0)
+                }
             }
         }
         GLES20.glUniform1f(handles.effect, params.effect.shaderValue)
@@ -361,6 +354,19 @@ internal object GlFilterProgram {
         GLES20.glDisableVertexAttribArray(handles.position)
         GLES20.glDisableVertexAttribArray(handles.textureCoordinate)
     }
+
+    fun hasMakeupControls(params: ShaderFilterParams): Boolean =
+        params.skinSmoothing != 0f ||
+            params.skinWhitening != 0f ||
+            params.blush != 0f ||
+            params.lipstick != 0f ||
+            params.underEye != 0f ||
+            params.teethWhitening != 0f ||
+            params.eyeShadow != 0f ||
+            params.eyeliner != 0f ||
+            params.eyebrow != 0f ||
+            params.faceSlimming != 0f ||
+            params.eyeEnlargement != 0f
 
     fun floatBufferOf(values: FloatArray): FloatBuffer =
         ByteBuffer.allocateDirect(values.size * java.lang.Float.BYTES)
