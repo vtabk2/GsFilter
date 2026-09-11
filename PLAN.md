@@ -1,5 +1,29 @@
 # PLAN
 
+## Task: Abort cancelled art scaling before GPU work
+
+Status: DONE
+Created: 2026-09-11
+Completed: 2026-09-11
+
+### Requirements
+
+- Stop a cancelled art thumbnail after source scaling and before GPU upload.
+- Recycle temporary scaled bitmaps through the existing `finally` path.
+- Preserve fallback behavior for non-cancelled renders.
+
+### Checklist
+
+- [x] Add a cancellation checkpoint after art source scaling.
+- [x] Keep existing cleanup and runtime fallback behavior.
+- [x] Run focused unit tests, compile, and review diff.
+
+### Notes
+
+- Request art bị cancel sẽ dừng trước GPU upload sau khi scale xong.
+- `finally` vẫn recycle temporary source và fallback không đổi.
+- `:filter:testDebugUnitTest`, filter/app compilation, and `git diff --check` passed.
+
 ## Task: Reuse preview texture storage on source changes
 
 Status: DONE

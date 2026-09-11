@@ -47,6 +47,7 @@ object FilterThumbnailRenderer {
             maxHeight = maxHeight * ART_SOURCE_SCALE,
         )
         return try {
+            throwIfCancelled(isCancelled)
             FilterGpuBitmapRenderer.getBitmap(
                 source = renderSource,
                 recipe = recipe,
