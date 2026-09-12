@@ -4,6 +4,7 @@ import android.graphics.Bitmap
 import com.gsfilter.filter.Adjustments
 import com.gsfilter.filter.FilterRecipe
 import com.gsfilter.filter.ShaderFilterParams
+import com.gsfilter.filter.gl.GlFilterProgram
 
 object FilterRenderer {
 
@@ -41,6 +42,8 @@ object FilterRenderer {
         onProgress(FilterRenderProgress(completedCount = 0, totalCount = totalCount))
         val params = ShaderFilterParams.from(recipe, adjustments)
         val isNoOp = FilterBitmapRenderer.isNoOp(params)
+        val makeupControlsEnabled = if (isNoOp) false else GlFilterProgram.hasMakeupControls(params)
+        val adjustmentValuesEnabled = if (isNoOp) false else GlFilterProgram.hasAdjustmentValues(params)
         var completedCount = 0
         val batches = sources.withIndex().groupBy { indexedSource ->
             FilterBitmapRenderer.targetSize(
@@ -59,6 +62,8 @@ object FilterRenderer {
                     maxHeight = maxHeight,
                     renderSize = renderSize,
                     isNoOp = isNoOp,
+                    makeupControlsEnabled = makeupControlsEnabled,
+                    adjustmentValuesEnabled = adjustmentValuesEnabled,
                 )
                 onBitmap(indexedSource.index, bitmap)
                 completedCount++
@@ -74,6 +79,8 @@ object FilterRenderer {
         maxHeight: Int?,
         renderSize: FilterBitmapRenderer.RenderSize? = null,
         isNoOp: Boolean,
+        makeupControlsEnabled: Boolean? = null,
+        adjustmentValuesEnabled: Boolean? = null,
     ): Bitmap {
         if (isNoOp || FilterGpuBitmapRenderer.isOffscreenGpuUnavailable) {
             return FilterBitmapRenderer.getBitmapWithParams(
@@ -92,6 +99,8 @@ object FilterRenderer {
                 maxWidth = maxWidth,
                 maxHeight = maxHeight,
                 renderSize = renderSize,
+                makeupControlsEnabled = makeupControlsEnabled,
+                adjustmentValuesEnabled = adjustmentValuesEnabled,
             )
         } catch (_: RuntimeException) {
             // Fall back for devices/contexts where offscreen EGL is unavailable.

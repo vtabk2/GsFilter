@@ -1,5 +1,25 @@
 # PLAN
 
+## Task: Reuse GPU batch control flags
+
+Status: IN PROGRESS
+Created: 2026-09-12
+
+### Requirements
+
+- Avoid recomputing static makeup and adjustment control flags per image.
+- Preserve the public GPU API defaults and uniform upload behavior.
+
+### Checklist
+
+- [x] Compute the flags once in `FilterRenderer.renderBatch`.
+- [x] Pass them only through the internal batch path.
+- [ ] Run unit tests, compile, and review the diff.
+
+### Notes
+
+- Single-image callers keep the existing default calculation.
+
 ## Task: Skip GPU for no-op batch renders
 
 Status: IN PROGRESS

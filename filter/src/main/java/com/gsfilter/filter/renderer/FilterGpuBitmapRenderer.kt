@@ -59,6 +59,8 @@ object FilterGpuBitmapRenderer {
         scaleSource: Boolean = true,
         texelScale: Float = 1f,
         renderSize: FilterBitmapRenderer.RenderSize? = null,
+        makeupControlsEnabled: Boolean? = null,
+        adjustmentValuesEnabled: Boolean? = null,
         isCancelled: () -> Boolean = { false },
     ): Bitmap {
         acquireRenderLock(isCancelled)
@@ -77,6 +79,8 @@ object FilterGpuBitmapRenderer {
                 scaleSource = scaleSource,
                 texelScale = texelScale,
                 renderSize = renderSize,
+                makeupControlsEnabled = makeupControlsEnabled ?: GlFilterProgram.hasMakeupControls(params),
+                adjustmentValuesEnabled = adjustmentValuesEnabled ?: GlFilterProgram.hasAdjustmentValues(params),
             )
         } finally {
             renderLock.unlock()
@@ -104,6 +108,8 @@ object FilterGpuBitmapRenderer {
         scaleSource: Boolean,
         texelScale: Float,
         renderSize: FilterBitmapRenderer.RenderSize?,
+        makeupControlsEnabled: Boolean,
+        adjustmentValuesEnabled: Boolean,
     ): Bitmap {
         val outputSize = renderSize ?: FilterBitmapRenderer.targetSize(source.width, source.height, maxWidth, maxHeight)
         val renderSource =
@@ -115,9 +121,7 @@ object FilterGpuBitmapRenderer {
         val width = if (scaleSource) renderSource.width else outputSize.width
         val height = if (scaleSource) renderSource.height else outputSize.height
         val session = sessionFor(width, height)
-        val makeupControlsEnabled = GlFilterProgram.hasMakeupControls(params)
         val uploadMakeupUniforms = session.makeupUniformsEnabled || makeupControlsEnabled
-        val adjustmentValuesEnabled = GlFilterProgram.hasAdjustmentValues(params)
         val uploadAdjustmentUniforms = session.adjustmentUniformsNeedUpload || adjustmentValuesEnabled
         var invalidateSession = false
 
