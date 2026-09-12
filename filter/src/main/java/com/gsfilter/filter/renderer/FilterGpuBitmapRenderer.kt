@@ -121,8 +121,13 @@ object FilterGpuBitmapRenderer {
         val width = if (scaleSource) renderSource.width else outputSize.width
         val height = if (scaleSource) renderSource.height else outputSize.height
         val session = sessionFor(width, height)
-        val uploadMakeupUniforms = session.makeupUniformsEnabled || makeupControlsEnabled
-        val uploadAdjustmentUniforms = session.adjustmentUniformsNeedUpload || adjustmentValuesEnabled
+        val paramsChanged = session.lastParams !== params
+        val texelSizeChanged =
+            session.lastRenderWidth != width ||
+                session.lastRenderHeight != height ||
+                session.lastTexelScale != texelScale
+        val uploadMakeupUniforms = paramsChanged || session.makeupUniformsEnabled != makeupControlsEnabled
+        val uploadAdjustmentUniforms = paramsChanged || session.adjustmentUniformsEnabled != adjustmentValuesEnabled
         var invalidateSession = false
 
         return try {
@@ -141,10 +146,16 @@ object FilterGpuBitmapRenderer {
                 texelScale = texelScale,
                 uploadMakeupUniforms = uploadMakeupUniforms,
                 uploadAdjustmentUniforms = uploadAdjustmentUniforms,
+                uploadEffectUniforms = paramsChanged,
+                uploadTexelSize = texelSizeChanged,
                 bindTextureSampler = false,
             )
+            session.lastParams = params
             session.makeupUniformsEnabled = makeupControlsEnabled
-            session.adjustmentUniformsNeedUpload = adjustmentValuesEnabled
+            session.adjustmentUniformsEnabled = adjustmentValuesEnabled
+            session.lastRenderWidth = width
+            session.lastRenderHeight = height
+            session.lastTexelScale = texelScale
             GLES20.glDrawArrays(GLES20.GL_TRIANGLE_STRIP, 0, GlFilterProgram.VERTEX_COUNT)
 
             readBitmap(width, height)
@@ -294,8 +305,12 @@ object FilterGpuBitmapRenderer {
         var inputBitmapGenerationId = 0
         var lutTextureId = 0
         var lut: FilterLut? = null
+        var lastParams: ShaderFilterParams? = null
+        var lastRenderWidth = 0
+        var lastRenderHeight = 0
+        var lastTexelScale = Float.NaN
         var makeupUniformsEnabled = false
-        var adjustmentUniformsNeedUpload = true
+        var adjustmentUniformsEnabled = false
         lateinit var handles: GlFilterProgram.ProgramHandles
             private set
 

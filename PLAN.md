@@ -1,5 +1,25 @@
 # PLAN
 
+## Task: Cache unchanged GPU uniforms in batch
+
+Status: IN PROGRESS
+Created: 2026-09-12
+
+### Requirements
+
+- Avoid re-uploading immutable batch uniforms for every source bitmap.
+- Refresh uniforms when params or render geometry changes.
+
+### Checklist
+
+- [x] Cache params identity and render texel geometry per GPU session.
+- [x] Keep input texture upload and draw per image.
+- [ ] Run unit tests, compile, and review the diff.
+
+### Notes
+
+- Batch params are intentionally reused by identity; distinct single-image params keep the existing behavior.
+
 ## Task: Reuse GPU batch control flags
 
 Status: IN PROGRESS
