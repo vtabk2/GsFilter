@@ -1,5 +1,26 @@
 # PLAN
 
+## Task: Bypass GPU for no-op thumbnails
+
+Status: IN PROGRESS
+Created: 2026-09-12
+
+### Requirements
+
+- Avoid GPU upload/render/readback for default or zero-intensity thumbnails.
+- Return an independent bitmap when the source already fits the target size.
+
+### Checklist
+
+- [x] Detect default and zero-intensity recipes with neutral adjustments.
+- [x] Reuse the existing bounded source scaling path.
+- [x] Keep source bitmap ownership unchanged.
+- [ ] Run unit tests, compile, and review the diff.
+
+### Notes
+
+- Non-neutral recipes keep the existing GPU-first path.
+
 ## Task: Add CPU no-op render fast path
 
 Status: IN PROGRESS

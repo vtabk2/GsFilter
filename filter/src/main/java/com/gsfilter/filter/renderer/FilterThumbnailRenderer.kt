@@ -41,6 +41,9 @@ object FilterThumbnailRenderer {
     ): Bitmap {
         throwIfCancelled(isCancelled)
         val thumbnailRecipe = thumbnailRecipe(recipe)
+        if (adjustments == Adjustments() && (thumbnailRecipe == FilterRecipe() || thumbnailRecipe.intensity == 0)) {
+            return copyThumbnail(source, maxWidth, maxHeight)
+        }
         return if (shouldUseFullSourceTexture(thumbnailRecipe)) {
             renderWithFullSourceTexture(
                 source,
@@ -232,6 +235,15 @@ object FilterThumbnailRenderer {
     private fun throwIfCancelled(isCancelled: () -> Boolean) {
         if (isCancelled()) {
             throw CancellationException("Thumbnail render cancelled")
+        }
+    }
+
+    private fun copyThumbnail(source: Bitmap, maxWidth: Int, maxHeight: Int): Bitmap {
+        val scaled = FilterBitmapRenderer.scaledSource(source, maxWidth, maxHeight)
+        return if (scaled === source) {
+            source.copy(Bitmap.Config.ARGB_8888, false)
+        } else {
+            scaled
         }
     }
 
