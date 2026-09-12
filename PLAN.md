@@ -1,5 +1,26 @@
 # PLAN
 
+## Task: Split preview uniform dirty flags
+
+Status: IN PROGRESS
+Created: 2026-09-12
+
+### Requirements
+
+- Upload only the changed makeup or adjustment uniform group.
+- Preserve first-frame and surface-recreation uploads.
+
+### Checklist
+
+- [x] Compare makeup parameters separately.
+- [x] Compare adjustment parameters separately.
+- [x] Keep existing dirty flags sticky until the next draw.
+- [ ] Run unit tests, compile, and review the diff.
+
+### Notes
+
+- Changing one control group no longer re-uploads the unrelated group.
+
 ## Task: Use constant-time category priority lookup
 
 Status: IN PROGRESS

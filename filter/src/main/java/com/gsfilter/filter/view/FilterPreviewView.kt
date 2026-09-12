@@ -174,10 +174,49 @@ class FilterPreviewView @JvmOverloads constructor(
         }
 
         fun setFilterParams(nextParams: ShaderFilterParams) {
+            makeupUniformsNeedUpload = makeupUniformsNeedUpload || makeupParamsChanged(params, nextParams)
+            adjustmentUniformsNeedUpload = adjustmentUniformsNeedUpload || adjustmentParamsChanged(params, nextParams)
             params = nextParams
-            makeupUniformsNeedUpload = true
-            adjustmentUniformsNeedUpload = true
         }
+
+        private fun makeupParamsChanged(
+            previous: ShaderFilterParams,
+            next: ShaderFilterParams,
+        ): Boolean =
+            previous.skinSmoothing != next.skinSmoothing ||
+                previous.skinWhitening != next.skinWhitening ||
+                previous.blush != next.blush ||
+                previous.lipstick != next.lipstick ||
+                previous.underEye != next.underEye ||
+                previous.teethWhitening != next.teethWhitening ||
+                previous.eyeShadow != next.eyeShadow ||
+                previous.eyeliner != next.eyeliner ||
+                previous.eyebrow != next.eyebrow ||
+                previous.faceSlimming != next.faceSlimming ||
+                previous.eyeEnlargement != next.eyeEnlargement ||
+                previous.makeupFeatures != next.makeupFeatures
+
+        private fun adjustmentParamsChanged(
+            previous: ShaderFilterParams,
+            next: ShaderFilterParams,
+        ): Boolean =
+            previous.redShift != next.redShift ||
+                previous.greenShift != next.greenShift ||
+                previous.blueShift != next.blueShift ||
+                previous.brightness != next.brightness ||
+                previous.exposure != next.exposure ||
+                previous.contrast != next.contrast ||
+                previous.highlights != next.highlights ||
+                previous.shadows != next.shadows ||
+                previous.saturation != next.saturation ||
+                previous.vibrance != next.vibrance ||
+                previous.temperature != next.temperature ||
+                previous.tint != next.tint ||
+                previous.sharpness != next.sharpness ||
+                previous.clarity != next.clarity ||
+                previous.fade != next.fade ||
+                previous.vignette != next.vignette ||
+                previous.grain != next.grain
 
         private fun lutTextureFor(params: ShaderFilterParams): Int {
             if (params.lutStrength <= 0f) {
