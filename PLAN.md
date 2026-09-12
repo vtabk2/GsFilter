@@ -1,5 +1,25 @@
 # PLAN
 
+## Task: Skip redundant GPU uniform uploads
+
+Status: IN PROGRESS
+Created: 2026-09-12
+
+### Requirements
+
+- Treat value-equivalent shader parameters as unchanged within a render session.
+- Preserve uniform updates when any parameter value changes.
+
+### Checklist
+
+- [x] Use `ShaderFilterParams` value equality for the session change check.
+- [x] Review the diff and document validation limits.
+
+### Notes
+
+- This avoids re-uploading unchanged GPU uniforms when callers create an equivalent params object.
+- Gradle validation is blocked because Java/JAVA_HOME is unavailable in this environment.
+
 ## Task: Reuse row offsets in CPU renders
 
 Status: IN PROGRESS
