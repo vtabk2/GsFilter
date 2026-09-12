@@ -65,6 +65,7 @@ object FilterBitmapRenderer {
                 width = width,
                 height = height,
                 params = params,
+                noOp = noOp,
             )
             Bitmap.createBitmap(output, width, height, Bitmap.Config.ARGB_8888)
         } finally {
@@ -113,9 +114,10 @@ object FilterBitmapRenderer {
         width: Int,
         height: Int,
         params: ShaderFilterParams,
+        noOp: Boolean = isNoOp(params),
     ): IntArray {
         require(pixels.size == width * height) { "Pixel array size must match width * height." }
-        if (isNoOp(params)) {
+        if (noOp) {
             return pixels.copyOf()
         }
 

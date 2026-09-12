@@ -78,6 +78,7 @@ Created: 2026-09-12
 - [x] Evaluate the no-op decision once per render batch.
 - [x] Reuse the no-op decision in the CPU fallback path.
 - [x] Copy no-op bitmaps without a Java pixel-array round trip.
+- [x] Avoid repeating the no-op check inside active CPU renders.
 - [x] Skip repeated GPU attempts after offscreen initialization failure.
 - [ ] Run unit tests, compile, and review the diff.
 
