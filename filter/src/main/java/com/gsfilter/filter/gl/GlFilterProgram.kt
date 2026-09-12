@@ -164,6 +164,7 @@ internal object GlFilterProgram {
         uploadAdjustmentUniforms: Boolean = true,
         uploadEffectUniforms: Boolean = true,
         uploadTexelSize: Boolean = true,
+        uploadLutUniforms: Boolean = true,
         bindTextureSampler: Boolean = true,
     ) {
         GLES20.glActiveTexture(GLES20.GL_TEXTURE0)
@@ -171,12 +172,14 @@ internal object GlFilterProgram {
         if (bindTextureSampler) {
             GLES20.glUniform1i(handles.texture, 0)
         }
-        val lutStrength = if (lutTextureId != 0) params.lutStrength else 0f
-        if (lutStrength > 0f) {
-            GLES20.glActiveTexture(GLES20.GL_TEXTURE1)
-            GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, lutTextureId)
+        if (uploadLutUniforms) {
+            val lutStrength = if (lutTextureId != 0) params.lutStrength else 0f
+            if (lutStrength > 0f) {
+                GLES20.glActiveTexture(GLES20.GL_TEXTURE1)
+                GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, lutTextureId)
+            }
+            GLES20.glUniform1f(handles.lutStrength, lutStrength)
         }
-        GLES20.glUniform1f(handles.lutStrength, lutStrength)
         if (uploadMakeupUniforms) {
             GLES20.glUniform1f(handles.skinSmoothing, params.skinSmoothing)
             GLES20.glUniform1f(handles.skinWhitening, params.skinWhitening)

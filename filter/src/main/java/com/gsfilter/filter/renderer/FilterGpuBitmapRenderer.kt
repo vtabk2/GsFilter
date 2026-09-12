@@ -134,6 +134,9 @@ object FilterGpuBitmapRenderer {
             session.egl.makeCurrent()
             uploadTexture(renderSource, session)
             val lutTextureId = if (params.lutStrength > 0f) session.lutTextureFor(params.lut) else 0
+            val lutStrength = if (lutTextureId != 0) params.lutStrength else 0f
+            val uploadLutUniforms =
+                session.lastLutTextureId != lutTextureId || session.lastLutStrength != lutStrength
 
             val handles = session.handles
             GlFilterProgram.bindUniforms(
@@ -148,6 +151,7 @@ object FilterGpuBitmapRenderer {
                 uploadAdjustmentUniforms = uploadAdjustmentUniforms,
                 uploadEffectUniforms = paramsChanged,
                 uploadTexelSize = texelSizeChanged,
+                uploadLutUniforms = uploadLutUniforms,
                 bindTextureSampler = false,
             )
             session.lastParams = params
@@ -156,6 +160,8 @@ object FilterGpuBitmapRenderer {
             session.lastRenderWidth = width
             session.lastRenderHeight = height
             session.lastTexelScale = texelScale
+            session.lastLutTextureId = lutTextureId
+            session.lastLutStrength = lutStrength
             GLES20.glDrawArrays(GLES20.GL_TRIANGLE_STRIP, 0, GlFilterProgram.VERTEX_COUNT)
 
             readBitmap(width, height)
@@ -198,6 +204,7 @@ object FilterGpuBitmapRenderer {
         ) {
             return
         }
+        GLES20.glActiveTexture(GLES20.GL_TEXTURE0)
         val textureId = session.inputTextureId
         GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, textureId)
         if (
@@ -309,6 +316,8 @@ object FilterGpuBitmapRenderer {
         var lastRenderWidth = 0
         var lastRenderHeight = 0
         var lastTexelScale = Float.NaN
+        var lastLutTextureId = 0
+        var lastLutStrength = Float.NaN
         var makeupUniformsEnabled = false
         var adjustmentUniformsEnabled = false
         lateinit var handles: GlFilterProgram.ProgramHandles

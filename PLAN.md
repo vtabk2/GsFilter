@@ -1,5 +1,25 @@
 # PLAN
 
+## Task: Cache unchanged GPU LUT state
+
+Status: IN PROGRESS
+Created: 2026-09-12
+
+### Requirements
+
+- Avoid rebinding and re-uploading an unchanged LUT uniform in a batch.
+- Keep texture units correct when switching between input and LUT textures.
+
+### Checklist
+
+- [x] Cache LUT texture id and effective strength per GPU session.
+- [x] Restore texture unit 0 before every input texture update.
+- [ ] Run unit tests, compile, and review the diff.
+
+### Notes
+
+- LUT state is refreshed when the LUT, effective strength, or session changes.
+
 ## Task: Cache unchanged GPU uniforms in batch
 
 Status: IN PROGRESS
