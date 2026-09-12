@@ -1,5 +1,25 @@
 # PLAN
 
+## Task: Reuse GPU face mask per pixel
+
+Status: IN PROGRESS
+Created: 2026-09-12
+
+### Requirements
+
+- Avoid recalculating the same face-area mask for active Beauty features.
+- Preserve the existing mask value and feature output.
+
+### Checklist
+
+- [x] Compute the face mask once in the fragment shader.
+- [x] Reuse it for teeth, eye shadow, eyeliner, and eyebrow branches.
+- [ ] Run unit tests, compile, and review the diff.
+
+### Notes
+
+- The CPU path already reused its face mask; this aligns the GPU path.
+
 ## Task: Reuse no-op renderer in export path
 
 Status: IN PROGRESS

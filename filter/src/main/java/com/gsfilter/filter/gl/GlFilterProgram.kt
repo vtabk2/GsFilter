@@ -932,9 +932,11 @@ internal object GlFilterProgram {
                 uSkinWhitening > 0.0 ||
                 featureBeautyEnabled;
             float beautyMask = 0.0;
+            float faceMask = 1.0;
             vec3 rgb = color.rgb;
             if (beautyEnabled) {
-                beautyMask = skinMask(color.rgb) * faceAreaMask(vTexCoord);
+                faceMask = faceAreaMask(vTexCoord);
+                beautyMask = skinMask(color.rgb) * faceMask;
                 if (uSkinSmoothing > 0.0) {
                     vec3 localContrast = abs(color.rgb - blur);
                     float edgeGuard = 1.0 - smoothstep(
@@ -978,7 +980,7 @@ internal object GlFilterProgram {
                     0.15,
                     1.05
                 );
-                float teethAmount = uTeethWhitening * teethRegionMask * faceAreaMask(vTexCoord) *
+                float teethAmount = uTeethWhitening * teethRegionMask * faceMask *
                     teethColorMask(color.rgb) * 0.65;
                 float teethLuma = dot(rgb, vec3(0.299, 0.587, 0.114));
                 float teethLift = teethAmount * (1.0 - teethLuma) * 0.22;
@@ -989,7 +991,7 @@ internal object GlFilterProgram {
                     eyeShadowRegionMask(vTexCoord, uEyeLeft),
                     eyeShadowRegionMask(vTexCoord, uEyeRight)
                 );
-                float eyeShadowAmount = uEyeShadow * eyeShadowMask * faceAreaMask(vTexCoord) * 0.28;
+                float eyeShadowAmount = uEyeShadow * eyeShadowMask * faceMask * 0.28;
                 rgb = mix(rgb, vec3(0.34, 0.16, 0.22), eyeShadowAmount);
             }
             if (uEyeliner > 0.0) {
@@ -997,7 +999,7 @@ internal object GlFilterProgram {
                     eyelinerRegionMask(vTexCoord, uEyeLeft),
                     eyelinerRegionMask(vTexCoord, uEyeRight)
                 );
-                float eyelinerAmount = uEyeliner * eyelinerMask * faceAreaMask(vTexCoord) * 0.48;
+                float eyelinerAmount = uEyeliner * eyelinerMask * faceMask * 0.48;
                 rgb = mix(rgb, vec3(0.06, 0.04, 0.05), eyelinerAmount);
             }
             if (uEyebrow > 0.0) {
@@ -1005,7 +1007,7 @@ internal object GlFilterProgram {
                     contourMask(vTexCoord, uLeftEyebrowPoints, uLeftEyebrowPointCount),
                     contourMask(vTexCoord, uRightEyebrowPoints, uRightEyebrowPointCount)
                 );
-                float eyebrowAmount = uEyebrow * eyebrowMask * faceAreaMask(vTexCoord) * 0.32;
+                float eyebrowAmount = uEyebrow * eyebrowMask * faceMask * 0.32;
                 rgb = mix(rgb, rgb * vec3(0.42, 0.32, 0.28), eyebrowAmount);
             }
             if (uBlush > 0.0) {

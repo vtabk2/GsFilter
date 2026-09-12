@@ -128,6 +128,7 @@ object FilterBitmapRenderer {
                     needsNeighborhood,
                     needsEdge,
                     hasBeauty,
+                    hasFeatureBeauty,
                 )
             }
         }
@@ -163,6 +164,7 @@ object FilterBitmapRenderer {
                     params.intensity != 0f &&
                     params.effectStrength != 0f),
             hasBeautyControls(params),
+            hasFeatureBeautyControls(params),
         )
     }
 
@@ -183,6 +185,7 @@ object FilterBitmapRenderer {
         needsNeighborhood: Boolean,
         needsEdge: Boolean,
         hasBeauty: Boolean,
+        hasFeatureBeauty: Boolean,
     ): Int {
         val textureX = (x + 0.5f) / width
         val textureY = (y + 0.5f) / height
