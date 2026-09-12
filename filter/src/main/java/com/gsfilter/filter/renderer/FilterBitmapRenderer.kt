@@ -49,21 +49,23 @@ object FilterBitmapRenderer {
         )
         val width = renderSource.width
         val height = renderSource.height
+        if (noOp) {
+            return try {
+                requireNotNull(renderSource.copy(Bitmap.Config.ARGB_8888, false))
+            } finally {
+                recycleIfTemporary(renderSource, source)
+            }
+        }
         val pixels = IntArray(width * height)
 
         return try {
             renderSource.getPixels(pixels, 0, width, 0, 0, width, height)
-            val output =
-                if (noOp) {
-                    pixels
-                } else {
-                    renderPixels(
-                        pixels = pixels,
-                        width = width,
-                        height = height,
-                        params = params,
-                    )
-                }
+            val output = renderPixels(
+                pixels = pixels,
+                width = width,
+                height = height,
+                params = params,
+            )
             Bitmap.createBitmap(output, width, height, Bitmap.Config.ARGB_8888)
         } finally {
             recycleIfTemporary(renderSource, source)
