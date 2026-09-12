@@ -874,6 +874,14 @@ class FilterControlsView @JvmOverloads constructor(
             holder.bind(getItem(position))
         }
 
+        override fun onBindViewHolder(holder: FilterHolder, position: Int, payloads: MutableList<Any>) {
+            if (payloads.contains(PAYLOAD_SELECTION)) {
+                holder.bindSelection(getItem(position))
+            } else {
+                holder.bind(getItem(position))
+            }
+        }
+
         override fun onViewRecycled(holder: FilterHolder) {
             holder.clear()
         }
@@ -888,13 +896,7 @@ class FilterControlsView @JvmOverloads constructor(
 
             fun bind(item: FilterItem) {
                 val style = item.style
-                itemView.setBackgroundResource(
-                    if (item.isSelected) style.selectedCardBackgroundRes else style.cardBackgroundRes,
-                )
-                itemView.foreground = itemView.context.getDrawable(
-                    if (item.isSelected) style.selectedCardForegroundRes else style.cardForegroundRes,
-                )
-                itemView.isSelected = item.isSelected
+                bindSelection(item)
                 itemView.setOnClickListener { onFilterSelected(item.filter) }
                 label?.setBackgroundResource(style.labelBackgroundRes)
                 label?.setTextColor(style.labelTextColor)
@@ -917,18 +919,45 @@ class FilterControlsView @JvmOverloads constructor(
                     .into(imageView)
             }
 
+            fun bindSelection(item: FilterItem) {
+                val style = item.style
+                itemView.setBackgroundResource(
+                    if (item.isSelected) style.selectedCardBackgroundRes else style.cardBackgroundRes,
+                )
+                itemView.foreground = itemView.context.getDrawable(
+                    if (item.isSelected) style.selectedCardForegroundRes else style.cardForegroundRes,
+                )
+                itemView.isSelected = item.isSelected
+            }
+
             fun clear() {
                 image?.let { Glide.with(it).clear(it) }
             }
         }
 
         private companion object {
+            const val PAYLOAD_SELECTION = "selection"
+
             val DIFF = object : DiffUtil.ItemCallback<FilterItem>() {
                 override fun areItemsTheSame(oldItem: FilterItem, newItem: FilterItem): Boolean =
                     oldItem.filter.id == newItem.filter.id
 
                 override fun areContentsTheSame(oldItem: FilterItem, newItem: FilterItem): Boolean =
                     oldItem == newItem
+
+                override fun getChangePayload(oldItem: FilterItem, newItem: FilterItem): Any? =
+                    if (
+                        oldItem.filter.id == newItem.filter.id &&
+                        oldItem.isSelected != newItem.isSelected &&
+                        oldItem.thumbnailBitmap === newItem.thumbnailBitmap &&
+                        oldItem.thumbnailKey == newItem.thumbnailKey &&
+                        oldItem.thumbnailGenerationId == newItem.thumbnailGenerationId &&
+                        oldItem.style == newItem.style
+                    ) {
+                        PAYLOAD_SELECTION
+                    } else {
+                        null
+                    }
             }
         }
     }

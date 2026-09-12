@@ -1,5 +1,25 @@
 # PLAN
 
+## Task: Avoid thumbnail rebind on filter selection
+
+Status: IN PROGRESS
+Created: 2026-09-12
+
+### Requirements
+
+- Update selection visuals without reloading unchanged thumbnails.
+- Fall back to a full bind when source, style, or item content changes.
+
+### Checklist
+
+- [x] Add a DiffUtil selection payload.
+- [x] Update only card selection visuals for payload binds.
+- [ ] Run unit tests, compile, and review the diff.
+
+### Notes
+
+- Selecting another filter no longer repeats the Glide request for the two affected cards.
+
 ## Task: Avoid unused Beauty masks
 
 Status: IN PROGRESS
