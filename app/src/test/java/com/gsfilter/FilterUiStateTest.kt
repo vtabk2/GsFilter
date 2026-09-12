@@ -4,6 +4,7 @@ import com.gsfilter.filter.Adjustments
 import com.gsfilter.filter.FilterCatalog
 import com.gsfilter.filter.FilterRecipe
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertTrue
 import org.junit.Test
 
 class FilterUiStateTest {
@@ -49,5 +50,23 @@ class FilterUiStateTest {
         assertEquals(catalog.defaultFilter, restored.selectedFilter)
         assertEquals(FilterRecipe(), restored.selectedRecipe)
         assertEquals(Adjustments(), restored.adjustments)
+    }
+
+    @Test
+    fun `restored filter focuses its category when saved category does not contain it`() {
+        val catalog = FilterCatalog.pack
+        val filter = catalog.options.first { it.id == "fuji" }
+        val saved = SavedFilterState(
+            selectedCategoryId = "natural",
+            selectedFilterId = filter.id,
+            selectedRecipe = filter.recipe,
+            filterIntensities = emptyMap(),
+            adjustments = Adjustments.DEFAULT,
+        )
+
+        val restored = FilterUiState(catalog = catalog).restoreFilterState(saved)
+
+        assertEquals("film", restored.selectedCategory.id)
+        assertTrue(restored.selectedCategory.id in restored.selectedFilter.categoryIds)
     }
 }

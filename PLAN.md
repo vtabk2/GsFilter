@@ -1,5 +1,86 @@
 # PLAN
 
+## Task: Scroll focused filter category into view
+
+Status: IN PROGRESS
+Created: 2026-09-12
+
+### Requirements
+
+- Keep the active category chip visible when category focus changes.
+- Preserve the existing horizontal category rail and selection behavior.
+
+### Checklist
+
+- [x] Scroll the active category chip after layout.
+- [x] Review the diff and document manual verification.
+
+### Notes
+
+- Use the existing `HorizontalScrollView`; no new UI dependency is needed.
+- Manual verification remains required because Gradle cannot run without Java/`JAVA_HOME`.
+
+## Task: Focus selected filter category after image changes
+
+Status: IN PROGRESS
+Created: 2026-09-12
+
+### Requirements
+
+- Restore a category containing the selected filter when the saved category does not.
+- Preserve manual category browsing behavior.
+- Keep scroll-to-selected behavior working after the category is focused.
+
+### Checklist
+
+- [x] Normalize restored category for the selected filter.
+- [x] Add regression coverage for a mismatched saved category.
+- [x] Review the diff and document validation limits.
+
+### Notes
+
+- Category normalization is limited to image-state restoration, not category taps.
+- Gradle validation is blocked because the shell has no Java installation or `JAVA_HOME`.
+
+## Task: Scroll to selected filter when image changes
+
+Status: IN PROGRESS
+Created: 2026-09-12
+
+### Requirements
+
+- Scroll the filter rail to the selected filter after switching images.
+- Preserve category/filter selection behavior and avoid stale callback positions.
+
+### Checklist
+
+- [ ] Treat source/thumbnail changes as scroll-triggering updates.
+- [ ] Scroll after the submitted list has been laid out.
+- [ ] Review the diff and document manual verification.
+
+### Notes
+
+- The selected filter may remain unchanged while its source bitmap changes.
+
+## Task: Cache sorted filters by category
+
+Status: IN PROGRESS
+Created: 2026-09-12
+
+### Requirements
+
+- Avoid filtering and sorting the static catalog on every category render.
+- Preserve category membership, priority ordering, and unknown-category behavior.
+
+### Checklist
+
+- [ ] Precompute sorted lists once.
+- [ ] Run filter unit tests and review the diff.
+
+### Notes
+
+- Keep the existing `FilterPack` API unchanged.
+
 ## Task: Avoid redundant offscreen texture binds
 
 Status: IN PROGRESS

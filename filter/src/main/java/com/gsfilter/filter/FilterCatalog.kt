@@ -1944,11 +1944,7 @@ object FilterCatalog {
     )
 
     fun filtersForCategory(categoryId: String): List<FilterOption> {
-        val filters = pack.filtersForCategory(categoryId)
-        val priority = categoryFilterRanks[categoryId] ?: return filters
-        return filters.sortedBy { filter ->
-            priority[filter.id] ?: Int.MAX_VALUE
-        }
+        return sortedFiltersByCategory[categoryId].orEmpty()
     }
 
     fun categoryForFilter(filter: FilterOption): FilterCategory? =
@@ -2032,6 +2028,18 @@ object FilterCatalog {
     private val categoryFilterRanks: Map<String, Map<String, Int>> by lazy {
         categoryFilterPriority.mapValues { (_, filterIds) ->
             filterIds.withIndex().associate { indexed -> indexed.value to indexed.index }
+        }
+    }
+
+    private val sortedFiltersByCategory: Map<String, List<FilterOption>> by lazy {
+        categories.associate { category ->
+            val filters = pack.filtersForCategory(category.id)
+            val priority = categoryFilterRanks[category.id]
+            category.id to if (priority == null) {
+                filters
+            } else {
+                filters.sortedBy { filter -> priority[filter.id] ?: Int.MAX_VALUE }
+            }
         }
     }
 

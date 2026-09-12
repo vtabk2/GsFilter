@@ -90,9 +90,15 @@ internal fun FilterUiState.restoreFilterState(saved: SavedFilterState?): FilterU
         saved?.selectedCategoryId?.let(catalog::categoryById)
             ?: (if (savedFilter != null) catalog.categoryForFilter(filter) else catalog.defaultCategory)
             ?: catalog.defaultCategory
+    val focusedCategory =
+        if (savedFilter != null && category.id !in filter.categoryIds) {
+            catalog.categoryForFilter(filter) ?: category
+        } else {
+            category
+        }
 
     return copy(
-        selectedCategory = category,
+        selectedCategory = focusedCategory,
         selectedFilter = filter,
         filterIntensities = saved?.filterIntensities ?: emptyMap(),
         skinSmoothing = recipe.skinSmoothing,

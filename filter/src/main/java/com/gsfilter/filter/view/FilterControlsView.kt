@@ -5,12 +5,14 @@ import android.content.res.ColorStateList
 import android.content.res.TypedArray
 import android.graphics.Bitmap
 import android.graphics.Color
+import android.graphics.Rect
 import android.util.AttributeSet
 import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.FrameLayout
+import android.widget.HorizontalScrollView
 import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.SeekBar
@@ -69,6 +71,7 @@ class FilterControlsView @JvmOverloads constructor(
     private val buttonClose: RippleImageView?
     private val buttonOriginalFilter: RippleImageView?
     private val categoryContainer: LinearLayout?
+    private val categoryScroll: HorizontalScrollView?
     private val filterRecyclerView: RecyclerView?
     private val filterIntensityLabel: TextView?
     private val filterIntensitySeekBar: SeekBar?
@@ -98,6 +101,7 @@ class FilterControlsView @JvmOverloads constructor(
         buttonClose = findViewById(R.id.gs_filter_close_button)
         buttonOriginalFilter = findViewById(R.id.gs_filter_original)
         categoryContainer = findViewById(R.id.gs_filter_category_container)
+        categoryScroll = findViewById(R.id.gs_filter_category_scroll)
         filterRecyclerView = findViewById(R.id.gs_filter_recycler)
         filterIntensityLabel = findViewById(R.id.gs_filter_intensity_label)
         filterIntensitySeekBar = findViewById(R.id.gs_filter_intensity_seek_bar)
@@ -168,12 +172,14 @@ class FilterControlsView @JvmOverloads constructor(
         val nextCategory = visibleCategoryById(selectedCategory.id) ?: visibleCategories().first()
         val nextFilter = catalog.filterById(selectedFilter.id) ?: selectedFilter
         val nextThumbnailGenerationId = thumbnailBitmap?.generationId ?: 0
+        val thumbnailChanged =
+            this.thumbnailBitmap !== thumbnailBitmap ||
+                this.thumbnailKey != thumbnailKey ||
+                this.thumbnailGenerationId != nextThumbnailGenerationId
         val shouldRenderFilters =
             this.selectedCategory != nextCategory ||
                 this.selectedFilter != nextFilter ||
-                this.thumbnailBitmap !== thumbnailBitmap ||
-                this.thumbnailKey != thumbnailKey ||
-                this.thumbnailGenerationId != nextThumbnailGenerationId
+                thumbnailChanged
         val shouldRenderFilterIntensity =
             this.selectedFilter != nextFilter || this.selectedRecipe != selectedRecipe
         val selectionChanged = this.selectedCategory != nextCategory || this.selectedFilter != nextFilter
@@ -199,7 +205,7 @@ class FilterControlsView @JvmOverloads constructor(
                 renderFilterIntensity()
                 renderBeauty()
             }
-            renderFilterItems(scrollToSelected = selectionChanged)
+            renderFilterItems(scrollToSelected = selectionChanged || thumbnailChanged)
         } else {
             renderFilterIntensity()
             renderBeauty()
@@ -237,9 +243,13 @@ class FilterControlsView @JvmOverloads constructor(
             if (!scrollToSelected) {
                 return@submitList
             }
-            val selectedIndex = items.indexOfFirst { it.filter.id == this.selectedFilter.id }
-            if (selectedIndex >= 0) {
-                filterRecyclerView?.scrollToPosition(selectedIndex)
+            filterRecyclerView?.post {
+                val selectedIndex = filterAdapter.currentList.indexOfFirst {
+                    it.filter.id == this.selectedFilter.id
+                }
+                if (selectedIndex >= 0) {
+                    filterRecyclerView?.scrollToPosition(selectedIndex)
+                }
             }
         }
     }
@@ -584,6 +594,13 @@ class FilterControlsView @JvmOverloads constructor(
             val isSelected = id == selectedCategory.id
             chip.setBackgroundResource(if (isSelected) style.selectedChipBackgroundRes else style.chipBackgroundRes)
             chip.setTextColor(if (isSelected) style.selectedTextColor else style.textColor)
+        }
+        val selectedChip = categoryChips[selectedCategory.id] ?: return
+        categoryScroll?.post {
+            selectedChip.requestRectangleOnScreen(
+                Rect(0, 0, selectedChip.width, selectedChip.height),
+                true,
+            )
         }
     }
 
