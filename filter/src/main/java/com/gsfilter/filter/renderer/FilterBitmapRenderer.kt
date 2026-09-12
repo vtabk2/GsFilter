@@ -87,6 +87,9 @@ object FilterBitmapRenderer {
         params: ShaderFilterParams,
     ): IntArray {
         require(pixels.size == width * height) { "Pixel array size must match width * height." }
+        if (isNoOp(params)) {
+            return pixels.copyOf()
+        }
 
         val output = IntArray(pixels.size)
         val lutOutput = FloatArray(3)
@@ -780,6 +783,39 @@ object FilterBitmapRenderer {
                 params.eyeliner != 0f ||
                 params.eyebrow != 0f
             )
+
+    private fun isNoOp(params: ShaderFilterParams): Boolean =
+        (params.effect == FilterEffect.Color || params.intensity == 0f) &&
+            params.lutStrength <= 0f &&
+            params.skinSmoothing == 0f &&
+            params.skinWhitening == 0f &&
+            params.blush == 0f &&
+            params.lipstick == 0f &&
+            params.underEye == 0f &&
+            params.teethWhitening == 0f &&
+            params.eyeShadow == 0f &&
+            params.eyeliner == 0f &&
+            params.eyebrow == 0f &&
+            params.faceSlimming <= 0f &&
+            params.eyeEnlargement <= 0f &&
+            params.isMonochrome == 0f &&
+            params.redShift == 0f &&
+            params.greenShift == 0f &&
+            params.blueShift == 0f &&
+            params.brightness == 0f &&
+            params.exposure == 1f &&
+            params.contrast == 1f &&
+            params.highlights == 0f &&
+            params.shadows == 0f &&
+            params.saturation == 1f &&
+            params.vibrance == 0f &&
+            params.temperature == 0f &&
+            params.tint == 0f &&
+            params.sharpness == 0f &&
+            params.clarity == 0f &&
+            params.fade == 0f &&
+            params.vignette == 0f &&
+            params.grain == 0f
 
     private fun applyEyeWarp(
         coordinate: FloatArray,

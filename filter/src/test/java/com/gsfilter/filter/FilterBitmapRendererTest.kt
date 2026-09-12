@@ -12,14 +12,16 @@ class FilterBitmapRendererTest {
     @Test
     fun `default params keep pixels unchanged`() {
         val color = 0xcc336699.toInt()
+        val input = intArrayOf(color)
         val output = FilterBitmapRenderer.renderPixels(
-            pixels = intArrayOf(color),
+            pixels = input,
             width = 1,
             height = 1,
             params = ShaderFilterParams.from(FilterRecipe(), Adjustments()),
         )
 
         assertEquals(color, output.single())
+        assertTrue(output !== input)
     }
 
     @Test

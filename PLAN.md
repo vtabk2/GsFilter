@@ -1,5 +1,26 @@
 # PLAN
 
+## Task: Add CPU no-op render fast path
+
+Status: IN PROGRESS
+Created: 2026-09-12
+
+### Requirements
+
+- Skip per-pixel filter work when all effective controls are neutral.
+- Return independent output pixels to preserve the existing contract.
+
+### Checklist
+
+- [x] Detect neutral effect, makeup, and adjustment values.
+- [x] Return a copy without entering the pixel loop.
+- [x] Cover the no-op path in the existing renderer test.
+- [ ] Run unit tests, compile, and review the diff.
+
+### Notes
+
+- This mainly reduces CPU fallback/default-filter work; GPU rendering remains unchanged.
+
 ## Task: Skip zero-intensity effect work
 
 Status: IN PROGRESS
