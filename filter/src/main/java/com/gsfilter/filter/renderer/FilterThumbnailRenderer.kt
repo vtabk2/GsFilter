@@ -41,9 +41,9 @@ object FilterThumbnailRenderer {
     ): Bitmap {
         throwIfCancelled(isCancelled)
         val thumbnailRecipe = thumbnailRecipe(recipe)
-        if (adjustments == Adjustments.DEFAULT &&
-            (thumbnailRecipe == FilterRecipe.DEFAULT || thumbnailRecipe.intensity == 0)
-        ) {
+        val hasDefaultAdjustments = adjustments === Adjustments.DEFAULT || adjustments == Adjustments.DEFAULT
+        val isDefaultRecipe = thumbnailRecipe === FilterRecipe.DEFAULT || thumbnailRecipe == FilterRecipe.DEFAULT
+        if (hasDefaultAdjustments && (isDefaultRecipe || thumbnailRecipe.intensity == 0)) {
             return copyThumbnail(source, maxWidth, maxHeight)
         }
         return if (shouldUseFullSourceTexture(thumbnailRecipe)) {

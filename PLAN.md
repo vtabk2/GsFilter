@@ -35,6 +35,7 @@ Created: 2026-09-12
 - [x] Add immutable default instances.
 - [x] Use them for renderer defaults and thumbnail no-op checks.
 - [x] Use them in the ViewModel's hot default-state checks.
+- [x] Check default object identity before thumbnail equality.
 - [ ] Run unit tests, compile, and review the diff.
 
 ### Notes
