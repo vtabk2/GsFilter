@@ -141,8 +141,8 @@ object FilterBitmapRenderer {
             params.skinWhitening != 0f ||
             hasFeatureBeauty
         for (y in 0 until height) {
+            var index = y * width
             for (x in 0 until width) {
-                val index = y * width + x
                 output[index] = filterPixel(
                     pixels,
                     x,
@@ -164,6 +164,7 @@ object FilterBitmapRenderer {
                     needsFaceMask,
                     needsBeautyMask,
                 )
+                index++
             }
         }
         return output

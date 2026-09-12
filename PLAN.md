@@ -1,5 +1,25 @@
 # PLAN
 
+## Task: Reduce CPU pixel-loop indexing
+
+Status: IN PROGRESS
+Created: 2026-09-12
+
+### Requirements
+
+- Reduce repeated index arithmetic in the CPU renderer.
+- Preserve pixel traversal order and output values.
+
+### Checklist
+
+- [x] Increment the output index within each scanline.
+- [x] Keep all filter calculations unchanged.
+- [ ] Run unit tests, compile, and review the diff.
+
+### Notes
+
+- The loop still visits every pixel exactly once in row-major order.
+
 ## Task: Cache unchanged GPU LUT state
 
 Status: IN PROGRESS
