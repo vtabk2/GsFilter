@@ -75,7 +75,7 @@ object FilterRenderer {
         renderSize: FilterBitmapRenderer.RenderSize? = null,
         isNoOp: Boolean,
     ): Bitmap {
-        if (isNoOp) {
+        if (isNoOp || FilterGpuBitmapRenderer.isOffscreenGpuUnavailable) {
             return FilterBitmapRenderer.getBitmapWithParams(
                 source = source,
                 params = params,

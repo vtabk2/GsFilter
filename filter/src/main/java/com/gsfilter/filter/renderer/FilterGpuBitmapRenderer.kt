@@ -27,6 +27,9 @@ object FilterGpuBitmapRenderer {
     private val vertexBuffer = GlFilterProgram.floatBufferOf(GlFilterProgram.VERTICES)
     private val textureBuffer = GlFilterProgram.floatBufferOf(GlFilterProgram.TEXTURE_COORDS)
 
+    internal val isOffscreenGpuUnavailable: Boolean
+        get() = offscreenGpuUnavailable
+
     fun getBitmap(
         source: Bitmap,
         recipe: FilterRecipe,
@@ -452,6 +455,7 @@ object FilterGpuBitmapRenderer {
     // ponytail: cache one output size; replace on size changes to avoid unbounded EGL resources.
     private var cachedSession: RenderSession? = null
     // Accessed only from getBitmap(), while renderLock is held.
+    @Volatile
     private var offscreenGpuUnavailable = false
 
     private val CONFIG_ATTRIBUTES = intArrayOf(
