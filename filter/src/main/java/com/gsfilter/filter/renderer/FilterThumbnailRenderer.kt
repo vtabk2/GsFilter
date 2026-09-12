@@ -78,6 +78,9 @@ object FilterThumbnailRenderer {
         sourceKey: String?,
         isCancelled: () -> Boolean,
     ): Bitmap = synchronized(artSourceCacheLock) {
+        if (FilterGpuBitmapRenderer.isOffscreenGpuUnavailable) {
+            return@synchronized renderScaledFirst(source, recipe, adjustments, maxWidth, maxHeight, sourceKey, isCancelled)
+        }
         val renderSource = scaledArtSource(source, maxWidth, maxHeight, sourceKey)
         try {
             throwIfCancelled(isCancelled)
@@ -159,6 +162,14 @@ object FilterThumbnailRenderer {
         isCancelled: () -> Boolean,
     ): Bitmap = synchronized(thumbnailSourceCacheLock) {
         val renderSource = scaledThumbnailSource(source, maxWidth, maxHeight, sourceKey)
+        if (FilterGpuBitmapRenderer.isOffscreenGpuUnavailable) {
+            throwIfCancelled(isCancelled)
+            return@synchronized FilterBitmapRenderer.getBitmap(
+                source = renderSource,
+                recipe = recipe,
+                adjustments = adjustments,
+            )
+        }
         try {
             throwIfCancelled(isCancelled)
             FilterGpuBitmapRenderer.getBitmap(
