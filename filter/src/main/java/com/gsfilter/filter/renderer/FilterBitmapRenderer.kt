@@ -140,6 +140,10 @@ object FilterBitmapRenderer {
         val hasBeauty = params.skinSmoothing != 0f ||
             params.skinWhitening != 0f ||
             hasFeatureBeauty
+        val needsRotation = params.makeupFeatures != null && (hasWarp || hasBeauty)
+        val rotationRadians = params.makeupFeatures?.rotationRadians ?: 0f
+        val rotationSine = if (needsRotation) sin(rotationRadians) else 0f
+        val rotationCosine = if (needsRotation) cos(rotationRadians) else 1f
         for (y in 0 until height) {
             var index = y * width
             for (x in 0 until width) {
@@ -156,6 +160,8 @@ object FilterBitmapRenderer {
                     texelY,
                     exposure,
                     hasWarp,
+                    rotationSine,
+                    rotationCosine,
                     sharpAmount,
                     needsNeighborhood,
                     needsEdge,
@@ -179,6 +185,7 @@ object FilterBitmapRenderer {
         params: ShaderFilterParams,
     ): Int {
         val sharpAmount = (params.sharpness * 0.65f) + (params.clarity * 0.35f)
+        val rotationRadians = params.makeupFeatures?.rotationRadians ?: 0f
         return filterPixel(
             pixels,
             x,
@@ -192,6 +199,8 @@ object FilterBitmapRenderer {
             1f / height,
             2.0.pow(params.exposure.toDouble()).toFloat(),
             hasActiveWarp(params),
+            sin(rotationRadians),
+            cos(rotationRadians),
             sharpAmount,
             params.skinSmoothing != 0f || sharpAmount != 0f,
             params.skinSmoothing != 0f ||
@@ -218,6 +227,8 @@ object FilterBitmapRenderer {
         texelY: Float,
         exposure: Float,
         hasWarp: Boolean,
+        rotationSine: Float,
+        rotationCosine: Float,
         sharpAmount: Float,
         needsNeighborhood: Boolean,
         needsEdge: Boolean,
@@ -229,7 +240,7 @@ object FilterBitmapRenderer {
         val textureX = (x + 0.5f) / width
         val textureY = (y + 0.5f) / height
         if (hasWarp) {
-            warpSourceCoordinate(textureX, textureY, params, warpCoordinate)
+            warpSourceCoordinate(textureX, textureY, params, warpCoordinate, rotationSine, rotationCosine)
         } else {
             warpCoordinate[0] = textureX
             warpCoordinate[1] = textureY
@@ -303,7 +314,8 @@ object FilterBitmapRenderer {
                             features.faceCenterY,
                             features.faceRadiusX,
                             features.faceRadiusY,
-                            features.rotationRadians,
+                            rotationSine = rotationSine,
+                            rotationCosine = rotationCosine,
                             innerEdge = 0.55f,
                             outerEdge = 1.05f,
                         )
@@ -362,7 +374,8 @@ object FilterBitmapRenderer {
                         features.leftEyeCenterY,
                         features.leftEyeRadiusX,
                         features.leftEyeRadiusY,
-                        features.rotationRadians,
+                        rotationSine,
+                        rotationCosine,
                     ),
                     underEyeMask(
                         textureX,
@@ -371,7 +384,8 @@ object FilterBitmapRenderer {
                         features.rightEyeCenterY,
                         features.rightEyeRadiusX,
                         features.rightEyeRadiusY,
-                        features.rotationRadians,
+                        rotationSine,
+                        rotationCosine,
                     ),
                 )
                 val underEyeAmount = params.underEye * underEyeMask * beautyMask
@@ -389,7 +403,8 @@ object FilterBitmapRenderer {
                     features.lipCenterY,
                     features.lipRadiusX * 1.08f,
                     features.lipRadiusY * 0.65f,
-                    features.rotationRadians,
+                    rotationSine = rotationSine,
+                    rotationCosine = rotationCosine,
                     innerEdge = 0.15f,
                     outerEdge = 1.05f,
                 )
@@ -410,7 +425,8 @@ object FilterBitmapRenderer {
                         features.leftEyeCenterY,
                         features.leftEyeRadiusX,
                         features.leftEyeRadiusY,
-                        features.rotationRadians,
+                        rotationSine,
+                        rotationCosine,
                     ),
                     eyeShadowMask(
                         textureX,
@@ -419,7 +435,8 @@ object FilterBitmapRenderer {
                         features.rightEyeCenterY,
                         features.rightEyeRadiusX,
                         features.rightEyeRadiusY,
-                        features.rotationRadians,
+                        rotationSine,
+                        rotationCosine,
                     ),
                 )
                 val eyeShadowAmount = params.eyeShadow * eyeShadowMask * faceMask * 0.28f
@@ -436,7 +453,8 @@ object FilterBitmapRenderer {
                         features.leftEyeCenterY,
                         features.leftEyeRadiusX,
                         features.leftEyeRadiusY,
-                        features.rotationRadians,
+                        rotationSine,
+                        rotationCosine,
                     ),
                     eyelinerMask(
                         textureX,
@@ -445,7 +463,8 @@ object FilterBitmapRenderer {
                         features.rightEyeCenterY,
                         features.rightEyeRadiusX,
                         features.rightEyeRadiusY,
-                        features.rotationRadians,
+                        rotationSine,
+                        rotationCosine,
                     ),
                 )
                 val eyelinerAmount = params.eyeliner * eyelinerMask * faceMask * 0.48f
@@ -470,10 +489,11 @@ object FilterBitmapRenderer {
                         textureY,
                         features.leftCheekX,
                         features.leftCheekY,
-                        features.cheekRadiusX,
-                        features.cheekRadiusY,
-                        features.rotationRadians,
-                        innerEdge = 0.35f,
+                    features.cheekRadiusX,
+                    features.cheekRadiusY,
+                    rotationSine = rotationSine,
+                    rotationCosine = rotationCosine,
+                    innerEdge = 0.35f,
                         outerEdge = 1.15f,
                     ) * features.leftCheekStrength,
                     ellipseMask(
@@ -483,7 +503,8 @@ object FilterBitmapRenderer {
                         features.rightCheekY,
                         features.cheekRadiusX,
                         features.cheekRadiusY,
-                        features.rotationRadians,
+                        rotationSine = rotationSine,
+                        rotationCosine = rotationCosine,
                         innerEdge = 0.35f,
                         outerEdge = 1.15f,
                     ) * features.rightCheekStrength,
@@ -516,7 +537,8 @@ object FilterBitmapRenderer {
                         features.lipCenterY,
                         features.lipRadiusX,
                         features.lipRadiusY,
-                        features.rotationRadians,
+                        rotationSine = rotationSine,
+                        rotationCosine = rotationCosine,
                         innerEdge = 0.75f,
                         outerEdge = 1.05f,
                     )
@@ -759,24 +781,24 @@ object FilterBitmapRenderer {
         textureY: Float,
         params: ShaderFilterParams,
         output: FloatArray,
+        rotationSine: Float,
+        rotationCosine: Float,
     ) {
         output[0] = textureX
         output[1] = textureY
         val features = params.makeupFeatures ?: return
         if (params.faceSlimming > 0f && features.faceRadiusX > 0f && features.faceRadiusY > 0f) {
-            val sine = sin(features.rotationRadians)
-            val cosine = cos(features.rotationRadians)
-            val deltaX = (output[0] - features.faceCenterX) * cosine +
-                (output[1] - features.faceCenterY) * sine
-            val deltaY = -(output[0] - features.faceCenterX) * sine +
-                (output[1] - features.faceCenterY) * cosine
+            val deltaX = (output[0] - features.faceCenterX) * rotationCosine +
+                (output[1] - features.faceCenterY) * rotationSine
+            val deltaY = -(output[0] - features.faceCenterX) * rotationSine +
+                (output[1] - features.faceCenterY) * rotationCosine
             val normalizedX = deltaX / features.faceRadiusX
             val normalizedY = deltaY / features.faceRadiusY
             val distance = sqrt((normalizedX * normalizedX) + (normalizedY * normalizedY))
             val falloff = 1f - smoothstep(0.25f, 1.05f, distance)
             val slimmedX = deltaX * (1f + (params.faceSlimming * 0.18f * falloff))
-            output[0] = features.faceCenterX + (slimmedX * cosine) - (deltaY * sine)
-            output[1] = features.faceCenterY + (slimmedX * sine) + (deltaY * cosine)
+            output[0] = features.faceCenterX + (slimmedX * rotationCosine) - (deltaY * rotationSine)
+            output[1] = features.faceCenterY + (slimmedX * rotationSine) + (deltaY * rotationCosine)
         }
         if (params.eyeEnlargement > 0f) {
             applyEyeWarp(
@@ -785,7 +807,8 @@ object FilterBitmapRenderer {
                 features.leftEyeCenterY,
                 features.leftEyeRadiusX,
                 features.leftEyeRadiusY,
-                features.rotationRadians,
+                rotationSine,
+                rotationCosine,
                 params.eyeEnlargement,
             )
             applyEyeWarp(
@@ -794,7 +817,8 @@ object FilterBitmapRenderer {
                 features.rightEyeCenterY,
                 features.rightEyeRadiusX,
                 features.rightEyeRadiusY,
-                features.rotationRadians,
+                rotationSine,
+                rotationCosine,
                 params.eyeEnlargement,
             )
         }
@@ -873,16 +897,15 @@ object FilterBitmapRenderer {
         centerY: Float,
         radiusX: Float,
         radiusY: Float,
-        rotationRadians: Float,
+        rotationSine: Float,
+        rotationCosine: Float,
         amount: Float,
     ) {
         if (radiusX <= 0f || radiusY <= 0f) {
             return
         }
-        val sine = sin(rotationRadians)
-        val cosine = cos(rotationRadians)
-        val deltaX = (coordinate[0] - centerX) * cosine + (coordinate[1] - centerY) * sine
-        val deltaY = -(coordinate[0] - centerX) * sine + (coordinate[1] - centerY) * cosine
+        val deltaX = (coordinate[0] - centerX) * rotationCosine + (coordinate[1] - centerY) * rotationSine
+        val deltaY = -(coordinate[0] - centerX) * rotationSine + (coordinate[1] - centerY) * rotationCosine
         val normalizedX = deltaX / (radiusX * 1.55f)
         val normalizedY = deltaY / (radiusY * 1.55f)
         val distance = sqrt((normalizedX * normalizedX) + (normalizedY * normalizedY))
@@ -890,8 +913,8 @@ object FilterBitmapRenderer {
         val scale = 1f - (amount * 0.18f * falloff)
         val warpedX = deltaX * scale
         val warpedY = deltaY * scale
-        coordinate[0] = centerX + (warpedX * cosine) - (warpedY * sine)
-        coordinate[1] = centerY + (warpedX * sine) + (warpedY * cosine)
+        coordinate[0] = centerX + (warpedX * rotationCosine) - (warpedY * rotationSine)
+        coordinate[1] = centerY + (warpedX * rotationSine) + (warpedY * rotationCosine)
     }
 
     private fun red(color: Int): Float = ((color shr 16) and CHANNEL_MASK) / CHANNEL_MAX
@@ -955,14 +978,13 @@ object FilterBitmapRenderer {
         centerY: Float,
         radiusX: Float,
         radiusY: Float,
-        rotationRadians: Float = 0f,
+        rotationSine: Float,
+        rotationCosine: Float,
         innerEdge: Float = 0.45f,
         outerEdge: Float = 1f,
     ): Float {
-        val sine = sin(rotationRadians)
-        val cosine = cos(rotationRadians)
-        val deltaX = (x - centerX) * cosine + (y - centerY) * sine
-        val deltaY = -(x - centerX) * sine + (y - centerY) * cosine
+        val deltaX = (x - centerX) * rotationCosine + (y - centerY) * rotationSine
+        val deltaY = -(x - centerX) * rotationSine + (y - centerY) * rotationCosine
         val distance = sqrt(
             ((deltaX / radiusX.coerceAtLeast(0.0001f)).pow(2f)) +
                 ((deltaY / radiusY.coerceAtLeast(0.0001f)).pow(2f)),
@@ -977,13 +999,14 @@ object FilterBitmapRenderer {
         eyeCenterY: Float,
         eyeRadiusX: Float,
         eyeRadiusY: Float,
-        rotationRadians: Float,
+        rotationSine: Float,
+        rotationCosine: Float,
     ): Float {
         if (eyeRadiusX <= 0f || eyeRadiusY <= 0f) {
             return 0f
         }
-        val offsetX = sin(rotationRadians) * eyeRadiusY * 1.55f
-        val offsetY = cos(rotationRadians) * eyeRadiusY * 1.55f
+        val offsetX = rotationSine * eyeRadiusY * 1.55f
+        val offsetY = rotationCosine * eyeRadiusY * 1.55f
         return ellipseMask(
             x = x,
             y = y,
@@ -991,7 +1014,8 @@ object FilterBitmapRenderer {
             centerY = eyeCenterY + offsetY,
             radiusX = eyeRadiusX * 1.25f,
             radiusY = eyeRadiusY * 0.80f,
-            rotationRadians = rotationRadians,
+            rotationSine = rotationSine,
+            rotationCosine = rotationCosine,
             innerEdge = 0.35f,
             outerEdge = 1.15f,
         )
@@ -1004,17 +1028,16 @@ object FilterBitmapRenderer {
         eyeCenterY: Float,
         eyeRadiusX: Float,
         eyeRadiusY: Float,
-        rotationRadians: Float,
+        rotationSine: Float,
+        rotationCosine: Float,
     ): Float {
         if (eyeRadiusX <= 0f || eyeRadiusY <= 0f) {
             return 0f
         }
-        val sine = sin(rotationRadians)
-        val cosine = cos(rotationRadians)
-        val centerX = eyeCenterX - (sine * eyeRadiusY * 0.28f)
-        val centerY = eyeCenterY - (cosine * eyeRadiusY * 0.28f)
-        val deltaX = (x - centerX) * cosine + (y - centerY) * sine
-        val deltaY = -(x - centerX) * sine + (y - centerY) * cosine
+        val centerX = eyeCenterX - (rotationSine * eyeRadiusY * 0.28f)
+        val centerY = eyeCenterY - (rotationCosine * eyeRadiusY * 0.28f)
+        val deltaX = (x - centerX) * rotationCosine + (y - centerY) * rotationSine
+        val deltaY = -(x - centerX) * rotationSine + (y - centerY) * rotationCosine
         val normalizedX = deltaX / (eyeRadiusX * 1.55f)
         val normalizedY = deltaY / (eyeRadiusY * 1.35f)
         val distance = sqrt((normalizedX * normalizedX) + (normalizedY * normalizedY))
@@ -1030,15 +1053,14 @@ object FilterBitmapRenderer {
         eyeCenterY: Float,
         eyeRadiusX: Float,
         eyeRadiusY: Float,
-        rotationRadians: Float,
+        rotationSine: Float,
+        rotationCosine: Float,
     ): Float {
         if (eyeRadiusX <= 0f || eyeRadiusY <= 0f) {
             return 0f
         }
-        val sine = sin(rotationRadians)
-        val cosine = cos(rotationRadians)
-        val deltaX = (x - eyeCenterX) * cosine + (y - eyeCenterY) * sine
-        val deltaY = -(x - eyeCenterX) * sine + (y - eyeCenterY) * cosine
+        val deltaX = (x - eyeCenterX) * rotationCosine + (y - eyeCenterY) * rotationSine
+        val deltaY = -(x - eyeCenterX) * rotationSine + (y - eyeCenterY) * rotationCosine
         val normalizedX = deltaX / (eyeRadiusX * 1.14f)
         val normalizedY = deltaY / (eyeRadiusY * 1.12f)
         val distance = sqrt((normalizedX * normalizedX) + (normalizedY * normalizedY))

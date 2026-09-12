@@ -1,5 +1,25 @@
 # PLAN
 
+## Task: Reuse face rotation trigonometry in CPU renders
+
+Status: IN PROGRESS
+Created: 2026-09-12
+
+### Requirements
+
+- Compute face rotation sine/cosine once per bitmap render.
+- Preserve CPU Beauty/Warp output and the existing helper behavior.
+
+### Checklist
+
+- [x] Pass render-scoped rotation values through geometry helpers.
+- [x] Review the diff and document validation limits.
+
+### Notes
+
+- This removes repeated trigonometric calls from per-pixel face masks and warps.
+- Gradle validation is blocked because Java/JAVA_HOME is unavailable in this environment.
+
 ## Task: Skip unchanged preview parameter conversion
 
 Status: IN PROGRESS
