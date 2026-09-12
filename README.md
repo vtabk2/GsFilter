@@ -2,6 +2,8 @@
 
 GsFilter là demo filter ảnh Android nhỏ, đồng thời là module thư viện filter có thể tái sử dụng.
 
+Phiên bản thư viện hiện tại: `1.0.3` trên JitPack.
+
 Dự án gồm:
 
 - `:filter`: module tái sử dụng cho model filter, preview OpenGL, control Filter/Beauty/Adjust, CPU/GPU bitmap render, batch render progress, và thumbnail qua Glide.
@@ -11,7 +13,7 @@ Phạm vi hiện tại:
 
 - Min SDK 24.
 - Compile SDK 36; app mẫu target SDK 36.
-- Gradle wrapper 9.0.0, Android Gradle Plugin 8.13.2, Kotlin 2.1.10, Java 17.
+- Gradle wrapper 9.0.0, Android Gradle Plugin 8.13.2, Kotlin 2.2.21, KSP 2.2.21-2.0.4, Java 17.
 - Kotlin + XML views.
 - Không có camera flow.
 - Preview GPU qua `FilterPreviewView`.
@@ -45,7 +47,7 @@ Thêm GsFilter vào module app:
 
 ```kotlin
 dependencies {
-    implementation("com.github.vtabk2:GsFilter:1.0.1")
+    implementation("com.github.vtabk2:GsFilter:1.0.3")
 }
 ```
 
@@ -64,7 +66,7 @@ dependencyResolutionManagement {
 
 ```groovy
 dependencies {
-    implementation 'com.github.vtabk2:GsFilter:1.0.1'
+    implementation 'com.github.vtabk2:GsFilter:1.0.3'
 }
 ```
 
@@ -135,10 +137,14 @@ Sau đó bind bitmap và trạng thái filter hiện tại:
 
 ```kotlin
 binding.filterPreview.setSourceBitmap(sourceBitmap)
-binding.filterPreview.setFilterState(selectedFilter.recipe, adjustments)
+binding.filterPreview.setFilterState(
+    selectedFilter.recipe,
+    adjustments,
+    makeupFeatures = null, // truyền MakeupFeatures nếu host có face detection
+)
 ```
 
-`setFilterState()` bỏ qua params trùng nhau và gom các thay đổi adjust nhanh vào frame kế tiếp.
+`makeupFeatures` là tùy chọn; truyền `null` nếu host không dùng face detection. `setFilterState()` bỏ qua params trùng nhau và gom các thay đổi adjust nhanh vào frame kế tiếp.
 
 ## Render bitmap không cần view
 
@@ -243,6 +249,8 @@ binding.filterControls.setAdjustments(state.adjustments)
 
 Nếu host không có override intensity theo filter, có thể dùng overload `setState()` không truyền `selectedRecipe`.
 
+`FilterControlsView` mặc định dùng `FilterCatalog.pack`. Host có thể thay bằng catalog riêng qua `setCatalog(FilterPack(...))`; sau đó dùng cùng các callback và `setState()` như trên.
+
 Ghi chú:
 
 - `Original` là action cố định ở đầu, dùng none icon.
@@ -302,7 +310,7 @@ Host có thể map từng `BeautyControl` vào state riêng như app mẫu.
 
 ## Mẫu filter tích hợp
 
-Built-in `FilterCatalog` có 104 preset, không tính action `Original`. Một preset có thể xuất hiện ở nhiều category; `Popular` là nhóm shortcut cho các mẫu hay dùng.
+Built-in `FilterCatalog` có 103 preset, không tính action `Original`. Một preset có thể xuất hiện ở nhiều category; `Popular` là nhóm shortcut cho các mẫu hay dùng.
 
 | Category  | Preset hỗ trợ                                                                                                                                                                                                                       |
 |-----------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
