@@ -1,5 +1,45 @@
 # PLAN
 
+## Task: Cache filter lookup by id
+
+Status: IN PROGRESS
+Created: 2026-09-12
+
+### Requirements
+
+- Avoid scanning all options for repeated state lookups.
+- Preserve the explicit default-filter precedence.
+
+### Checklist
+
+- [x] Build a lazy id index.
+- [x] Keep `defaultFilter` winning on duplicate default ids.
+- [ ] Run unit tests, compile, and review the diff.
+
+### Notes
+
+- `filterById()` is now constant-time after the first lookup.
+
+## Task: Cache filters by category
+
+Status: IN PROGRESS
+Created: 2026-09-12
+
+### Requirements
+
+- Avoid rescanning the full filter catalog on every rail render.
+- Preserve category membership and empty-category behavior.
+
+### Checklist
+
+- [x] Build the category index lazily from the immutable pack.
+- [x] Keep unknown categories returning an empty list.
+- [ ] Run unit tests, compile, and review the diff.
+
+### Notes
+
+- This removes repeated list allocations during category/filter state updates.
+
 ## Task: Avoid thumbnail rebind on filter selection
 
 Status: IN PROGRESS

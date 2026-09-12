@@ -17,8 +17,17 @@ data class FilterPack(
         }
     }
 
+    private val filtersByCategory: Map<String, List<FilterOption>> by lazy {
+        categories.associate { category ->
+            category.id to options.filter { category.id in it.categoryIds }
+        }
+    }
+    private val filtersById: Map<String, FilterOption> by lazy {
+        options.associateBy { it.id } + (defaultFilter.id to defaultFilter)
+    }
+
     fun filtersForCategory(categoryId: String): List<FilterOption> =
-        options.filter { categoryId in it.categoryIds }
+        filtersByCategory[categoryId].orEmpty()
 
     fun categoryForFilter(filter: FilterOption): FilterCategory? =
         categories.firstOrNull { it.id in filter.categoryIds }
@@ -27,9 +36,5 @@ data class FilterPack(
         categories.firstOrNull { it.id == id }
 
     fun filterById(id: String): FilterOption? =
-        if (id == defaultFilter.id) {
-            defaultFilter
-        } else {
-            options.firstOrNull { it.id == id }
-        }
+        filtersById[id]
 }
