@@ -1,5 +1,26 @@
 # PLAN
 
+## Task: Use partial binds for thumbnail updates
+
+Status: IN PROGRESS
+Created: 2026-09-12
+
+### Requirements
+
+- Update only the image when filter thumbnail inputs change.
+- Preserve full binds when selection, filter identity, or style changes.
+
+### Checklist
+
+- [x] Add a thumbnail change payload to the adapter diff.
+- [x] Bind thumbnail updates without rebinding labels and selection state.
+- [x] Review the diff and document validation limits.
+
+### Notes
+
+- This reduces UI work when one source image refreshes the filter rail.
+- Gradle validation is blocked because Java/JAVA_HOME is unavailable in this environment.
+
 ## Task: Avoid neutral adjustment allocations
 
 Status: IN PROGRESS

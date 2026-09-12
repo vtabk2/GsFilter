@@ -852,10 +852,13 @@ class FilterControlsView @JvmOverloads constructor(
         }
 
         override fun onBindViewHolder(holder: FilterHolder, position: Int, payloads: MutableList<Any>) {
-            if (payloads.contains(PAYLOAD_SELECTION)) {
-                holder.bindSelection(getItem(position))
-            } else {
-                holder.bind(getItem(position))
+            when {
+                payloads.contains(PAYLOAD_SELECTION) && payloads.contains(PAYLOAD_THUMBNAIL) -> {
+                    holder.bind(getItem(position))
+                }
+                payloads.contains(PAYLOAD_SELECTION) -> holder.bindSelection(getItem(position))
+                payloads.contains(PAYLOAD_THUMBNAIL) -> holder.bindThumbnail(getItem(position))
+                else -> holder.bind(getItem(position))
             }
         }
 
@@ -878,7 +881,10 @@ class FilterControlsView @JvmOverloads constructor(
                 label?.setBackgroundResource(style.labelBackgroundRes)
                 label?.setTextColor(style.labelTextColor)
                 label?.text = item.filter.displayName(itemView.context)
+                bindThumbnail(item)
+            }
 
+            fun bindThumbnail(item: FilterItem) {
                 val source = item.thumbnailBitmap
                 val sourceKey = item.thumbnailKey
                 val imageView = image ?: return
@@ -914,6 +920,7 @@ class FilterControlsView @JvmOverloads constructor(
 
         private companion object {
             const val PAYLOAD_SELECTION = "selection"
+            const val PAYLOAD_THUMBNAIL = "thumbnail"
 
             val DIFF = object : DiffUtil.ItemCallback<FilterItem>() {
                 override fun areItemsTheSame(oldItem: FilterItem, newItem: FilterItem): Boolean =
@@ -923,17 +930,19 @@ class FilterControlsView @JvmOverloads constructor(
                     oldItem == newItem
 
                 override fun getChangePayload(oldItem: FilterItem, newItem: FilterItem): Any? =
-                    if (
-                        oldItem.filter.id == newItem.filter.id &&
-                        oldItem.isSelected != newItem.isSelected &&
-                        oldItem.thumbnailBitmap === newItem.thumbnailBitmap &&
-                        oldItem.thumbnailKey == newItem.thumbnailKey &&
-                        oldItem.thumbnailGenerationId == newItem.thumbnailGenerationId &&
-                        oldItem.style == newItem.style
-                    ) {
-                        PAYLOAD_SELECTION
-                    } else {
+                    if (oldItem.filter.id != newItem.filter.id || oldItem.style != newItem.style) {
                         null
+                    } else {
+                        val selectionChanged = oldItem.isSelected != newItem.isSelected
+                        val thumbnailChanged =
+                            oldItem.thumbnailBitmap !== newItem.thumbnailBitmap ||
+                                oldItem.thumbnailKey != newItem.thumbnailKey ||
+                                oldItem.thumbnailGenerationId != newItem.thumbnailGenerationId
+                        when {
+                            selectionChanged && !thumbnailChanged -> PAYLOAD_SELECTION
+                            thumbnailChanged && !selectionChanged -> PAYLOAD_THUMBNAIL
+                            else -> null
+                        }
                     }
             }
         }
