@@ -213,6 +213,8 @@ Trong app mẫu, `FilterViewModel.renderFilteredBitmap(maxWidth, maxHeight, useG
     android:layout_height="wrap_content"
     app:gsFilterCloseIcon="@drawable/ic_gs_tick"
     app:gsFilterCompactTabs="true"
+    app:gsFilterShowHeader="false"
+    app:gsFilterShowBeauty="false"
     app:gsFilterShowTabIndicator="true"
     app:gsFilterTabIndicatorColor="@color/your_selected_color"
     app:gsFilterTabIndicatorWidthMode="text"
@@ -375,6 +377,8 @@ Các XML attributes hiện có:
 | `gsFilterIconPadding`            | Override padding icon close/original nếu cần; bỏ trống thì dùng default của `RippleImageView`                                        |
 | `gsFilterShowTabIndicator`       | Hiển thị indicator dưới tab Filter/Adjust đang chọn                                                                                  |
 | `gsFilterCompactTabs`            | Kéo label/indicator của tab Filter và Adjust gần nhau hơn trong khi vùng bấm vẫn rộng                                                |
+| `gsFilterShowHeader`              | Hiển thị/ẩn toàn bộ header `gs_filter_header`; mặc định `true`                                                                      |
+| `gsFilterShowBeauty`              | Hiển thị/ẩn tab và nội dung Beauty; mặc định `true`                                                                                   |
 | `gsFilterTabSpacing`             | Khoảng cách giữa tab Filter và Adjust khi cần chỉnh gần/xa nhau                                                                      |
 | `gsFilterTabIndicatorColor`      | Màu tab indicator                                                                                                                    |
 | `gsFilterTabIndicatorHeight`     | Chiều cao tab indicator                                                                                                              |

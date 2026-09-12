@@ -1,5 +1,29 @@
 # PLAN
 
+## Task: Add a switch for the Beauty tab
+
+Status: IN PROGRESS
+Created: 2026-09-12
+
+### Requirements
+
+- Add a backward-compatible XML flag to hide the Beauty tab and content.
+- Fall back to Filter if callers select Beauty while it is disabled.
+- Keep existing attribute naming conventions and public names unchanged.
+
+### Checklist
+
+- [x] Add `gsFilterShowBeauty`, defaulting to `true`.
+- [x] Hide the tab and guard programmatic Beauty selection.
+- [x] Document the attribute in README.
+- [x] Review all existing attributes for naming consistency.
+- [x] Review the diff and document validation limits.
+
+### Notes
+
+- Existing attributes are already consistent; renaming them would be a breaking API change.
+- Gradle validation is blocked because Java/JAVA_HOME is unavailable in this environment.
+
 ## Task: Use partial binds for thumbnail updates
 
 Status: IN PROGRESS

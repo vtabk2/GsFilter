@@ -94,9 +94,11 @@ class FilterControlsView @JvmOverloads constructor(
     init {
         orientation = VERTICAL
         LayoutInflater.from(context).inflate(R.layout.gs_view_filter_controls, this, true)
+        findViewById<View>(R.id.gs_filter_header)?.visibility = if (style.showHeader) VISIBLE else GONE
 
         tabFilter = findViewById(R.id.gs_filter_tab_filter)
         tabBeauty = findViewById(R.id.gs_filter_tab_beauty)
+        tabBeauty?.visibility = if (style.showBeauty) VISIBLE else GONE
         tabAdjust = findViewById(R.id.gs_filter_tab_adjust)
         buttonClose = findViewById(R.id.gs_filter_close_button)
         buttonOriginalFilter = findViewById(R.id.gs_filter_original)
@@ -130,12 +132,13 @@ class FilterControlsView @JvmOverloads constructor(
     }
 
     fun setSelectedTab(tab: ControlTab) {
-        renderTab(tabFilter, tab == ControlTab.Filter)
-        renderTab(tabBeauty, tab == ControlTab.Beauty)
-        renderTab(tabAdjust, tab == ControlTab.Adjust)
-        filterContent?.visibility = if (tab == ControlTab.Filter) VISIBLE else GONE
-        beautyContainer?.visibility = if (tab == ControlTab.Beauty) VISIBLE else GONE
-        adjustContainer?.visibility = if (tab == ControlTab.Adjust) VISIBLE else GONE
+        val effectiveTab = if (!style.showBeauty && tab == ControlTab.Beauty) ControlTab.Filter else tab
+        renderTab(tabFilter, effectiveTab == ControlTab.Filter)
+        renderTab(tabBeauty, effectiveTab == ControlTab.Beauty)
+        renderTab(tabAdjust, effectiveTab == ControlTab.Adjust)
+        filterContent?.visibility = if (effectiveTab == ControlTab.Filter) VISIBLE else GONE
+        beautyContainer?.visibility = if (effectiveTab == ControlTab.Beauty) VISIBLE else GONE
+        adjustContainer?.visibility = if (effectiveTab == ControlTab.Adjust) VISIBLE else GONE
     }
 
     fun setCatalog(catalog: FilterPack) {
@@ -670,6 +673,8 @@ class FilterControlsView @JvmOverloads constructor(
         val tabIndicatorMinWidth: Int,
         val compactTabs: Boolean,
         val tabSpacing: Int,
+        val showHeader: Boolean,
+        val showBeauty: Boolean,
         val showIntensity: Boolean,
         val showPopular: Boolean,
         val intensityTextColor: Int,
@@ -793,6 +798,8 @@ class FilterControlsView @JvmOverloads constructor(
                 R.styleable.FilterControlsView_gsFilterTabSpacing,
                 context.resources.getDimensionPixelSize(R.dimen.gs_filter_item_spacing),
             ),
+            showHeader = array.getBoolean(R.styleable.FilterControlsView_gsFilterShowHeader, true),
+            showBeauty = array.getBoolean(R.styleable.FilterControlsView_gsFilterShowBeauty, true),
             showIntensity = array.getBoolean(R.styleable.FilterControlsView_gsFilterShowIntensity, true),
             showPopular = array.getBoolean(R.styleable.FilterControlsView_gsFilterShowPopular, true),
             intensityTextColor = array.getColor(

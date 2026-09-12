@@ -30,6 +30,8 @@
             <enum name="text" value="2"/>
         </attr>
         <attr name="gsFilterTabIndicatorMinWidth" format="dimension"/>
+        <attr name="gsFilterShowHeader" format="boolean"/>
+        <attr name="gsFilterShowBeauty" format="boolean"/>
         <attr name="gsFilterShowIntensity" format="boolean"/>
         <attr name="gsFilterShowPopular" format="boolean"/>
         <attr name="gsFilterIntensityTextColor" format="color|reference"/>
