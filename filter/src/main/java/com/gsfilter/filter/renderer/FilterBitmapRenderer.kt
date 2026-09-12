@@ -27,6 +27,19 @@ object FilterBitmapRenderer {
         maxWidth: Int? = null,
         maxHeight: Int? = null,
         makeupFeatures: MakeupFeatures? = null,
+    ): Bitmap =
+        getBitmapWithParams(
+            source = source,
+            params = ShaderFilterParams.from(recipe, adjustments, makeupFeatures),
+            maxWidth = maxWidth,
+            maxHeight = maxHeight,
+        )
+
+    internal fun getBitmapWithParams(
+        source: Bitmap,
+        params: ShaderFilterParams,
+        maxWidth: Int? = null,
+        maxHeight: Int? = null,
     ): Bitmap {
         val renderSource = scaledSource(source, maxWidth, maxHeight)
         val width = renderSource.width
@@ -39,7 +52,7 @@ object FilterBitmapRenderer {
                 pixels = pixels,
                 width = width,
                 height = height,
-                params = ShaderFilterParams.from(recipe, adjustments, makeupFeatures),
+                params = params,
             )
             Bitmap.createBitmap(output, width, height, Bitmap.Config.ARGB_8888)
         } finally {

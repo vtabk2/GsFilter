@@ -1,5 +1,25 @@
 # PLAN
 
+## Task: Reuse batch shader params
+
+Status: IN PROGRESS
+Created: 2026-09-12
+
+### Requirements
+
+- Build immutable shader parameters once for a batch.
+- Preserve GPU fallback and per-image output behavior.
+
+### Checklist
+
+- [x] Reuse one parameter object across batch items.
+- [x] Keep public single-image APIs unchanged.
+- [ ] Run unit tests, compile, and review the diff.
+
+### Notes
+
+- The same params now flow through GPU first and CPU fallback paths without rebuilding per image.
+
 ## Task: Group batch renders by effective size
 
 Status: IN PROGRESS

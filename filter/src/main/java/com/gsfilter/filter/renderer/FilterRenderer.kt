@@ -3,6 +3,7 @@ package com.gsfilter.filter.renderer
 import android.graphics.Bitmap
 import com.gsfilter.filter.Adjustments
 import com.gsfilter.filter.FilterRecipe
+import com.gsfilter.filter.ShaderFilterParams
 
 object FilterRenderer {
 
@@ -12,25 +13,12 @@ object FilterRenderer {
         adjustments: Adjustments = Adjustments(),
         maxWidth: Int? = null,
         maxHeight: Int? = null,
-    ): Bitmap =
-        try {
-            FilterGpuBitmapRenderer.getBitmap(
-                source = source,
-                recipe = recipe,
-                adjustments = adjustments,
-                maxWidth = maxWidth,
-                maxHeight = maxHeight,
-            )
-        } catch (_: RuntimeException) {
-            // Fall back for devices/contexts where offscreen EGL is unavailable.
-            FilterBitmapRenderer.getBitmap(
-                source = source,
-                recipe = recipe,
-                adjustments = adjustments,
-                maxWidth = maxWidth,
-                maxHeight = maxHeight,
-            )
-        }
+    ): Bitmap = getBitmapWithParams(
+        source = source,
+        params = ShaderFilterParams.from(recipe, adjustments),
+        maxWidth = maxWidth,
+        maxHeight = maxHeight,
+    )
 
     /**
      * Renders one bitmap at a time so callers can save or recycle each result before the next render.
@@ -47,6 +35,7 @@ object FilterRenderer {
     ) {
         val totalCount = sources.size
         onProgress(FilterRenderProgress(completedCount = 0, totalCount = totalCount))
+        val params = ShaderFilterParams.from(recipe, adjustments)
         var completedCount = 0
         val batches = sources.withIndex().groupBy { indexedSource ->
             FilterBitmapRenderer.targetSize(
@@ -58,10 +47,9 @@ object FilterRenderer {
         }
         batches.values.forEach { batch ->
             batch.forEach { indexedSource ->
-                val bitmap = getBitmap(
+                val bitmap = getBitmapWithParams(
                     source = indexedSource.value,
-                    recipe = recipe,
-                    adjustments = adjustments,
+                    params = params,
                     maxWidth = maxWidth,
                     maxHeight = maxHeight,
                 )
@@ -71,6 +59,29 @@ object FilterRenderer {
             }
         }
     }
+
+    private fun getBitmapWithParams(
+        source: Bitmap,
+        params: ShaderFilterParams,
+        maxWidth: Int?,
+        maxHeight: Int?,
+    ): Bitmap =
+        try {
+            FilterGpuBitmapRenderer.getBitmapWithParams(
+                source = source,
+                params = params,
+                maxWidth = maxWidth,
+                maxHeight = maxHeight,
+            )
+        } catch (_: RuntimeException) {
+            // Fall back for devices/contexts where offscreen EGL is unavailable.
+            FilterBitmapRenderer.getBitmapWithParams(
+                source = source,
+                params = params,
+                maxWidth = maxWidth,
+                maxHeight = maxHeight,
+            )
+        }
 }
 
 data class FilterRenderProgress(

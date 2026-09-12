@@ -37,6 +37,25 @@ object FilterGpuBitmapRenderer {
         texelScale: Float = 1f,
         makeupFeatures: MakeupFeatures? = null,
         isCancelled: () -> Boolean = { false },
+    ): Bitmap =
+        getBitmapWithParams(
+            source = source,
+            params = ShaderFilterParams.from(recipe, adjustments, makeupFeatures),
+            maxWidth = maxWidth,
+            maxHeight = maxHeight,
+            scaleSource = scaleSource,
+            texelScale = texelScale,
+            isCancelled = isCancelled,
+        )
+
+    internal fun getBitmapWithParams(
+        source: Bitmap,
+        params: ShaderFilterParams,
+        maxWidth: Int? = null,
+        maxHeight: Int? = null,
+        scaleSource: Boolean = true,
+        texelScale: Float = 1f,
+        isCancelled: () -> Boolean = { false },
     ): Bitmap {
         acquireRenderLock(isCancelled)
         return try {
@@ -48,13 +67,11 @@ object FilterGpuBitmapRenderer {
             }
             renderLocked(
                 source = source,
-                recipe = recipe,
-                adjustments = adjustments,
+                params = params,
                 maxWidth = maxWidth,
                 maxHeight = maxHeight,
                 scaleSource = scaleSource,
                 texelScale = texelScale,
-                makeupFeatures = makeupFeatures,
             )
         } finally {
             renderLock.unlock()
@@ -76,13 +93,11 @@ object FilterGpuBitmapRenderer {
 
     private fun renderLocked(
         source: Bitmap,
-        recipe: FilterRecipe,
-        adjustments: Adjustments,
+        params: ShaderFilterParams,
         maxWidth: Int?,
         maxHeight: Int?,
         scaleSource: Boolean,
         texelScale: Float,
-        makeupFeatures: MakeupFeatures?,
     ): Bitmap {
         val renderSize = FilterBitmapRenderer.targetSize(source.width, source.height, maxWidth, maxHeight)
         val renderSource =
@@ -94,7 +109,6 @@ object FilterGpuBitmapRenderer {
         val width = if (scaleSource) renderSource.width else renderSize.width
         val height = if (scaleSource) renderSource.height else renderSize.height
         val session = sessionFor(width, height)
-        val params = ShaderFilterParams.from(recipe, adjustments, makeupFeatures)
         val makeupControlsEnabled = GlFilterProgram.hasMakeupControls(params)
         val uploadMakeupUniforms = session.makeupUniformsEnabled || makeupControlsEnabled
         val adjustmentValuesEnabled = GlFilterProgram.hasAdjustmentValues(params)
