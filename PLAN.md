@@ -1,5 +1,27 @@
 # PLAN
 
+## Task: Skip redundant preview uniform uploads
+
+Status: IN PROGRESS
+Created: 2026-09-12
+
+### Requirements
+
+- Upload Beauty and Adjust uniforms when state or GL context changes.
+- Preserve zero-value uploads when controls are reset.
+- Keep shader output and render scheduling unchanged.
+
+### Checklist
+
+- [x] Mark uniform groups dirty when filter state changes.
+- [x] Clear dirty flags after a successful preview bind.
+- [ ] Run unit tests, compile, and review the diff.
+
+### Notes
+
+- Repeated preview draws no longer re-upload active Beauty/Adjust uniforms.
+- A filter-state update still rebinds both groups, including reset-to-zero values.
+
 ## Task: Coalesce preview source updates
 
 Status: IN PROGRESS
