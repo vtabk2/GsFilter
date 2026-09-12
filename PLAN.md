@@ -16,6 +16,7 @@ Created: 2026-09-12
 - [x] Keep active filters on the GPU-first path with CPU fallback.
 - [x] Avoid the extra pixel-array copy in the bitmap no-op path.
 - [x] Evaluate the no-op decision once per render batch.
+- [x] Reuse the no-op decision in the CPU fallback path.
 - [x] Skip repeated GPU attempts after offscreen initialization failure.
 - [ ] Run unit tests, compile, and review the diff.
 

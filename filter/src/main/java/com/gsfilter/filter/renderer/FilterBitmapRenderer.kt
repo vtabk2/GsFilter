@@ -41,6 +41,7 @@ object FilterBitmapRenderer {
         maxWidth: Int? = null,
         maxHeight: Int? = null,
         renderSize: RenderSize? = null,
+        noOp: Boolean = isNoOp(params),
     ): Bitmap {
         val renderSource = scaledSource(
             source = source,
@@ -53,7 +54,7 @@ object FilterBitmapRenderer {
         return try {
             renderSource.getPixels(pixels, 0, width, 0, 0, width, height)
             val output =
-                if (isNoOp(params)) {
+                if (noOp) {
                     pixels
                 } else {
                     renderPixels(
