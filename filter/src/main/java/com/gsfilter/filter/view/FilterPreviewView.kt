@@ -28,6 +28,9 @@ class FilterPreviewView @JvmOverloads constructor(
     private var hasPendingSourceBitmap = false
     private var isSourceUpdatePosted = false
     private var lastFilterParams: ShaderFilterParams? = null
+    private var lastRecipe: FilterRecipe? = null
+    private var lastAdjustments: Adjustments? = null
+    private var lastMakeupFeatures: MakeupFeatures? = null
     private var pendingFilterParams: ShaderFilterParams? = null
     private var isFilterRenderPosted = false
 
@@ -70,7 +73,17 @@ class FilterPreviewView @JvmOverloads constructor(
         adjustments: Adjustments,
         makeupFeatures: MakeupFeatures? = null,
     ) {
+        if (
+            recipe == lastRecipe &&
+            adjustments == lastAdjustments &&
+            (makeupFeatures === lastMakeupFeatures || makeupFeatures == lastMakeupFeatures)
+        ) {
+            return
+        }
         val params = ShaderFilterParams.from(recipe, adjustments, makeupFeatures)
+        lastRecipe = recipe
+        lastAdjustments = adjustments
+        lastMakeupFeatures = makeupFeatures
         if (params == lastFilterParams) {
             return
         }

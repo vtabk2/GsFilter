@@ -1,5 +1,25 @@
 # PLAN
 
+## Task: Skip unchanged preview parameter conversion
+
+Status: IN PROGRESS
+Created: 2026-09-12
+
+### Requirements
+
+- Avoid rebuilding shader params when preview inputs are unchanged.
+- Preserve structural equality behavior for distinct but equal makeup feature objects.
+
+### Checklist
+
+- [x] Memoize the last preview inputs.
+- [x] Review the diff and document validation limits.
+
+### Notes
+
+- This targets state emissions unrelated to filter rendering, such as loading/error updates.
+- Gradle validation is blocked because the shell has no Java installation or `JAVA_HOME`.
+
 ## Task: Reuse neutral filter model instances
 
 Status: IN PROGRESS
