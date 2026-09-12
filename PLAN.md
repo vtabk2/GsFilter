@@ -1,5 +1,29 @@
 # PLAN
 
+## Task: Skip inactive Beauty sub-stages
+
+Status: IN PROGRESS
+Created: 2026-09-12
+
+### Requirements
+
+- Skip Beauty smoothing and whitening calculations when their values are zero.
+- Preserve feature masks and active Beauty output.
+- Keep CPU and GPU behavior aligned.
+
+### Checklist
+
+- [x] Gate CPU whitening calculations.
+- [x] Gate GPU smoothing and whitening calculations.
+- [x] Gate each Beauty feature mask by its active control.
+- [ ] Run unit tests, compile, and review the diff.
+
+### Notes
+
+- Feature-only Beauty no longer calculates unused skin smoothing/whitening math.
+- Skin-only Beauty no longer enters the feature mask block.
+- A single active feature no longer evaluates the other feature masks.
+
 ## Task: Skip inactive Beauty feature masks
 
 Status: IN PROGRESS

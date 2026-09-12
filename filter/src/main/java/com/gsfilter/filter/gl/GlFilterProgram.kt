@@ -935,22 +935,22 @@ internal object GlFilterProgram {
             vec3 rgb = color.rgb;
             if (beautyEnabled) {
                 beautyMask = skinMask(color.rgb) * faceAreaMask(vTexCoord);
-                vec3 localContrast = abs(color.rgb - blur);
-                float edgeGuard = 1.0 - smoothstep(
-                    0.06,
-                    0.20,
-                    max(max(localContrast.r, localContrast.g), localContrast.b)
-                );
-                float beautyEdge = 0.0;
                 if (uSkinSmoothing > 0.0) {
-                    beautyEdge = edgeAt(sourceCoord);
+                    vec3 localContrast = abs(color.rgb - blur);
+                    float edgeGuard = 1.0 - smoothstep(
+                        0.06,
+                        0.20,
+                        max(max(localContrast.r, localContrast.g), localContrast.b)
+                    );
+                    float beautyEdge = edgeAt(sourceCoord);
+                    float smoothAmount = uSkinSmoothing * beautyMask * edgeGuard *
+                        (1.0 - smoothstep(0.18, 0.55, beautyEdge));
+                    rgb = mix(color.rgb, blur, smoothAmount);
                 }
-                float smoothAmount = uSkinSmoothing * beautyMask * edgeGuard *
-                    (1.0 - smoothstep(0.18, 0.55, beautyEdge));
-                rgb = mix(color.rgb, blur, smoothAmount);
             }
             rgb = rgb + (rgb - blur) * ((uSharpness * 0.65) + (uClarity * 0.35));
             if (beautyEnabled) {
+            if (uSkinWhitening > 0.0) {
             float whitening = uSkinWhitening * beautyMask;
             float skinLuma = dot(rgb, vec3(0.299, 0.587, 0.114));
             float highlightGuard = 1.0 - smoothstep(0.55, 0.92, skinLuma);
@@ -958,58 +958,73 @@ internal object GlFilterProgram {
             rgb += vec3(skinLift);
             float skinDesaturate = whitening * 0.08 * highlightGuard;
             rgb = mix(rgb, vec3(skinLuma + skinLift), skinDesaturate);
+            }
             if (featureBeautyEnabled) {
-            float underEyeMask = max(
-                underEyeRegionMask(vTexCoord, uUnderEyeLeft),
-                underEyeRegionMask(vTexCoord, uUnderEyeRight)
-            );
-            float underEyeAmount = uUnderEye * underEyeMask * beautyMask;
-            float underEyeLuma = dot(rgb, vec3(0.299, 0.587, 0.114));
-            float underEyeLift = underEyeAmount * (1.0 - underEyeLuma) * 0.08;
-            rgb += vec3(underEyeLift);
-            float teethRegionMask = ellipseMask(
-                vTexCoord,
-                vec4(uLipArea.xy, uLipArea.z * 1.08, uLipArea.w * 0.65),
-                uMakeupRotation,
-                0.15,
-                1.05
-            );
-            float teethAmount = uTeethWhitening * teethRegionMask * faceAreaMask(vTexCoord) *
-                teethColorMask(color.rgb) * 0.65;
-            float teethLuma = dot(rgb, vec3(0.299, 0.587, 0.114));
-            float teethLift = teethAmount * (1.0 - teethLuma) * 0.22;
-            rgb += vec3(teethLift);
-            float eyeShadowMask = max(
-                eyeShadowRegionMask(vTexCoord, uEyeLeft),
-                eyeShadowRegionMask(vTexCoord, uEyeRight)
-            );
-            float eyeShadowAmount = uEyeShadow * eyeShadowMask * faceAreaMask(vTexCoord) * 0.28;
-            rgb = mix(rgb, vec3(0.34, 0.16, 0.22), eyeShadowAmount);
-            float eyelinerMask = max(
-                eyelinerRegionMask(vTexCoord, uEyeLeft),
-                eyelinerRegionMask(vTexCoord, uEyeRight)
-            );
-            float eyelinerAmount = uEyeliner * eyelinerMask * faceAreaMask(vTexCoord) * 0.48;
-            rgb = mix(rgb, vec3(0.06, 0.04, 0.05), eyelinerAmount);
-            float eyebrowMask = max(
-                contourMask(vTexCoord, uLeftEyebrowPoints, uLeftEyebrowPointCount),
-                contourMask(vTexCoord, uRightEyebrowPoints, uRightEyebrowPointCount)
-            );
-            float eyebrowAmount = uEyebrow * eyebrowMask * faceAreaMask(vTexCoord) * 0.32;
-            rgb = mix(rgb, rgb * vec3(0.42, 0.32, 0.28), eyebrowAmount);
-            float blushMask = max(
-                ellipseMask(vTexCoord, uBlushLeft, uMakeupRotation, 0.35, 1.15) * uBlushStrengths.x,
-                ellipseMask(vTexCoord, uBlushRight, uMakeupRotation, 0.35, 1.15) * uBlushStrengths.y
-            );
-            float blushAmount = uBlush * blushMask * skinMask(rgb) * 0.40;
-            float blushLuma = dot(rgb, vec3(0.299, 0.587, 0.114));
-            rgb = mix(
-                rgb,
-                clamp(vec3(blushLuma + 0.20, blushLuma - 0.05, blushLuma - 0.02), 0.0, 1.0),
-                blushAmount
-            );
-            float lipstickAmount = uLipstick * lipContourMask(vTexCoord) * lipColorMask(color.rgb) * 0.40;
-            rgb = mix(rgb, vec3(0.70, 0.16, 0.22), lipstickAmount);
+            if (uUnderEye > 0.0) {
+                float underEyeMask = max(
+                    underEyeRegionMask(vTexCoord, uUnderEyeLeft),
+                    underEyeRegionMask(vTexCoord, uUnderEyeRight)
+                );
+                float underEyeAmount = uUnderEye * underEyeMask * beautyMask;
+                float underEyeLuma = dot(rgb, vec3(0.299, 0.587, 0.114));
+                float underEyeLift = underEyeAmount * (1.0 - underEyeLuma) * 0.08;
+                rgb += vec3(underEyeLift);
+            }
+            if (uTeethWhitening > 0.0) {
+                float teethRegionMask = ellipseMask(
+                    vTexCoord,
+                    vec4(uLipArea.xy, uLipArea.z * 1.08, uLipArea.w * 0.65),
+                    uMakeupRotation,
+                    0.15,
+                    1.05
+                );
+                float teethAmount = uTeethWhitening * teethRegionMask * faceAreaMask(vTexCoord) *
+                    teethColorMask(color.rgb) * 0.65;
+                float teethLuma = dot(rgb, vec3(0.299, 0.587, 0.114));
+                float teethLift = teethAmount * (1.0 - teethLuma) * 0.22;
+                rgb += vec3(teethLift);
+            }
+            if (uEyeShadow > 0.0) {
+                float eyeShadowMask = max(
+                    eyeShadowRegionMask(vTexCoord, uEyeLeft),
+                    eyeShadowRegionMask(vTexCoord, uEyeRight)
+                );
+                float eyeShadowAmount = uEyeShadow * eyeShadowMask * faceAreaMask(vTexCoord) * 0.28;
+                rgb = mix(rgb, vec3(0.34, 0.16, 0.22), eyeShadowAmount);
+            }
+            if (uEyeliner > 0.0) {
+                float eyelinerMask = max(
+                    eyelinerRegionMask(vTexCoord, uEyeLeft),
+                    eyelinerRegionMask(vTexCoord, uEyeRight)
+                );
+                float eyelinerAmount = uEyeliner * eyelinerMask * faceAreaMask(vTexCoord) * 0.48;
+                rgb = mix(rgb, vec3(0.06, 0.04, 0.05), eyelinerAmount);
+            }
+            if (uEyebrow > 0.0) {
+                float eyebrowMask = max(
+                    contourMask(vTexCoord, uLeftEyebrowPoints, uLeftEyebrowPointCount),
+                    contourMask(vTexCoord, uRightEyebrowPoints, uRightEyebrowPointCount)
+                );
+                float eyebrowAmount = uEyebrow * eyebrowMask * faceAreaMask(vTexCoord) * 0.32;
+                rgb = mix(rgb, rgb * vec3(0.42, 0.32, 0.28), eyebrowAmount);
+            }
+            if (uBlush > 0.0) {
+                float blushMask = max(
+                    ellipseMask(vTexCoord, uBlushLeft, uMakeupRotation, 0.35, 1.15) * uBlushStrengths.x,
+                    ellipseMask(vTexCoord, uBlushRight, uMakeupRotation, 0.35, 1.15) * uBlushStrengths.y
+                );
+                float blushAmount = uBlush * blushMask * skinMask(rgb) * 0.40;
+                float blushLuma = dot(rgb, vec3(0.299, 0.587, 0.114));
+                rgb = mix(
+                    rgb,
+                    clamp(vec3(blushLuma + 0.20, blushLuma - 0.05, blushLuma - 0.02), 0.0, 1.0),
+                    blushAmount
+                );
+            }
+            if (uLipstick > 0.0) {
+                float lipstickAmount = uLipstick * lipContourMask(vTexCoord) * lipColorMask(color.rgb) * 0.40;
+                rgb = mix(rgb, vec3(0.70, 0.16, 0.22), lipstickAmount);
+            }
             }
             }
 

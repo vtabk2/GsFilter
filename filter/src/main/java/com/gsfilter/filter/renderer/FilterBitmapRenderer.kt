@@ -282,182 +282,198 @@ object FilterBitmapRenderer {
             red = mix(red, blurredRed, beautySmoothAmount)
             green = mix(green, blurredGreen, beautySmoothAmount)
             blue = mix(blue, blurredBlue, beautySmoothAmount)
-            val beautyWhiteAmount = params.skinWhitening * beautyMask
-            val skinLuma = gray(red, green, blue)
-            val highlightGuard = 1f - smoothstep(0.55f, 0.92f, skinLuma)
-            val skinLift = beautyWhiteAmount * (1f - skinLuma) * 0.10f * highlightGuard
-            red += skinLift
-            green += skinLift
-            blue += skinLift
-            val skinDesaturate = beautyWhiteAmount * 0.08f * highlightGuard
-            val liftedLuma = skinLuma + skinLift
-            red = mix(red, liftedLuma, skinDesaturate)
-            green = mix(green, liftedLuma, skinDesaturate)
-            blue = mix(blue, liftedLuma, skinDesaturate)
+            if (params.skinWhitening != 0f) {
+                val beautyWhiteAmount = params.skinWhitening * beautyMask
+                val skinLuma = gray(red, green, blue)
+                val highlightGuard = 1f - smoothstep(0.55f, 0.92f, skinLuma)
+                val skinLift = beautyWhiteAmount * (1f - skinLuma) * 0.10f * highlightGuard
+                red += skinLift
+                green += skinLift
+                blue += skinLift
+                val skinDesaturate = beautyWhiteAmount * 0.08f * highlightGuard
+                val liftedLuma = skinLuma + skinLift
+                red = mix(red, liftedLuma, skinDesaturate)
+                green = mix(green, liftedLuma, skinDesaturate)
+                blue = mix(blue, liftedLuma, skinDesaturate)
+            }
         } else {
             faceMask = 1f
             beautyMask = 0f
         }
         params.makeupFeatures?.takeIf { hasFeatureBeauty }?.let { features ->
-            val blushMask = max(
-                ellipseMask(
-                    textureX,
-                    textureY,
-                    features.leftCheekX,
-                    features.leftCheekY,
-                    features.cheekRadiusX,
-                    features.cheekRadiusY,
-                    features.rotationRadians,
-                    innerEdge = 0.35f,
-                    outerEdge = 1.15f,
-                ) * features.leftCheekStrength,
-                ellipseMask(
-                    textureX,
-                    textureY,
-                    features.rightCheekX,
-                    features.rightCheekY,
-                    features.cheekRadiusX,
-                    features.cheekRadiusY,
-                    features.rotationRadians,
-                    innerEdge = 0.35f,
-                    outerEdge = 1.15f,
-                ) * features.rightCheekStrength,
-            )
-            val underEyeMask = max(
-                underEyeMask(
-                    textureX,
-                    textureY,
-                    features.leftEyeCenterX,
-                    features.leftEyeCenterY,
-                    features.leftEyeRadiusX,
-                    features.leftEyeRadiusY,
-                    features.rotationRadians,
-                ),
-                underEyeMask(
-                    textureX,
-                    textureY,
-                    features.rightEyeCenterX,
-                    features.rightEyeCenterY,
-                    features.rightEyeRadiusX,
-                    features.rightEyeRadiusY,
-                    features.rotationRadians,
-                ),
-            )
-            val underEyeAmount = params.underEye * underEyeMask * beautyMask
-            val underEyeLuma = gray(red, green, blue)
-            val underEyeLift = underEyeAmount * (1f - underEyeLuma) * 0.08f
-            red += underEyeLift
-            green += underEyeLift
-            blue += underEyeLift
-            val teethRegionMask = ellipseMask(
-                textureX,
-                textureY,
-                features.lipCenterX,
-                features.lipCenterY,
-                features.lipRadiusX * 1.08f,
-                features.lipRadiusY * 0.65f,
-                features.rotationRadians,
-                innerEdge = 0.15f,
-                outerEdge = 1.05f,
-            )
-            val teethAmount = params.teethWhitening * teethRegionMask * faceMask *
-                teethColorMask(red, green, blue) * 0.65f
-            val teethLuma = gray(red, green, blue)
-            val teethLift = teethAmount * (1f - teethLuma) * 0.22f
-            red += teethLift
-            green += teethLift
-            blue += teethLift
-            val eyeShadowMask = max(
-                eyeShadowMask(
-                    textureX,
-                    textureY,
-                    features.leftEyeCenterX,
-                    features.leftEyeCenterY,
-                    features.leftEyeRadiusX,
-                    features.leftEyeRadiusY,
-                    features.rotationRadians,
-                ),
-                eyeShadowMask(
-                    textureX,
-                    textureY,
-                    features.rightEyeCenterX,
-                    features.rightEyeCenterY,
-                    features.rightEyeRadiusX,
-                    features.rightEyeRadiusY,
-                    features.rotationRadians,
-                ),
-            )
-            val eyeShadowAmount = params.eyeShadow * eyeShadowMask * faceMask * 0.28f
-            red = mix(red, 0.34f, eyeShadowAmount)
-            green = mix(green, 0.16f, eyeShadowAmount)
-            blue = mix(blue, 0.22f, eyeShadowAmount)
-            val eyelinerMask = max(
-                eyelinerMask(
-                    textureX,
-                    textureY,
-                    features.leftEyeCenterX,
-                    features.leftEyeCenterY,
-                    features.leftEyeRadiusX,
-                    features.leftEyeRadiusY,
-                    features.rotationRadians,
-                ),
-                eyelinerMask(
-                    textureX,
-                    textureY,
-                    features.rightEyeCenterX,
-                    features.rightEyeCenterY,
-                    features.rightEyeRadiusX,
-                    features.rightEyeRadiusY,
-                    features.rotationRadians,
-                ),
-            )
-            val eyelinerAmount = params.eyeliner * eyelinerMask * faceMask * 0.48f
-            red = mix(red, 0.06f, eyelinerAmount)
-            green = mix(green, 0.04f, eyelinerAmount)
-            blue = mix(blue, 0.05f, eyelinerAmount)
-            val eyebrowMask = max(
-                polygonMask(textureX, textureY, features.leftEyebrowContour),
-                polygonMask(textureX, textureY, features.rightEyebrowContour),
-            )
-            val eyebrowAmount = params.eyebrow * eyebrowMask * faceMask * 0.32f
-            red = mix(red, red * 0.42f, eyebrowAmount)
-            green = mix(green, green * 0.32f, eyebrowAmount)
-            blue = mix(blue, blue * 0.28f, eyebrowAmount)
-            val blushAmount = params.blush * blushMask * skinMask(red, green, blue) * 0.40f
-            val blushLuma = gray(red, green, blue)
-            red = mix(red, clamp(blushLuma + 0.20f, 0f, 1f), blushAmount)
-            green = mix(green, clamp(blushLuma - 0.05f, 0f, 1f), blushAmount)
-            blue = mix(blue, clamp(blushLuma - 0.02f, 0f, 1f), blushAmount)
-            val lipstickMask = when {
-                features.upperLipContour.size >= 3 || features.lowerLipContour.size >= 3 -> max(
-                    if (features.upperLipContour.size >= 3) {
-                        polygonMask(textureX, textureY, features.upperLipContour)
-                    } else {
-                        0f
-                    },
-                    if (features.lowerLipContour.size >= 3) {
-                        polygonMask(textureX, textureY, features.lowerLipContour)
-                    } else {
-                        0f
-                    },
+            if (params.underEye != 0f) {
+                val underEyeMask = max(
+                    underEyeMask(
+                        textureX,
+                        textureY,
+                        features.leftEyeCenterX,
+                        features.leftEyeCenterY,
+                        features.leftEyeRadiusX,
+                        features.leftEyeRadiusY,
+                        features.rotationRadians,
+                    ),
+                    underEyeMask(
+                        textureX,
+                        textureY,
+                        features.rightEyeCenterX,
+                        features.rightEyeCenterY,
+                        features.rightEyeRadiusX,
+                        features.rightEyeRadiusY,
+                        features.rotationRadians,
+                    ),
                 )
-                features.lipContour.size >= 3 -> polygonMask(textureX, textureY, features.lipContour)
-                else -> ellipseMask(
+                val underEyeAmount = params.underEye * underEyeMask * beautyMask
+                val underEyeLuma = gray(red, green, blue)
+                val underEyeLift = underEyeAmount * (1f - underEyeLuma) * 0.08f
+                red += underEyeLift
+                green += underEyeLift
+                blue += underEyeLift
+            }
+            if (params.teethWhitening != 0f) {
+                val teethRegionMask = ellipseMask(
                     textureX,
                     textureY,
                     features.lipCenterX,
                     features.lipCenterY,
-                    features.lipRadiusX,
-                    features.lipRadiusY,
+                    features.lipRadiusX * 1.08f,
+                    features.lipRadiusY * 0.65f,
                     features.rotationRadians,
-                    innerEdge = 0.75f,
+                    innerEdge = 0.15f,
                     outerEdge = 1.05f,
                 )
+                val teethAmount = params.teethWhitening * teethRegionMask * faceMask *
+                    teethColorMask(red, green, blue) * 0.65f
+                val teethLuma = gray(red, green, blue)
+                val teethLift = teethAmount * (1f - teethLuma) * 0.22f
+                red += teethLift
+                green += teethLift
+                blue += teethLift
             }
-            val lipstickAmount = params.lipstick * lipstickMask * lipColorMask(red, green, blue) * 0.40f
-            red = mix(red, 0.70f, lipstickAmount)
-            green = mix(green, 0.16f, lipstickAmount)
-            blue = mix(blue, 0.22f, lipstickAmount)
+            if (params.eyeShadow != 0f) {
+                val eyeShadowMask = max(
+                    eyeShadowMask(
+                        textureX,
+                        textureY,
+                        features.leftEyeCenterX,
+                        features.leftEyeCenterY,
+                        features.leftEyeRadiusX,
+                        features.leftEyeRadiusY,
+                        features.rotationRadians,
+                    ),
+                    eyeShadowMask(
+                        textureX,
+                        textureY,
+                        features.rightEyeCenterX,
+                        features.rightEyeCenterY,
+                        features.rightEyeRadiusX,
+                        features.rightEyeRadiusY,
+                        features.rotationRadians,
+                    ),
+                )
+                val eyeShadowAmount = params.eyeShadow * eyeShadowMask * faceMask * 0.28f
+                red = mix(red, 0.34f, eyeShadowAmount)
+                green = mix(green, 0.16f, eyeShadowAmount)
+                blue = mix(blue, 0.22f, eyeShadowAmount)
+            }
+            if (params.eyeliner != 0f) {
+                val eyelinerMask = max(
+                    eyelinerMask(
+                        textureX,
+                        textureY,
+                        features.leftEyeCenterX,
+                        features.leftEyeCenterY,
+                        features.leftEyeRadiusX,
+                        features.leftEyeRadiusY,
+                        features.rotationRadians,
+                    ),
+                    eyelinerMask(
+                        textureX,
+                        textureY,
+                        features.rightEyeCenterX,
+                        features.rightEyeCenterY,
+                        features.rightEyeRadiusX,
+                        features.rightEyeRadiusY,
+                        features.rotationRadians,
+                    ),
+                )
+                val eyelinerAmount = params.eyeliner * eyelinerMask * faceMask * 0.48f
+                red = mix(red, 0.06f, eyelinerAmount)
+                green = mix(green, 0.04f, eyelinerAmount)
+                blue = mix(blue, 0.05f, eyelinerAmount)
+            }
+            if (params.eyebrow != 0f) {
+                val eyebrowMask = max(
+                    polygonMask(textureX, textureY, features.leftEyebrowContour),
+                    polygonMask(textureX, textureY, features.rightEyebrowContour),
+                )
+                val eyebrowAmount = params.eyebrow * eyebrowMask * faceMask * 0.32f
+                red = mix(red, red * 0.42f, eyebrowAmount)
+                green = mix(green, green * 0.32f, eyebrowAmount)
+                blue = mix(blue, blue * 0.28f, eyebrowAmount)
+            }
+            if (params.blush != 0f) {
+                val blushMask = max(
+                    ellipseMask(
+                        textureX,
+                        textureY,
+                        features.leftCheekX,
+                        features.leftCheekY,
+                        features.cheekRadiusX,
+                        features.cheekRadiusY,
+                        features.rotationRadians,
+                        innerEdge = 0.35f,
+                        outerEdge = 1.15f,
+                    ) * features.leftCheekStrength,
+                    ellipseMask(
+                        textureX,
+                        textureY,
+                        features.rightCheekX,
+                        features.rightCheekY,
+                        features.cheekRadiusX,
+                        features.cheekRadiusY,
+                        features.rotationRadians,
+                        innerEdge = 0.35f,
+                        outerEdge = 1.15f,
+                    ) * features.rightCheekStrength,
+                )
+                val blushAmount = params.blush * blushMask * skinMask(red, green, blue) * 0.40f
+                val blushLuma = gray(red, green, blue)
+                red = mix(red, clamp(blushLuma + 0.20f, 0f, 1f), blushAmount)
+                green = mix(green, clamp(blushLuma - 0.05f, 0f, 1f), blushAmount)
+                blue = mix(blue, clamp(blushLuma - 0.02f, 0f, 1f), blushAmount)
+            }
+            if (params.lipstick != 0f) {
+                val lipstickMask = when {
+                    features.upperLipContour.size >= 3 || features.lowerLipContour.size >= 3 -> max(
+                        if (features.upperLipContour.size >= 3) {
+                            polygonMask(textureX, textureY, features.upperLipContour)
+                        } else {
+                            0f
+                        },
+                        if (features.lowerLipContour.size >= 3) {
+                            polygonMask(textureX, textureY, features.lowerLipContour)
+                        } else {
+                            0f
+                        },
+                    )
+                    features.lipContour.size >= 3 -> polygonMask(textureX, textureY, features.lipContour)
+                    else -> ellipseMask(
+                        textureX,
+                        textureY,
+                        features.lipCenterX,
+                        features.lipCenterY,
+                        features.lipRadiusX,
+                        features.lipRadiusY,
+                        features.rotationRadians,
+                        innerEdge = 0.75f,
+                        outerEdge = 1.05f,
+                    )
+                }
+                val lipstickAmount = params.lipstick * lipstickMask * lipColorMask(red, green, blue) * 0.40f
+                red = mix(red, 0.70f, lipstickAmount)
+                green = mix(green, 0.16f, lipstickAmount)
+                blue = mix(blue, 0.22f, lipstickAmount)
+            }
         }
 
         if (sharpAmount != 0f) {
