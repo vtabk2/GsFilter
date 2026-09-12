@@ -117,6 +117,8 @@ class FilterPreviewView @JvmOverloads constructor(
         private var params = ShaderFilterParams.from(FilterRecipe(), Adjustments())
         private var makeupUniformsNeedUpload = true
         private var adjustmentUniformsNeedUpload = true
+        private var effectUniformsNeedUpload = true
+        private var texelSizeNeedUpload = true
 
         override fun onSurfaceCreated(gl: GL10?, config: EGLConfig?) {
             program = GlFilterProgram.buildProgram()
@@ -134,6 +136,8 @@ class FilterPreviewView @JvmOverloads constructor(
             imageHeight = 0
             makeupUniformsNeedUpload = true
             adjustmentUniformsNeedUpload = true
+            effectUniformsNeedUpload = true
+            texelSizeNeedUpload = true
             pendingBitmap = sourceBitmap
             GLES20.glClearColor(0.93f, 0.93f, 0.93f, 1f)
         }
@@ -143,6 +147,7 @@ class FilterPreviewView @JvmOverloads constructor(
             surfaceHeight = height
             GLES20.glViewport(0, 0, width, height)
             updateVertexBuffer()
+            texelSizeNeedUpload = true
         }
 
         override fun onDrawFrame(gl: GL10?) {
@@ -162,9 +167,13 @@ class FilterPreviewView @JvmOverloads constructor(
                 bindTextureSampler = false,
                 uploadMakeupUniforms = makeupUniformsNeedUpload,
                 uploadAdjustmentUniforms = adjustmentUniformsNeedUpload,
+                uploadEffectUniforms = effectUniformsNeedUpload,
+                uploadTexelSize = texelSizeNeedUpload,
             )
             makeupUniformsNeedUpload = false
             adjustmentUniformsNeedUpload = false
+            effectUniformsNeedUpload = false
+            texelSizeNeedUpload = false
             GLES20.glDrawArrays(GLES20.GL_TRIANGLE_STRIP, 0, GlFilterProgram.VERTEX_COUNT)
         }
 
@@ -176,8 +185,20 @@ class FilterPreviewView @JvmOverloads constructor(
         fun setFilterParams(nextParams: ShaderFilterParams) {
             makeupUniformsNeedUpload = makeupUniformsNeedUpload || makeupParamsChanged(params, nextParams)
             adjustmentUniformsNeedUpload = adjustmentUniformsNeedUpload || adjustmentParamsChanged(params, nextParams)
+            effectUniformsNeedUpload = effectUniformsNeedUpload || effectParamsChanged(params, nextParams)
             params = nextParams
         }
+
+        private fun effectParamsChanged(
+            previous: ShaderFilterParams,
+            next: ShaderFilterParams,
+        ): Boolean =
+            previous.effect != next.effect ||
+                previous.effectStrength != next.effectStrength ||
+                previous.effectThreshold != next.effectThreshold ||
+                previous.effectTone != next.effectTone ||
+                previous.intensity != next.intensity ||
+                previous.isMonochrome != next.isMonochrome
 
         private fun makeupParamsChanged(
             previous: ShaderFilterParams,
@@ -286,6 +307,7 @@ class FilterPreviewView @JvmOverloads constructor(
             if (imageWidth == 0 || imageHeight == 0 || surfaceWidth == 0 || surfaceHeight == 0) {
                 renderWidth = 0
                 renderHeight = 0
+                texelSizeNeedUpload = true
                 vertexBuffer.clear()
                 vertexBuffer.put(GlFilterProgram.VERTICES).position(0)
                 return
@@ -304,6 +326,7 @@ class FilterPreviewView @JvmOverloads constructor(
             }
             renderWidth = ((surfaceWidth * scaleX) + 0.5f).toInt().coerceAtLeast(1)
             renderHeight = ((surfaceHeight * scaleY) + 0.5f).toInt().coerceAtLeast(1)
+            texelSizeNeedUpload = true
 
             vertexBuffer.clear()
             vertexBuffer

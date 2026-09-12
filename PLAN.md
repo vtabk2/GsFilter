@@ -1,5 +1,27 @@
 # PLAN
 
+## Task: Split preview effect and texel uploads
+
+Status: IN PROGRESS
+Created: 2026-09-12
+
+### Requirements
+
+- Avoid re-uploading unchanged effect uniforms on unrelated control changes.
+- Refresh texel size when the preview surface or image geometry changes.
+- Keep offscreen rendering behavior unchanged.
+
+### Checklist
+
+- [x] Add effect and texel upload flags with defaults enabled.
+- [x] Track effect changes separately in the preview renderer.
+- [x] Mark texel size dirty on surface changes and first frame.
+- [ ] Run unit tests, compile, and review the diff.
+
+### Notes
+
+- `FilterGpuBitmapRenderer` keeps the default upload behavior.
+
 ## Task: Split preview uniform dirty flags
 
 Status: IN PROGRESS

@@ -162,6 +162,8 @@ internal object GlFilterProgram {
         texelScale: Float = 1f,
         uploadMakeupUniforms: Boolean = true,
         uploadAdjustmentUniforms: Boolean = true,
+        uploadEffectUniforms: Boolean = true,
+        uploadTexelSize: Boolean = true,
         bindTextureSampler: Boolean = true,
     ) {
         GLES20.glActiveTexture(GLES20.GL_TEXTURE0)
@@ -325,17 +327,21 @@ internal object GlFilterProgram {
                 }
             }
         }
-        GLES20.glUniform1f(handles.effect, params.effect.shaderValue)
-        GLES20.glUniform1f(handles.effectStrength, params.effectStrength)
-        GLES20.glUniform1f(handles.effectThreshold, params.effectThreshold)
-        GLES20.glUniform1f(handles.effectTone, params.effectTone)
-        GLES20.glUniform1f(handles.intensity, params.intensity)
-        GLES20.glUniform1f(handles.mono, params.isMonochrome)
-        GLES20.glUniform2f(
-            handles.texelSize,
-            if (renderWidth > 0) texelScale / renderWidth else 0f,
-            if (renderHeight > 0) texelScale / renderHeight else 0f,
-        )
+        if (uploadEffectUniforms) {
+            GLES20.glUniform1f(handles.effect, params.effect.shaderValue)
+            GLES20.glUniform1f(handles.effectStrength, params.effectStrength)
+            GLES20.glUniform1f(handles.effectThreshold, params.effectThreshold)
+            GLES20.glUniform1f(handles.effectTone, params.effectTone)
+            GLES20.glUniform1f(handles.intensity, params.intensity)
+            GLES20.glUniform1f(handles.mono, params.isMonochrome)
+        }
+        if (uploadTexelSize) {
+            GLES20.glUniform2f(
+                handles.texelSize,
+                if (renderWidth > 0) texelScale / renderWidth else 0f,
+                if (renderHeight > 0) texelScale / renderHeight else 0f,
+            )
+        }
         if (uploadAdjustmentUniforms) {
             GLES20.glUniform3f(handles.rgbShift, params.redShift, params.greenShift, params.blueShift)
             GLES20.glUniform1f(handles.brightness, params.brightness)
