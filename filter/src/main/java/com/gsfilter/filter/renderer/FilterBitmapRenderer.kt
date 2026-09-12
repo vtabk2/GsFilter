@@ -52,12 +52,17 @@ object FilterBitmapRenderer {
 
         return try {
             renderSource.getPixels(pixels, 0, width, 0, 0, width, height)
-            val output = renderPixels(
-                pixels = pixels,
-                width = width,
-                height = height,
-                params = params,
-            )
+            val output =
+                if (isNoOp(params)) {
+                    pixels
+                } else {
+                    renderPixels(
+                        pixels = pixels,
+                        width = width,
+                        height = height,
+                        params = params,
+                    )
+                }
             Bitmap.createBitmap(output, width, height, Bitmap.Config.ARGB_8888)
         } finally {
             recycleIfTemporary(renderSource, source)

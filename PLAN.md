@@ -14,6 +14,8 @@ Created: 2026-09-12
 
 - [x] Reuse the CPU no-op fast path from the shared renderer.
 - [x] Keep active filters on the GPU-first path with CPU fallback.
+- [x] Avoid the extra pixel-array copy in the bitmap no-op path.
+- [x] Evaluate the no-op decision once per render batch.
 - [ ] Run unit tests, compile, and review the diff.
 
 ### Notes

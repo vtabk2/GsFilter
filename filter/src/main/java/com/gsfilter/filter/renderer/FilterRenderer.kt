@@ -13,12 +13,16 @@ object FilterRenderer {
         adjustments: Adjustments = Adjustments(),
         maxWidth: Int? = null,
         maxHeight: Int? = null,
-    ): Bitmap = getBitmapWithParams(
-        source = source,
-        params = ShaderFilterParams.from(recipe, adjustments),
-        maxWidth = maxWidth,
-        maxHeight = maxHeight,
-    )
+    ): Bitmap {
+        val params = ShaderFilterParams.from(recipe, adjustments)
+        return getBitmapWithParams(
+            source = source,
+            params = params,
+            maxWidth = maxWidth,
+            maxHeight = maxHeight,
+            isNoOp = FilterBitmapRenderer.isNoOp(params),
+        )
+    }
 
     /**
      * Renders one bitmap at a time so callers can save or recycle each result before the next render.
@@ -36,6 +40,7 @@ object FilterRenderer {
         val totalCount = sources.size
         onProgress(FilterRenderProgress(completedCount = 0, totalCount = totalCount))
         val params = ShaderFilterParams.from(recipe, adjustments)
+        val isNoOp = FilterBitmapRenderer.isNoOp(params)
         var completedCount = 0
         val batches = sources.withIndex().groupBy { indexedSource ->
             FilterBitmapRenderer.targetSize(
@@ -53,6 +58,7 @@ object FilterRenderer {
                     maxWidth = maxWidth,
                     maxHeight = maxHeight,
                     renderSize = renderSize,
+                    isNoOp = isNoOp,
                 )
                 onBitmap(indexedSource.index, bitmap)
                 completedCount++
@@ -67,8 +73,9 @@ object FilterRenderer {
         maxWidth: Int?,
         maxHeight: Int?,
         renderSize: FilterBitmapRenderer.RenderSize? = null,
+        isNoOp: Boolean,
     ): Bitmap {
-        if (FilterBitmapRenderer.isNoOp(params)) {
+        if (isNoOp) {
             return FilterBitmapRenderer.getBitmapWithParams(
                 source = source,
                 params = params,
