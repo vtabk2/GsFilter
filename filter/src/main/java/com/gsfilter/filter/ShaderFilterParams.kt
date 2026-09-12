@@ -49,7 +49,15 @@ data class ShaderFilterParams(
         ): ShaderFilterParams {
             val linearIntensity = amount(recipe.intensity, PERCENT_MAX)
             val intensity = intensityAmount(linearIntensity)
-            return combineAdjustments(recipe.adjustments.scaledBy(intensity), adjustments).let { combined ->
+            val presetAdjustments = if (
+                intensity == 0f ||
+                recipe.adjustments == Adjustments.DEFAULT
+            ) {
+                Adjustments.DEFAULT
+            } else {
+                recipe.adjustments.scaledBy(intensity)
+            }
+            return combineAdjustments(presetAdjustments, adjustments).let { combined ->
                 ShaderFilterParams(
                     effect = recipe.effect,
                     effectStrength = amount(recipe.effectStrength, PERCENT_MAX),
@@ -97,8 +105,10 @@ data class ShaderFilterParams(
             }
         }
 
-        private fun combineAdjustments(preset: Adjustments, user: Adjustments): Adjustments =
-            Adjustments(
+        private fun combineAdjustments(preset: Adjustments, user: Adjustments): Adjustments = when {
+            preset == Adjustments.DEFAULT -> user
+            user == Adjustments.DEFAULT -> preset
+            else -> Adjustments(
                 brightness = preset.brightness + user.brightness,
                 exposure = preset.exposure + user.exposure,
                 contrast = preset.contrast + user.contrast,
@@ -114,6 +124,7 @@ data class ShaderFilterParams(
                 vignette = preset.vignette + user.vignette,
                 grain = preset.grain + user.grain,
             )
+        }
 
         private fun signed(value: Int, divisor: Float): Float =
             value.coerceIn(SIGNED_MIN, SIGNED_MAX) / divisor

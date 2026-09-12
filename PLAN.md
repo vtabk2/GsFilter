@@ -1,5 +1,26 @@
 # PLAN
 
+## Task: Avoid neutral adjustment allocations
+
+Status: IN PROGRESS
+Created: 2026-09-12
+
+### Requirements
+
+- Avoid constructing scaled/combined adjustment objects when they add no values.
+- Preserve `ShaderFilterParams.from` output for default and non-default inputs.
+
+### Checklist
+
+- [x] Reuse the neutral adjustment instance for zero/default preset values.
+- [x] Return an existing adjustment object when the other side is neutral.
+- [x] Review the diff and document validation limits.
+
+### Notes
+
+- This reduces transient allocations during repeated preview and thumbnail parameter creation.
+- Gradle validation is blocked because Java/JAVA_HOME is unavailable in this environment.
+
 ## Task: Skip redundant GPU uniform uploads
 
 Status: IN PROGRESS
