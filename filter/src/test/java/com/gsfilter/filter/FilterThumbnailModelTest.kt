@@ -65,7 +65,7 @@ class FilterThumbnailModelTest {
             ),
         )
 
-        assertTrue(key.startsWith("gpu-preview-v15:"))
+        assertTrue(key.startsWith("gpu-preview-v16:"))
     }
 
     @Test
