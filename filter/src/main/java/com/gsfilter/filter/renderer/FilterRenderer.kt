@@ -34,6 +34,7 @@ object FilterRenderer {
 
     /**
      * Renders one bitmap at a time so callers can save or recycle each result before the next render.
+     * Items are grouped by their effective render size; [onBitmap] receives the original index.
      */
     fun renderBatch(
         sources: List<Bitmap>,
@@ -46,16 +47,28 @@ object FilterRenderer {
     ) {
         val totalCount = sources.size
         onProgress(FilterRenderProgress(completedCount = 0, totalCount = totalCount))
-        sources.forEachIndexed { index, source ->
-            val bitmap = getBitmap(
-                source = source,
-                recipe = recipe,
-                adjustments = adjustments,
+        var completedCount = 0
+        val batches = sources.withIndex().groupBy { indexedSource ->
+            FilterBitmapRenderer.targetSize(
+                width = indexedSource.value.width,
+                height = indexedSource.value.height,
                 maxWidth = maxWidth,
                 maxHeight = maxHeight,
             )
-            onBitmap(index, bitmap)
-            onProgress(FilterRenderProgress(completedCount = index + 1, totalCount = totalCount))
+        }
+        batches.values.forEach { batch ->
+            batch.forEach { indexedSource ->
+                val bitmap = getBitmap(
+                    source = indexedSource.value,
+                    recipe = recipe,
+                    adjustments = adjustments,
+                    maxWidth = maxWidth,
+                    maxHeight = maxHeight,
+                )
+                onBitmap(indexedSource.index, bitmap)
+                completedCount++
+                onProgress(FilterRenderProgress(completedCount = completedCount, totalCount = totalCount))
+            }
         }
     }
 }

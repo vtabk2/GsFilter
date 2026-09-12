@@ -215,7 +215,8 @@ class FilterPreviewView @JvmOverloads constructor(
                 previous.eyebrow != next.eyebrow ||
                 previous.faceSlimming != next.faceSlimming ||
                 previous.eyeEnlargement != next.eyeEnlargement ||
-                previous.makeupFeatures != next.makeupFeatures
+                (previous.makeupFeatures !== next.makeupFeatures &&
+                    previous.makeupFeatures != next.makeupFeatures)
 
         private fun adjustmentParamsChanged(
             previous: ShaderFilterParams,

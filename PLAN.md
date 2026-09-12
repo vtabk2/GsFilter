@@ -1,25 +1,45 @@
 # PLAN
 
-## Task: Bypass EGL for no-op GPU renders
+## Task: Group batch renders by effective size
 
 Status: IN PROGRESS
 Created: 2026-09-12
 
 ### Requirements
 
-- Skip EGL/texture setup when the effective recipe has no visible changes.
-- Preserve output bounds, cancellation, and bitmap ownership.
+- Reuse the cached GPU session across images with the same output size.
+- Keep one-result-at-a-time delivery and original source indices.
 
 ### Checklist
 
-- [x] Reuse the CPU no-op predicate.
-- [x] Check cancellation before and after the bypass.
-- [x] Keep non-no-op GPU rendering unchanged.
+- [x] Group by post-scale render dimensions.
+- [x] Keep `onBitmap` indexed by original source position.
+- [x] Preserve incremental progress callbacks.
 - [ ] Run unit tests, compile, and review the diff.
 
 ### Notes
 
-- No-op GPU calls now avoid the global render lock and offscreen context creation.
+- Group order follows the first occurrence of each size; callback order may differ from source order, but each callback includes its original index.
+
+## Task: Avoid redundant makeup feature deep comparison
+
+Status: IN PROGRESS
+Created: 2026-09-12
+
+### Requirements
+
+- Avoid traversing unchanged contour data on every preview state update.
+- Preserve structural comparison when a different feature object is supplied.
+
+### Checklist
+
+- [x] Check object identity before deep comparison.
+- [x] Preserve deep comparison for distinct but equal objects.
+- [ ] Run unit tests, compile, and review the diff.
+
+### Notes
+
+- Slider updates that reuse the same `MakeupFeatures` object now skip contour equality work.
 
 ## Task: Reuse default thumbnail adjustments
 

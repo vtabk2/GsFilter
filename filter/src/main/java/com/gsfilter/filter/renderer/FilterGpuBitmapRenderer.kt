@@ -38,24 +38,6 @@ object FilterGpuBitmapRenderer {
         makeupFeatures: MakeupFeatures? = null,
         isCancelled: () -> Boolean = { false },
     ): Bitmap {
-        if (isCancelled()) {
-            throw CancellationException("Thumbnail render cancelled")
-        }
-        if (FilterBitmapRenderer.isNoOp(recipe, adjustments, makeupFeatures)) {
-            val result = FilterBitmapRenderer.getBitmap(
-                source = source,
-                recipe = recipe,
-                adjustments = adjustments,
-                maxWidth = maxWidth,
-                maxHeight = maxHeight,
-                makeupFeatures = makeupFeatures,
-            )
-            if (isCancelled()) {
-                result.recycle()
-                throw CancellationException("Thumbnail render cancelled")
-            }
-            return result
-        }
         acquireRenderLock(isCancelled)
         return try {
             if (isCancelled()) {
