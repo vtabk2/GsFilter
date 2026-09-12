@@ -1,5 +1,25 @@
 # PLAN
 
+## Task: Avoid redundant offscreen texture binds
+
+Status: IN PROGRESS
+Created: 2026-09-12
+
+### Requirements
+
+- Avoid rebinding the cached input texture after offscreen upload.
+- Preserve preview binding behavior and texture-unit correctness.
+
+### Checklist
+
+- [x] Let offscreen upload own texture unit 0 binding.
+- [x] Keep preview's default input binding enabled.
+- [ ] Run unit tests, compile, and review the diff.
+
+### Notes
+
+- `uploadTexture` binds unit 0 whenever the source changes; unchanged sources retain the session binding.
+
 ## Task: Reuse neutral filter values
 
 Status: IN PROGRESS

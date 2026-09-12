@@ -152,6 +152,7 @@ object FilterGpuBitmapRenderer {
                 uploadEffectUniforms = paramsChanged,
                 uploadTexelSize = texelSizeChanged,
                 uploadLutUniforms = uploadLutUniforms,
+                bindInputTexture = false,
                 bindTextureSampler = false,
             )
             session.lastParams = params

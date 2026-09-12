@@ -165,10 +165,13 @@ internal object GlFilterProgram {
         uploadEffectUniforms: Boolean = true,
         uploadTexelSize: Boolean = true,
         uploadLutUniforms: Boolean = true,
+        bindInputTexture: Boolean = true,
         bindTextureSampler: Boolean = true,
     ) {
-        GLES20.glActiveTexture(GLES20.GL_TEXTURE0)
-        GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, textureId)
+        if (bindInputTexture) {
+            GLES20.glActiveTexture(GLES20.GL_TEXTURE0)
+            GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, textureId)
+        }
         if (bindTextureSampler) {
             GLES20.glUniform1i(handles.texture, 0)
         }
