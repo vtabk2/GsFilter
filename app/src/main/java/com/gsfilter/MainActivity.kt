@@ -11,7 +11,6 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import com.gsfilter.databinding.ActivityMainBinding
-import com.gsfilter.filter.FilterCatalog
 import com.gsfilter.filter.view.FilterControlsView
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
@@ -37,7 +36,6 @@ class MainActivity : ComponentActivity() {
         bindFilterControls()
         bindBeautyControls()
         bindAdjustControls()
-        bindFilterPackToggle()
         binding.nextImageButton.setOnClickListener { viewModel.nextImage() }
         collectState()
     }
@@ -58,11 +56,6 @@ class MainActivity : ComponentActivity() {
         binding.filterControls.onCategorySelected = viewModel::selectCategory
         binding.filterControls.onFilterSelected = viewModel::selectFilter
         binding.filterControls.onFilterIntensityChanged = viewModel::setFilterIntensity
-        binding.filterControls.onCatalogLoaded = viewModel::setCatalog
-        binding.filterControls.onCatalogLoadFailed = {
-            Toast.makeText(this, R.string.filter_pack_load_failed, Toast.LENGTH_SHORT).show()
-            binding.filterPackSwitch.isChecked = false
-        }
         renderControlTabs()
     }
 
@@ -97,20 +90,6 @@ class MainActivity : ComponentActivity() {
             }
         }
         binding.filterControls.onResetBeautyClick = viewModel::resetBeauty
-    }
-
-    private fun bindFilterPackToggle() {
-        binding.filterPackSwitch.setOnCheckedChangeListener { _, isChecked ->
-            if (isChecked) {
-                binding.filterControls.loadCatalogFromAssets(TEST_FILTER_PACK_ASSET)
-            } else {
-                binding.filterControls.setCatalog(FilterCatalog.pack)
-                viewModel.setCatalog(FilterCatalog.pack)
-            }
-        }
-        if (binding.filterPackSwitch.isChecked) {
-            binding.filterControls.loadCatalogFromAssets(TEST_FILTER_PACK_ASSET)
-        }
     }
 
     private fun collectState() {
@@ -232,7 +211,6 @@ class MainActivity : ComponentActivity() {
         }
 
     private companion object {
-        const val TEST_FILTER_PACK_ASSET = "filter_pack.json"
         const val FILTERED_IMAGES_DIR = "filtered"
         const val FILTERED_IMAGE_PREFIX = "filtered_"
         const val FILTERED_IMAGE_SUFFIX = ".jpg"

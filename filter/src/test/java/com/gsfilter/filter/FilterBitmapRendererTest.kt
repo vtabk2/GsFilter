@@ -619,7 +619,6 @@ class FilterBitmapRendererTest {
             FilterEffect.Pencil,
             FilterEffect.ColorPencil,
             FilterEffect.Charcoal,
-            FilterEffect.CrossHatch,
         ).forEach { effect ->
             val output = FilterBitmapRenderer.renderPixels(
                 pixels = pixels,

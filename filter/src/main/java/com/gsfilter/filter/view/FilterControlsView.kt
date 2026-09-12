@@ -5,8 +5,6 @@ import android.content.res.ColorStateList
 import android.content.res.TypedArray
 import android.graphics.Bitmap
 import android.graphics.Color
-import android.os.Handler
-import android.os.Looper
 import android.util.AttributeSet
 import android.view.Gravity
 import android.view.LayoutInflater
@@ -31,13 +29,10 @@ import com.gsfilter.filter.FilterCatalog
 import com.gsfilter.filter.FilterCategory
 import com.gsfilter.filter.FilterOption
 import com.gsfilter.filter.FilterPack
-import com.gsfilter.filter.FilterPackJson
 import com.gsfilter.filter.FilterRecipe
 import com.gsfilter.filter.R
 import com.gsfilter.filter.ext.displayName
 import com.gsfilter.filter.glide.FilterThumbnailModel
-import java.io.IOException
-import java.util.concurrent.Executors
 import kotlin.math.ceil
 
 class FilterControlsView @JvmOverloads constructor(
@@ -46,8 +41,6 @@ class FilterControlsView @JvmOverloads constructor(
 ) : LinearLayout(context, attrs) {
 
     private val style = FilterControlsStyle(context, attrs)
-    private val mainHandler = Handler(Looper.getMainLooper())
-    private var catalogLoadVersion = 0
     private var catalog = FilterCatalog.pack
     private var selectedCategory = catalog.defaultCategory
     private var selectedFilter = catalog.defaultFilter
@@ -67,8 +60,6 @@ class FilterControlsView @JvmOverloads constructor(
     var onResetBeautyClick: (() -> Unit)? = null
     var onAdjustmentChanged: ((AdjustControl, Int) -> Unit)? = null
     var onResetAllAdjustClick: (() -> Unit)? = null
-    var onCatalogLoaded: ((FilterPack) -> Unit)? = null
-    var onCatalogLoadFailed: ((Throwable) -> Unit)? = null
 
     private val categoryChips = mutableMapOf<String, TextView>()
     private val filterAdapter = FilterAdapter(::selectFilter)
@@ -132,7 +123,6 @@ class FilterControlsView @JvmOverloads constructor(
         bindAdjustContent()
         setCatalog(catalog)
         setSelectedTab(ControlTab.Filter)
-        style.catalogAssetPath?.let(::loadCatalogFromAssets)
     }
 
     fun setSelectedTab(tab: ControlTab) {
@@ -145,38 +135,12 @@ class FilterControlsView @JvmOverloads constructor(
     }
 
     fun setCatalog(catalog: FilterPack) {
-        catalogLoadVersion++
         this.catalog = catalog
         selectedCategory = visibleCategoryById(selectedCategory.id) ?: visibleCategories().first()
         selectedFilter = catalog.filterById(selectedFilter.id) ?: catalog.defaultFilter
         selectedRecipe = selectedFilter.recipe
         renderCategoryChips()
         renderState()
-    }
-
-    fun loadCatalogFromAssets(assetPath: String) {
-        val loadVersion = ++catalogLoadVersion
-        CATALOG_EXECUTOR.execute {
-            val result = runCatching {
-                context.applicationContext.assets.open(assetPath).use { input ->
-                    FilterPackJson.parse(input.bufferedReader().readText())
-                }
-            }.recoverCatching { error ->
-                throw IOException("Cannot load filter catalog asset: $assetPath", error)
-            }
-
-            mainHandler.post {
-                if (loadVersion != catalogLoadVersion) {
-                    return@post
-                }
-                result
-                    .onSuccess { loadedCatalog ->
-                        setCatalog(loadedCatalog)
-                        onCatalogLoaded?.invoke(loadedCatalog)
-                    }
-                    .onFailure { error -> onCatalogLoadFailed?.invoke(error) }
-            }
-        }
     }
 
     fun setState(
@@ -247,7 +211,6 @@ class FilterControlsView @JvmOverloads constructor(
     }
 
     override fun onDetachedFromWindow() {
-        catalogLoadVersion++
         super.onDetachedFromWindow()
     }
 
@@ -627,7 +590,6 @@ class FilterControlsView @JvmOverloads constructor(
     private fun itemSpacing(): Int = resources.getDimensionPixelSize(R.dimen.gs_filter_item_spacing)
 
     private companion object {
-        val CATALOG_EXECUTOR = Executors.newSingleThreadExecutor()
         const val FILTER_INTENSITY_MAX = 100
         const val BEAUTY_MAX = 100
         const val TAB_INDICATOR_WIDTH_FULL = 0
@@ -696,7 +658,6 @@ class FilterControlsView @JvmOverloads constructor(
         val intensityTextColor: Int,
         val intensityProgressColor: Int,
         val intensityTrackColor: Int,
-        val catalogAssetPath: String?,
     ) {
         constructor(context: Context, attrs: AttributeSet?) : this(
             context = context,
@@ -835,7 +796,6 @@ class FilterControlsView @JvmOverloads constructor(
                 R.styleable.FilterControlsView_gsFilterIntensityTrackColor,
                 context.getColor(R.color.gs_adjust_track_background),
             ),
-            catalogAssetPath = array.getString(R.styleable.FilterControlsView_gsFilterCatalogAsset),
         ) {
             array.recycle()
         }

@@ -1932,20 +1932,6 @@ object FilterCatalog {
                 ),
             ),
         ),
-        FilterOption(
-            id = "cross_hatch",
-            categoryIds = setOf(ART),
-            nameRes = R.string.gs_filter_cross_hatch,
-            recipe = FilterRecipe(
-                effect = FilterEffect.CrossHatch,
-                effectStrength = 82,
-                effectThreshold = 44,
-                effectTone = 50,
-                adjustments = Adjustments(
-                    grain = 5,
-                ),
-            ),
-        ),
     )
 
     val defaultCategory: FilterCategory = categories.first()
@@ -2040,7 +2026,7 @@ object FilterCatalog {
         COOL to listOf("cool", "cyan_clean", "arctic", "blue_mist", "mist", "steel"),
         AESTHETIC to listOf("lut_editorial_matte", "beige", "minimal", "dreamy", "latte", "pink"),
         CREATIVE to listOf("neon", "cyberpunk", "purple", "dream", "fantasy"),
-        ART to listOf("pencil", "soft_sketch", "color_pencil", "fine_line", "ink", "charcoal", "cross_hatch"),
+        ART to listOf("pencil", "soft_sketch", "color_pencil", "fine_line", "ink", "charcoal"),
     )
 
     private val categoryFilterRanks: Map<String, Map<String, Int>> by lazy {

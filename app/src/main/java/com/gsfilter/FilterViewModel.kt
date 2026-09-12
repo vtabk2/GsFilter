@@ -8,7 +8,6 @@ import com.gsfilter.filter.AdjustControl
 import com.gsfilter.filter.Adjustments
 import com.gsfilter.filter.FilterCategory
 import com.gsfilter.filter.FilterOption
-import com.gsfilter.filter.FilterPack
 import com.gsfilter.filter.FilterRecipe
 import com.gsfilter.filter.FilterSourceKey
 import com.gsfilter.filter.renderer.FilterBitmapRenderer
@@ -47,28 +46,6 @@ class FilterViewModel(application: Application) : AndroidViewModel(application) 
         val assetPath = imageAssets[imageAssetIndex]
         viewModelScope.launch {
             loadAsset(assetPath)
-        }
-    }
-
-    fun setCatalog(catalog: FilterPack) {
-        _state.update { state ->
-            val selectedFilter = catalog.filterById(state.selectedFilter.id) ?: catalog.defaultFilter
-            state.copy(
-                catalog = catalog,
-                selectedCategory = catalog.categoryById(state.selectedCategory.id) ?: catalog.defaultCategory,
-                selectedFilter = selectedFilter,
-                skinSmoothing = selectedFilter.recipe.skinSmoothing,
-                skinWhitening = selectedFilter.recipe.skinWhitening,
-                blush = selectedFilter.recipe.blush,
-                lipstick = selectedFilter.recipe.lipstick,
-                underEye = selectedFilter.recipe.underEye,
-                teethWhitening = selectedFilter.recipe.teethWhitening,
-                eyeShadow = selectedFilter.recipe.eyeShadow,
-                eyeliner = selectedFilter.recipe.eyeliner,
-                eyebrow = selectedFilter.recipe.eyebrow,
-                faceSlimming = selectedFilter.recipe.faceSlimming,
-                eyeEnlargement = selectedFilter.recipe.eyeEnlargement,
-            )
         }
     }
 

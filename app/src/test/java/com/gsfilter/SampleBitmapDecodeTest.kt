@@ -20,7 +20,7 @@ class SampleBitmapDecodeTest {
     fun `image assets are filtered and sample stays first`() {
         assertEquals(
             listOf("sample.jpg", "portrait.png", "tilted.webp"),
-            imageAssetPaths(arrayOf("filter_pack.json", "tilted.webp", "portrait.png", "sample.jpg", "notes.txt")),
+            imageAssetPaths(arrayOf("tilted.webp", "portrait.png", "sample.jpg", "notes.txt")),
         )
     }
 }

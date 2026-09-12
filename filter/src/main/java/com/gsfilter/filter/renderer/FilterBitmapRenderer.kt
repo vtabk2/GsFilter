@@ -662,18 +662,6 @@ object FilterBitmapRenderer {
                     blue = charcoal
                 }
 
-                FilterEffect.CrossHatch -> {
-                    val sourceGray = gray(sourceRed, sourceGreen, sourceBlue)
-                    val dark = 1f - sourceGray
-                    var hatch = stripe((textureX + textureY) * 34f) * if (dark >= 0.18f) 1f else 0f
-                    hatch += stripe((textureX - textureY) * 38f) * if (dark >= 0.42f) 1f else 0f
-                    hatch += stripe(textureX * 46f) * if (dark >= 0.68f) 1f else 0f
-                    val line = lineFromEdge(edge, params, 0.10f) * 0.45f
-                    val crossHatch = 1f - clamp(((hatch * 0.55f) + line) * params.effectStrength, 0f, 0.95f)
-                    red = crossHatch
-                    green = crossHatch
-                    blue = crossHatch
-                }
             }
             red = mix(beforeEffectRed, red, params.intensity)
             green = mix(beforeEffectGreen, green, params.intensity)

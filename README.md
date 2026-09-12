@@ -4,7 +4,7 @@ GsFilter là demo filter ảnh Android nhỏ, đồng thời là module thư vi�
 
 Dự án gồm:
 
-- `:filter`: module tái sử dụng cho model filter, preview OpenGL, control Filter/Beauty/Adjust, parse JSON filter pack, CPU/GPU bitmap render, batch render progress, và thumbnail qua Glide.
+- `:filter`: module tái sử dụng cho model filter, preview OpenGL, control Filter/Beauty/Adjust, CPU/GPU bitmap render, batch render progress, và thumbnail qua Glide.
 - `:app`: app mẫu dùng MVVM, ảnh từ `assets`, và module `:filter`.
 
 Phạm vi hiện tại:
@@ -210,8 +210,7 @@ Trong app mẫu, `FilterViewModel.renderFilteredBitmap(maxWidth, maxHeight, useG
     app:gsFilterShowTabIndicator="true"
     app:gsFilterTabIndicatorColor="@color/your_selected_color"
     app:gsFilterTabIndicatorWidthMode="text"
-    app:gsFilterTabSpacing="20dp"
-    app:gsFilterCatalogAsset="filters/filter_pack.json" />
+    app:gsFilterTabSpacing="20dp" />
 ```
 
 Wire callback từ host:
@@ -227,13 +226,6 @@ binding.filterControls.onFilterSelected = { filter -> viewModel.selectFilter(fil
 binding.filterControls.onFilterIntensityChanged = { value -> viewModel.setFilterIntensity(value) }
 binding.filterControls.onAdjustmentChanged = { control, value -> viewModel.setAdjustment(control, value) }
 binding.filterControls.onResetAllAdjustClick = { viewModel.resetAdjustments() }
-binding.filterControls.onCatalogLoaded = { pack ->
-    // Nếu host giữ state theo MVVM, lưu cùng FilterPack này vào ViewModel.
-    // Thường nên reset category/filter hiện tại về pack.defaultCategory/defaultFilter.
-}
-binding.filterControls.onCatalogLoadFailed = { error ->
-    // Hiển thị lỗi do host quản lý hoặc giữ built-in filter pack.
-}
 ```
 
 Render state hiện tại ngược lại vào view:
@@ -308,39 +300,27 @@ binding.filterControls.onResetBeautyClick = {
 
 Host có thể map từng `BeautyControl` vào state riêng như app mẫu.
 
-## Test JSON pack trong app mẫu
-
-App mẫu có `app/src/main/assets/filter_pack.json` để test flow mở rộng filter bằng JSON.
-
-Switch `JSON pack` ở góc phải trên cùng đang tắt mặc định:
-
-- Bật: `MainActivity` gọi `binding.filterControls.loadCatalogFromAssets("filter_pack.json")`.
-- Tắt: app quay lại built-in `FilterCatalog.pack`.
-- Khi bật pack, filter mặc định là `Original/None`; app không tự áp dụng filter đầu tiên trong JSON.
-
-`MainActivity` cũng gửi `FilterPack` đã load vào `FilterViewModel`, vì ViewModel cần dùng đúng catalog hiện tại khi xử lý category/filter state.
-
 ## Mẫu filter tích hợp
 
-Built-in `FilterCatalog` có 104 preset, không tính action `Original`. Một preset có thể xuất hiện ở nhiều category; `Popular` là nhóm shortcut cho các mẫu hay dùng. Host app có thể thay thế hoặc mở rộng danh sách này bằng JSON pack.
+Built-in `FilterCatalog` có 104 preset, không tính action `Original`. Một preset có thể xuất hiện ở nhiều category; `Popular` là nhóm shortcut cho các mẫu hay dùng.
 
-| Category | Preset hỗ trợ |
-| --- | --- |
-| Popular | Fresh, Warm, Tasty, B&W, Clear, Gold, Teal Orange, Cream, Glow, Sunset, Blockbuster, Soft, Beauty, Golden Hour, Travel, Neon, Clean Light, Selfie Clear, Fresh Plate, Clean Portrait, Daylight Fresh, Food Pop, Teal Cinema |
-| Portrait | Portra, Skin, Peach, Cream, Glow, Soft, Blush, Rosy, Tan, Beauty, Soft Mono, Selfie Clear, Soft Portrait, Studio Skin, Golden Skin, Indoor Warm, Flash Soft, Low Light Skin, Pearl Mono, Clean Portrait, Soft Skin, Golden Portrait |
-| Natural | Fresh, Clear, Airy, Pure, Clean Light, Soft Day, Daylight Fresh |
-| Food | Tasty, Crispy, Cafe, Warm Plate, Fresh Plate, Warm Table, Food Pop |
-| Landscape | Clear Day, Golden Hour, Winter, Forest, Ocean, Sky, Travel, Blue Hour, Sunlit Forest, Green Film |
-| Night | Neon, City, Night, Blue Hour, Cyberpunk, Low Light Skin, Midnight City, Night Mood |
-| Film | Portra, Fuji, Gold, Kodak, Grain Film |
-| Cinematic | Cinema, Teal Orange, Noir, Drama, Epic, Blockbuster, Arthouse, Bleach, Deep Teal, Fade Drama, Teal Cinema |
-| Vintage | Retro, Fade, Dust, Oldie, 90s, Retro Matte, Vintage Fade |
-| B&W | B&W, Noir, Matte, High Contrast, Soft Mono, Pearl Mono |
-| Warm | Warm, Sunset, Amber, Caramel, Cozy |
-| Cool | Cool, Arctic, Mist, Blue Mist, Steel, Cyan Clean |
-| Aesthetic | Beige, Latte, Pink, Dreamy, Minimal, Editorial Matte |
-| Creative | Neon, Cyberpunk, Purple, Dream, Fantasy |
-| Art | Pencil, Soft Sketch, Color Pencil, Fine Line, Ink, Charcoal, Cross Hatch |
+| Category  | Preset hỗ trợ                                                                                                                                                                                                                       |
+|-----------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| Popular   | Fresh, Warm, Tasty, B&W, Clear, Gold, Teal Orange, Cream, Glow, Sunset, Blockbuster, Soft, Beauty, Golden Hour, Travel, Neon, Clean Light, Selfie Clear, Fresh Plate, Clean Portrait, Daylight Fresh, Food Pop, Teal Cinema         |
+| Portrait  | Portra, Skin, Peach, Cream, Glow, Soft, Blush, Rosy, Tan, Beauty, Soft Mono, Selfie Clear, Soft Portrait, Studio Skin, Golden Skin, Indoor Warm, Flash Soft, Low Light Skin, Pearl Mono, Clean Portrait, Soft Skin, Golden Portrait |
+| Natural   | Fresh, Clear, Airy, Pure, Clean Light, Soft Day, Daylight Fresh                                                                                                                                                                     |
+| Food      | Tasty, Crispy, Cafe, Warm Plate, Fresh Plate, Warm Table, Food Pop                                                                                                                                                                  |
+| Landscape | Clear Day, Golden Hour, Winter, Forest, Ocean, Sky, Travel, Blue Hour, Sunlit Forest, Green Film                                                                                                                                    |
+| Night     | Neon, City, Night, Blue Hour, Cyberpunk, Low Light Skin, Midnight City, Night Mood                                                                                                                                                  |
+| Film      | Portra, Fuji, Gold, Kodak, Grain Film                                                                                                                                                                                               |
+| Cinematic | Cinema, Teal Orange, Noir, Drama, Epic, Blockbuster, Arthouse, Bleach, Deep Teal, Fade Drama, Teal Cinema                                                                                                                           |
+| Vintage   | Retro, Fade, Dust, Oldie, 90s, Retro Matte, Vintage Fade                                                                                                                                                                            |
+| B&W       | B&W, Noir, Matte, High Contrast, Soft Mono, Pearl Mono                                                                                                                                                                              |
+| Warm      | Warm, Sunset, Amber, Caramel, Cozy                                                                                                                                                                                                  |
+| Cool      | Cool, Arctic, Mist, Blue Mist, Steel, Cyan Clean                                                                                                                                                                                    |
+| Aesthetic | Beige, Latte, Pink, Dreamy, Minimal, Editorial Matte                                                                                                                                                                                |
+| Creative  | Neon, Cyberpunk, Purple, Dream, Fantasy                                                                                                                                                                                             |
+| Art       | Pencil, Soft Sketch, Color Pencil, Fine Line, Ink, Charcoal                                                                                                                                                                         |
 
 ## Khóa cache thumbnail ổn định
 
@@ -358,177 +338,72 @@ Dùng lại đúng key khi cùng một ảnh source được chọn lại. Glide
 
 Thumbnail đưa vào Glide cache được bound theo request, tối đa `256px` cho cả filter màu và filter Art/effect. Cache key gồm source key, kích thước source, filter recipe, adjustments, render version, và kích thước thumbnail bound.
 
-## JSON filter packs
-
-`FilterControlsView` có thể load JSON pack từ assets của host app:
-
-```xml
-app:gsFilterCatalogAsset="filters/filter_pack.json"
-```
-
-Hoặc load/set bằng code:
-
-```kotlin
-val pack = FilterPackJson.parse(json)
-binding.filterControls.setCatalog(pack)
-```
-
-Nếu host giữ category/filter state trong `ViewModel`, hãy lưu cùng `FilterPack` đó ở ViewModel. View có thể tự render JSON pack, nhưng preview và selected filter state vẫn thuộc host.
-
-### Default `Original/None`
-
-Pack có thể giữ trạng thái ban đầu không áp filter bằng cách khai báo một option đặc biệt:
-
-- `id`: bắt buộc là `original`.
-- `name`: tên hiển thị tùy chọn, thường là `Original`.
-- `categoryIds`: mảng rỗng để option không xuất hiện trong category filter rail.
-- `defaultFilterId`: đặt là `original` để pack không tự chọn filter đầu tiên.
-
-Nếu không khai báo `defaultFilterId`, parser sẽ dùng filter đầu tiên trong mảng `filters`.
-
-Ví dụ JSON:
-
-```json
-{
-  "defaultCategoryId": "cinematic",
-  "defaultFilterId": "original",
-  "categories": [
-    { "id": "cinematic", "name": "Cinematic" },
-    { "id": "portrait", "name": "Portrait" }
-  ],
-  "filters": [
-    {
-      "id": "original",
-      "name": "Original",
-      "categoryIds": []
-    },
-    {
-      "id": "teal_orange",
-      "name": "Teal Orange",
-      "categoryIds": ["cinematic"],
-      "recipe": {
-        "effect": "color",
-        "lut": "teal_cinema",
-        "lutStrength": 80,
-        "intensity": 100,
-        "redShift": 12,
-        "greenShift": 4,
-        "blueShift": 8,
-        "adjustments": {
-          "exposure": -4,
-          "contrast": 22,
-          "highlights": -16,
-          "shadows": -10,
-          "saturation": -6,
-          "temperature": 8,
-          "tint": -8,
-          "clarity": 12,
-          "vignette": 20
-        }
-      }
-    }
-  ]
-}
-```
-
-Các field recipe đang hỗ trợ:
-
-- `effect`: `color`, `sketch`, `ink`, `pencil`, `color_pencil`, `charcoal`, hoặc `cross_hatch`; mặc định là `color`.
-- `effectStrength`, `effectThreshold`, `effectTone`: số `0..100` để tinh chỉnh effect nét vẽ.
-- `lut`: `none`, `clean_portrait`, `soft_skin`, `golden_portrait`, `daylight_fresh`, `food_pop`, `green_film`, `teal_cinema`, `night_mood`, `vintage_fade`, hoặc `editorial_matte`; mặc định là `none`.
-- `lutStrength`: số `0..100`, mặc định `100`.
-- `intensity`: số `0..100`, mặc định `100`.
-- `isMonochrome`: boolean.
-- `redShift`, `greenShift`, `blueShift`: được clamp trong `-100..100`.
-- `adjustments`: `brightness`, `exposure`, `contrast`, `highlights`, `shadows`, `saturation`, `vibrance`, `temperature`, `tint`, `sharpness`, `clarity`, `fade`, `vignette`, `grain`.
-
-Range của adjust:
-
-- Control dạng signed: `-100..100`.
-- Control dạng intensity: `sharpness`, `fade`, `vignette`, `grain` dùng `0..100`.
-
-JSON pack có thể khai báo `Original/None` bằng filter có `id` là `original`, `name` tùy chọn, và `categoryIds` rỗng. Nếu muốn pack bắt đầu ở trạng thái không áp filter, đặt thêm `defaultFilterId` là `original`.
-
-Ví dụ:
-
-```json
-{
-  "defaultFilterId": "original",
-  "categories": [{ "id": "cinematic", "name": "Cinematic" }],
-  "filters": [
-    { "id": "original", "name": "Original", "categoryIds": [] },
-    { "id": "teal", "name": "Teal", "categoryIds": ["cinematic"] }
-  ]
-}
-```
-
 Trong app mẫu, khi không có thay đổi filter, Beauty hoặc Adjust, đường export dùng bản sao pixel-identical của bitmap gốc thay vì chạy bitmap qua GPU shader. Để kiểm tra lúc bấm lưu, xem log tag `BitmapCompare` trong Logcat.
 
 ## Styling `FilterControlsView`
 
 Các XML attributes hiện có:
 
-| Attribute | Mục đích |
-| --- | --- |
-| `gsFilterTextColor` | Màu category/icon thường và fallback cho text tab |
-| `gsFilterSelectedTextColor` | Màu category/icon đang chọn và fallback cho selected tab khi tab background bật |
-| `gsFilterTabTextColor` | Màu text tab Filter/Adjust bình thường; mặc định theo `gsFilterTextColor` |
-| `gsFilterSelectedTabTextColor` | Màu text tab Filter/Adjust đang chọn; mặc định theo `gsFilterSelectedTextColor`, hoặc `gsFilterSelectedColor` khi tab background tắt |
-| `gsFilterSelectedColor` | Accent fallback cho trạng thái selected |
-| `gsFilterChipBackground` | Background category chip bình thường |
-| `gsFilterSelectedChipBackground` | Background category chip đang chọn |
-| `gsFilterTabBackground` | Background tab Filter/Adjust bình thường; mặc định theo `gsFilterChipBackground` |
-| `gsFilterSelectedTabBackground` | Background tab Filter/Adjust đang chọn; mặc định theo `gsFilterSelectedChipBackground` |
-| `gsFilterUseTabBackground` | Set `false` để render tab Filter/Adjust không có background |
-| `gsFilterCardBackground` | Background filter thumbnail card bình thường |
-| `gsFilterSelectedCardBackground` | Background filter thumbnail card đang chọn |
-| `gsFilterCardForeground` | Foreground viền thumbnail card bình thường, nằm trên ảnh |
-| `gsFilterSelectedCardForeground` | Foreground viền thumbnail card đang chọn, nằm trên ảnh |
-| `gsFilterLabelBackground` | Background nhãn thumbnail |
-| `gsFilterLabelTextColor` | Màu text nhãn thumbnail |
-| `gsFilterCloseIcon` | Drawable icon đóng/xác nhận; app mẫu có `ic_gs_tick` |
-| `gsFilterNoneIcon` | Drawable icon Original/none |
-| `gsFilterIconPadding` | Override padding icon close/original nếu cần; bỏ trống thì dùng default của `RippleImageView` |
-| `gsFilterShowTabIndicator` | Hiển thị indicator dưới tab Filter/Adjust đang chọn |
-| `gsFilterCompactTabs` | Kéo label/indicator của tab Filter và Adjust gần nhau hơn trong khi vùng bấm vẫn rộng |
-| `gsFilterTabSpacing` | Khoảng cách giữa tab Filter và Adjust khi cần chỉnh gần/xa nhau |
-| `gsFilterTabIndicatorColor` | Màu tab indicator |
-| `gsFilterTabIndicatorHeight` | Chiều cao tab indicator |
-| `gsFilterTabIndicatorWidthMode` | Kích thước ngang indicator: `full`, `min`, hoặc `text` |
-| `gsFilterTabIndicatorMinWidth` | Chiều rộng indicator khi mode là `min`; mặc định theo `gs_filter_chip_min_width` |
-| `gsFilterShowIntensity` | Bật/tắt slider Intensity cho filter có recipe |
-| `gsFilterIntensityTextColor` | Màu label và value của slider Intensity |
-| `gsFilterIntensityProgressColor` | Màu progress và thumb của slider Intensity |
-| `gsFilterIntensityTrackColor` | Màu track của slider Intensity |
-| `gsFilterCatalogAsset` | Asset path tùy chọn cho JSON filter pack |
-| `gsAdjustTextColor` | Màu text giá trị adjust |
-| `gsAdjustSecondaryTextColor` | Màu icon/label adjust item chưa chọn |
-| `gsAdjustSelectedColor` | Màu adjust item đang chọn, seekbar progress/thumb, và changed-dot |
-| `gsAdjustTrackColor` | Màu track của adjust seekbar |
-| `gsAdjustResetIcon` | Drawable icon reset control adjust hiện tại |
-| `gsAdjustResetIconPadding` | Override padding icon reset nếu cần; bỏ trống thì dùng default của `RippleImageView` |
-| `gsAdjustResetAllText` | Text nút reset tất cả |
+| Attribute                        | Mục đích                                                                                                                             |
+|----------------------------------|--------------------------------------------------------------------------------------------------------------------------------------|
+| `gsFilterTextColor`              | Màu category/icon thường và fallback cho text tab                                                                                    |
+| `gsFilterSelectedTextColor`      | Màu category/icon đang chọn và fallback cho selected tab khi tab background bật                                                      |
+| `gsFilterTabTextColor`           | Màu text tab Filter/Adjust bình thường; mặc định theo `gsFilterTextColor`                                                            |
+| `gsFilterSelectedTabTextColor`   | Màu text tab Filter/Adjust đang chọn; mặc định theo `gsFilterSelectedTextColor`, hoặc `gsFilterSelectedColor` khi tab background tắt |
+| `gsFilterSelectedColor`          | Accent fallback cho trạng thái selected                                                                                              |
+| `gsFilterChipBackground`         | Background category chip bình thường                                                                                                 |
+| `gsFilterSelectedChipBackground` | Background category chip đang chọn                                                                                                   |
+| `gsFilterTabBackground`          | Background tab Filter/Adjust bình thường; mặc định theo `gsFilterChipBackground`                                                     |
+| `gsFilterSelectedTabBackground`  | Background tab Filter/Adjust đang chọn; mặc định theo `gsFilterSelectedChipBackground`                                               |
+| `gsFilterUseTabBackground`       | Set `false` để render tab Filter/Adjust không có background                                                                          |
+| `gsFilterCardBackground`         | Background filter thumbnail card bình thường                                                                                         |
+| `gsFilterSelectedCardBackground` | Background filter thumbnail card đang chọn                                                                                           |
+| `gsFilterCardForeground`         | Foreground viền thumbnail card bình thường, nằm trên ảnh                                                                             |
+| `gsFilterSelectedCardForeground` | Foreground viền thumbnail card đang chọn, nằm trên ảnh                                                                               |
+| `gsFilterLabelBackground`        | Background nhãn thumbnail                                                                                                            |
+| `gsFilterLabelTextColor`         | Màu text nhãn thumbnail                                                                                                              |
+| `gsFilterCloseIcon`              | Drawable icon đóng/xác nhận; app mẫu có `ic_gs_tick`                                                                                 |
+| `gsFilterNoneIcon`               | Drawable icon Original/none                                                                                                          |
+| `gsFilterIconPadding`            | Override padding icon close/original nếu cần; bỏ trống thì dùng default của `RippleImageView`                                        |
+| `gsFilterShowTabIndicator`       | Hiển thị indicator dưới tab Filter/Adjust đang chọn                                                                                  |
+| `gsFilterCompactTabs`            | Kéo label/indicator của tab Filter và Adjust gần nhau hơn trong khi vùng bấm vẫn rộng                                                |
+| `gsFilterTabSpacing`             | Khoảng cách giữa tab Filter và Adjust khi cần chỉnh gần/xa nhau                                                                      |
+| `gsFilterTabIndicatorColor`      | Màu tab indicator                                                                                                                    |
+| `gsFilterTabIndicatorHeight`     | Chiều cao tab indicator                                                                                                              |
+| `gsFilterTabIndicatorWidthMode`  | Kích thước ngang indicator: `full`, `min`, hoặc `text`                                                                               |
+| `gsFilterTabIndicatorMinWidth`   | Chiều rộng indicator khi mode là `min`; mặc định theo `gs_filter_chip_min_width`                                                     |
+| `gsFilterShowIntensity`          | Bật/tắt slider Intensity cho filter có recipe                                                                                        |
+| `gsFilterIntensityTextColor`     | Màu label và value của slider Intensity                                                                                              |
+| `gsFilterIntensityProgressColor` | Màu progress và thumb của slider Intensity                                                                                           |
+| `gsFilterIntensityTrackColor`    | Màu track của slider Intensity                                                                                                       |
+| `gsAdjustTextColor`              | Màu text giá trị adjust                                                                                                              |
+| `gsAdjustSecondaryTextColor`     | Màu icon/label adjust item chưa chọn                                                                                                 |
+| `gsAdjustSelectedColor`          | Màu adjust item đang chọn, seekbar progress/thumb, và changed-dot                                                                    |
+| `gsAdjustTrackColor`             | Màu track của adjust seekbar                                                                                                         |
+| `gsAdjustResetIcon`              | Drawable icon reset control adjust hiện tại                                                                                          |
+| `gsAdjustResetIconPadding`       | Override padding icon reset nếu cần; bỏ trống thì dùng default của `RippleImageView`                                                 |
+| `gsAdjustResetAllText`           | Text nút reset tất cả                                                                                                                |
 
 Các dimension có thể override:
 
-| Dimension | Default | Mục đích |
-| --- | --- | --- |
-| `gs_filter_item_spacing` | `8dp` | Khoảng cách mặc định giữa các filter control |
-| `gs_filter_chip_min_width` | `80dp` | Chiều rộng tối thiểu của category chip và fallback indicator `min` |
-| `gs_filter_chip_min_height` | `32dp` | Chiều cao tối thiểu của tab và category chip |
-| `gs_filter_chip_horizontal_padding` | `18dp` | Padding ngang của tab và category chip |
-| `gs_filter_chip_vertical_padding` | `4dp` | Padding dọc của tab và category chip |
-| `gs_filter_category_top_spacing` | `20dp` | Khoảng cách trên giữa tab row Filter/Adjust và category row |
-| `gs_filter_tab_indicator_height` | `2dp` | Chiều cao indicator của tab Filter/Adjust |
-| `gs_filter_thumbnail_width` | `78dp` | Chiều rộng item thumbnail filter |
-| `gs_filter_thumbnail_height` | `102dp` | Chiều cao item thumbnail filter |
-| `gs_filter_thumbnail_label_height` | `24dp` | Chiều cao dải label thumbnail filter |
-| `gs_filter_thumbnail_label_padding` | `4dp` | Padding ngang label thumbnail filter |
-| `gs_adjust_icon_size` | `24dp` | Kích thước icon adjust control |
-| `gs_adjust_dot_size` | `5dp` | Kích thước dot báo value đã đổi |
-| `gs_adjust_item_gap` | `4dp` | Khoảng cách giữa dot, icon, và label của adjust item |
-| `gs_adjust_item_width` | `78dp` | Chiều rộng adjust item trong horizontal rail |
-| `gs_adjust_value_width` | `36dp` | Chiều rộng text giá trị adjust hiện tại |
+| Dimension                           | Default | Mục đích                                                           |
+|-------------------------------------|---------|--------------------------------------------------------------------|
+| `gs_filter_item_spacing`            | `8dp`   | Khoảng cách mặc định giữa các filter control                       |
+| `gs_filter_chip_min_width`          | `80dp`  | Chiều rộng tối thiểu của category chip và fallback indicator `min` |
+| `gs_filter_chip_min_height`         | `32dp`  | Chiều cao tối thiểu của tab và category chip                       |
+| `gs_filter_chip_horizontal_padding` | `18dp`  | Padding ngang của tab và category chip                             |
+| `gs_filter_chip_vertical_padding`   | `4dp`   | Padding dọc của tab và category chip                               |
+| `gs_filter_category_top_spacing`    | `20dp`  | Khoảng cách trên giữa tab row Filter/Adjust và category row        |
+| `gs_filter_tab_indicator_height`    | `2dp`   | Chiều cao indicator của tab Filter/Adjust                          |
+| `gs_filter_thumbnail_width`         | `78dp`  | Chiều rộng item thumbnail filter                                   |
+| `gs_filter_thumbnail_height`        | `102dp` | Chiều cao item thumbnail filter                                    |
+| `gs_filter_thumbnail_label_height`  | `24dp`  | Chiều cao dải label thumbnail filter                               |
+| `gs_filter_thumbnail_label_padding` | `4dp`   | Padding ngang label thumbnail filter                               |
+| `gs_adjust_icon_size`               | `24dp`  | Kích thước icon adjust control                                     |
+| `gs_adjust_dot_size`                | `5dp`   | Kích thước dot báo value đã đổi                                    |
+| `gs_adjust_item_gap`                | `4dp`   | Khoảng cách giữa dot, icon, và label của adjust item               |
+| `gs_adjust_item_width`              | `78dp`  | Chiều rộng adjust item trong horizontal rail                       |
+| `gs_adjust_value_width`             | `36dp`  | Chiều rộng text giá trị adjust hiện tại                            |
 
 Host app có thể override dimension của thư viện bằng cách khai báo cùng resource name trong `values/dimens.xml` của app:
 

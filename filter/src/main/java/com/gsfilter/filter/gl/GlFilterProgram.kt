@@ -901,10 +901,6 @@ internal object GlFilterProgram {
             return (inside && edgeDistance > 0.004) ? 1.0 : 0.0;
         }
 
-        float stripe(float value) {
-            return 1.0 - smoothstep(0.0, 0.055, abs(fract(value) - 0.5));
-        }
-
         vec3 sampleLut(vec3 rgb) {
             vec3 color = clamp(rgb, 0.0, 1.0);
             float blue = color.b * 32.0;
@@ -1108,14 +1104,7 @@ internal object GlFilterProgram {
                 if (uEffectStrength > 0.0) {
                     edge = edgeAt(vTexCoord);
                 }
-                if (uEffect > 5.5) {
-                    float dark = 1.0 - sourceGray;
-                    float hatch = stripe((vTexCoord.x + vTexCoord.y) * 34.0) * step(0.18, dark);
-                    hatch += stripe((vTexCoord.x - vTexCoord.y) * 38.0) * step(0.42, dark);
-                    hatch += stripe(vTexCoord.x * 46.0) * step(0.68, dark);
-                    float line = lineFromEdge(edge, 0.10) * 0.45;
-                    rgb = vec3(1.0 - clamp(((hatch * 0.55) + line) * uEffectStrength, 0.0, 0.95));
-                } else if (uEffect > 4.5) {
+                if (uEffect > 4.5) {
                     float line = lineFromEdge(edge, 0.14);
                     float texture = (random(vTexCoord * vec2(680.0, 920.0)) - 0.5) * 0.28 * uEffectStrength;
                     float charcoal = clamp(mix(0.92, sourceGray, 0.65 + (uEffectTone * 0.2)) - (line * 0.95) - texture, 0.0, 1.0);

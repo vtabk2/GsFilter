@@ -284,7 +284,6 @@ object FilterThumbnailRenderer {
             FilterEffect.Charcoal -> recipe.copy(
                 adjustments = recipe.adjustments.copy(grain = recipe.adjustments.grain.scale(50)),
             )
-            FilterEffect.CrossHatch -> recipe
         }
 
     internal fun filterPixel(
