@@ -921,15 +921,16 @@ internal object GlFilterProgram {
                 vec3 down = texture2D(uTexture, sourceCoord + vec2(0.0, uTexelSize.y)).rgb;
                 blur = (left + right + up + down) * 0.25;
             }
-            bool beautyEnabled = uSkinSmoothing > 0.0 ||
-                uSkinWhitening > 0.0 ||
-                uBlush > 0.0 ||
+            bool featureBeautyEnabled = uBlush > 0.0 ||
                 uLipstick > 0.0 ||
                 uUnderEye > 0.0 ||
                 uTeethWhitening > 0.0 ||
                 uEyeShadow > 0.0 ||
                 uEyeliner > 0.0 ||
                 uEyebrow > 0.0;
+            bool beautyEnabled = uSkinSmoothing > 0.0 ||
+                uSkinWhitening > 0.0 ||
+                featureBeautyEnabled;
             float beautyMask = 0.0;
             vec3 rgb = color.rgb;
             if (beautyEnabled) {
@@ -957,6 +958,7 @@ internal object GlFilterProgram {
             rgb += vec3(skinLift);
             float skinDesaturate = whitening * 0.08 * highlightGuard;
             rgb = mix(rgb, vec3(skinLuma + skinLift), skinDesaturate);
+            if (featureBeautyEnabled) {
             float underEyeMask = max(
                 underEyeRegionMask(vTexCoord, uUnderEyeLeft),
                 underEyeRegionMask(vTexCoord, uUnderEyeRight)
@@ -1008,6 +1010,7 @@ internal object GlFilterProgram {
             );
             float lipstickAmount = uLipstick * lipContourMask(vTexCoord) * lipColorMask(color.rgb) * 0.40;
             rgb = mix(rgb, vec3(0.70, 0.16, 0.22), lipstickAmount);
+            }
             }
 
             if (uRgbShift.r != 0.0 || uRgbShift.g != 0.0 || uRgbShift.b != 0.0) {

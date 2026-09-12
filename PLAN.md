@@ -1,5 +1,27 @@
 # PLAN
 
+## Task: Skip inactive Beauty feature masks
+
+Status: IN PROGRESS
+Created: 2026-09-12
+
+### Requirements
+
+- Avoid feature-mask work when only skin controls are active.
+- Preserve skin smoothing/whitening and all active feature controls.
+- Keep CPU and GPU behavior aligned.
+
+### Checklist
+
+- [x] Gate CPU feature masks by detected features and active controls.
+- [x] Gate GPU feature masks by active feature controls.
+- [ ] Run unit tests, compile, and review the diff.
+
+### Notes
+
+- Smoothing/Whitening no longer calculates eye, lip, cheek, teeth, or eyebrow masks when those controls are zero.
+- Face warp controls remain on their existing separate path.
+
 ## Task: Skip inactive Art effect branch
 
 Status: IN PROGRESS

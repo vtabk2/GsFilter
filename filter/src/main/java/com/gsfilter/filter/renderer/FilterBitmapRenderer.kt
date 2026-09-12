@@ -101,15 +101,10 @@ object FilterBitmapRenderer {
             (params.effect != FilterEffect.Color &&
                 params.intensity != 0f &&
                 params.effectStrength != 0f)
+        val hasFeatureBeauty = hasFeatureBeautyControls(params)
         val hasBeauty = params.skinSmoothing != 0f ||
             params.skinWhitening != 0f ||
-            params.blush != 0f ||
-            params.lipstick != 0f ||
-            params.underEye != 0f ||
-            params.teethWhitening != 0f ||
-            params.eyeShadow != 0f ||
-            params.eyeliner != 0f ||
-            params.eyebrow != 0f
+            hasFeatureBeauty
         for (y in 0 until height) {
             for (x in 0 until width) {
                 val index = y * width + x
@@ -164,15 +159,7 @@ object FilterBitmapRenderer {
                 (params.effect != FilterEffect.Color &&
                     params.intensity != 0f &&
                     params.effectStrength != 0f),
-            params.skinSmoothing != 0f ||
-                params.skinWhitening != 0f ||
-                params.blush != 0f ||
-                params.lipstick != 0f ||
-                params.underEye != 0f ||
-                params.teethWhitening != 0f ||
-                params.eyeShadow != 0f ||
-                params.eyeliner != 0f ||
-                params.eyebrow != 0f,
+            hasBeautyControls(params),
         )
     }
 
@@ -311,7 +298,7 @@ object FilterBitmapRenderer {
             faceMask = 1f
             beautyMask = 0f
         }
-        params.makeupFeatures?.takeIf { hasBeauty }?.let { features ->
+        params.makeupFeatures?.takeIf { hasFeatureBeauty }?.let { features ->
             val blushMask = max(
                 ellipseMask(
                     textureX,
@@ -760,6 +747,20 @@ object FilterBitmapRenderer {
                 ((features.leftEyeRadiusX > 0f && features.leftEyeRadiusY > 0f) ||
                     (features.rightEyeRadiusX > 0f && features.rightEyeRadiusY > 0f)))
     }
+
+    private fun hasBeautyControls(params: ShaderFilterParams): Boolean =
+        params.skinSmoothing != 0f || params.skinWhitening != 0f || hasFeatureBeautyControls(params)
+
+    private fun hasFeatureBeautyControls(params: ShaderFilterParams): Boolean =
+        params.makeupFeatures != null && (
+            params.blush != 0f ||
+                params.lipstick != 0f ||
+                params.underEye != 0f ||
+                params.teethWhitening != 0f ||
+                params.eyeShadow != 0f ||
+                params.eyeliner != 0f ||
+                params.eyebrow != 0f
+            )
 
     private fun applyEyeWarp(
         coordinate: FloatArray,
