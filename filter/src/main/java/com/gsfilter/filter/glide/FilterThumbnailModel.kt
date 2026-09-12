@@ -4,11 +4,13 @@ import android.graphics.Bitmap
 import com.gsfilter.filter.Adjustments
 import com.gsfilter.filter.FilterOption
 
+private val DEFAULT_THUMBNAIL_ADJUSTMENTS = Adjustments()
+
 class FilterThumbnailModel(
     val sourceKey: String,
     val source: Bitmap,
     val filter: FilterOption,
-    val adjustments: Adjustments = Adjustments(),
+    val adjustments: Adjustments = DEFAULT_THUMBNAIL_ADJUSTMENTS,
 ) {
 
     val cacheKey: String = buildCacheKey(sourceKey, source.width, source.height, filter, adjustments)
@@ -28,7 +30,7 @@ class FilterThumbnailModel(
             sourceWidth: Int,
             sourceHeight: Int,
             filter: FilterOption,
-            adjustments: Adjustments = Adjustments(),
+            adjustments: Adjustments = DEFAULT_THUMBNAIL_ADJUSTMENTS,
         ): String =
             "$RENDER_VERSION:$sourceKey:${sourceWidth}x$sourceHeight:${filter.id}:${filter.recipe}:$adjustments"
 

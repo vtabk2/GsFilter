@@ -1,5 +1,25 @@
 # PLAN
 
+## Task: Reuse default thumbnail adjustments
+
+Status: IN PROGRESS
+Created: 2026-09-12
+
+### Requirements
+
+- Avoid allocating a default immutable adjustments object for every thumbnail model.
+- Preserve model equality and cache keys.
+
+### Checklist
+
+- [x] Share the default adjustments instance.
+- [x] Keep explicit adjustments behavior unchanged.
+- [ ] Run unit tests, compile, and review the diff.
+
+### Notes
+
+- The shared value is immutable and used only as the default argument.
+
 ## Task: Split preview effect and texel uploads
 
 Status: IN PROGRESS
