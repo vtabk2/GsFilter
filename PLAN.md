@@ -1,5 +1,25 @@
 # PLAN
 
+## Task: Skip GPU for no-op batch renders
+
+Status: IN PROGRESS
+Created: 2026-09-12
+
+### Requirements
+
+- Avoid EGL setup and readback when the effective recipe does nothing.
+- Preserve bounded output sizing and independent bitmap ownership.
+
+### Checklist
+
+- [x] Reuse the CPU no-op fast path from the shared renderer.
+- [x] Keep active filters on the GPU-first path with CPU fallback.
+- [ ] Run unit tests, compile, and review the diff.
+
+### Notes
+
+- The check uses the already-built batch params, so it adds no per-image recipe conversion.
+
 ## Task: Reuse batch shader params
 
 Status: IN PROGRESS

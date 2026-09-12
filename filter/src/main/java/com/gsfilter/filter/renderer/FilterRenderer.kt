@@ -65,8 +65,16 @@ object FilterRenderer {
         params: ShaderFilterParams,
         maxWidth: Int?,
         maxHeight: Int?,
-    ): Bitmap =
-        try {
+    ): Bitmap {
+        if (FilterBitmapRenderer.isNoOp(params)) {
+            return FilterBitmapRenderer.getBitmapWithParams(
+                source = source,
+                params = params,
+                maxWidth = maxWidth,
+                maxHeight = maxHeight,
+            )
+        }
+        return try {
             FilterGpuBitmapRenderer.getBitmapWithParams(
                 source = source,
                 params = params,

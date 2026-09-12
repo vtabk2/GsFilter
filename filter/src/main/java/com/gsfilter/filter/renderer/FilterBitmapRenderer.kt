@@ -828,7 +828,7 @@ object FilterBitmapRenderer {
     private fun needsBeautyMask(params: ShaderFilterParams): Boolean =
         params.skinSmoothing != 0f || params.skinWhitening != 0f || params.underEye != 0f
 
-    private fun isNoOp(params: ShaderFilterParams): Boolean =
+    internal fun isNoOp(params: ShaderFilterParams): Boolean =
         (params.effect == FilterEffect.Color || params.intensity == 0f) &&
             params.lutStrength <= 0f &&
             params.skinSmoothing == 0f &&
