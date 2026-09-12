@@ -145,7 +145,10 @@ object FilterBitmapRenderer {
         val rotationSine = if (needsRotation) sin(rotationRadians) else 0f
         val rotationCosine = if (needsRotation) cos(rotationRadians) else 1f
         for (y in 0 until height) {
-            var index = y * width
+            val rowStart = y * width
+            val topRowStart = (y - 1).coerceAtLeast(0) * width
+            val bottomRowStart = (y + 1).coerceAtMost(height - 1) * width
+            var index = rowStart
             for (x in 0 until width) {
                 output[index] = filterPixel(
                     pixels,
@@ -154,6 +157,9 @@ object FilterBitmapRenderer {
                     width,
                     height,
                     index,
+                    rowStart,
+                    topRowStart,
+                    bottomRowStart,
                     params,
                     lutOutput,
                     warpCoordinate,
@@ -194,6 +200,9 @@ object FilterBitmapRenderer {
             width,
             height,
             y * width + x,
+            y * width,
+            (y - 1).coerceAtLeast(0) * width,
+            (y + 1).coerceAtMost(height - 1) * width,
             params,
             FloatArray(3),
             FloatArray(2),
@@ -223,6 +232,9 @@ object FilterBitmapRenderer {
         width: Int,
         height: Int,
         pixelIndex: Int,
+        rowStart: Int,
+        topRowStart: Int,
+        bottomRowStart: Int,
         params: ShaderFilterParams,
         lutOutput: FloatArray,
         warpCoordinate: FloatArray,
@@ -273,11 +285,10 @@ object FilterBitmapRenderer {
                 up = sampleBilinear(pixels, sourceX, sourceY - texelY, width, height)
                 down = sampleBilinear(pixels, sourceX, sourceY + texelY, width, height)
             } else {
-                val rowStart = y * width
                 left = pixels[rowStart + (x - 1).coerceAtLeast(0)]
                 right = pixels[rowStart + (x + 1).coerceAtMost(width - 1)]
-                up = pixels[((y - 1).coerceAtLeast(0) * width) + x]
-                down = pixels[((y + 1).coerceAtMost(height - 1) * width) + x]
+                up = pixels[topRowStart + x]
+                down = pixels[bottomRowStart + x]
             }
         } else {
             left = color
@@ -299,7 +310,7 @@ object FilterBitmapRenderer {
             blurredBlue = sourceBlue
         }
         val edge = if (needsEdge) {
-            edgeAt(pixels, x, y, width, height)
+            edgeAt(pixels, x, width, rowStart, topRowStart, bottomRowStart)
         } else {
             0f
         }
@@ -929,20 +940,24 @@ object FilterBitmapRenderer {
 
     private fun gray(red: Float, green: Float, blue: Float): Float = (red * 0.299f) + (green * 0.587f) + (blue * 0.114f)
 
-    private fun edgeAt(pixels: IntArray, x: Int, y: Int, width: Int, height: Int): Float {
+    private fun edgeAt(
+        pixels: IntArray,
+        x: Int,
+        width: Int,
+        rowStart: Int,
+        topRowStart: Int,
+        bottomRowStart: Int,
+    ): Float {
         val leftX = (x - 1).coerceAtLeast(0)
         val rightX = (x + 1).coerceAtMost(width - 1)
-        val topRow = (y - 1).coerceAtLeast(0) * width
-        val middleRow = y * width
-        val bottomRow = (y + 1).coerceAtMost(height - 1) * width
-        val topLeft = luma(pixels[topRow + leftX])
-        val top = luma(pixels[topRow + x])
-        val topRight = luma(pixels[topRow + rightX])
-        val left = luma(pixels[middleRow + leftX])
-        val right = luma(pixels[middleRow + rightX])
-        val bottomLeft = luma(pixels[bottomRow + leftX])
-        val bottom = luma(pixels[bottomRow + x])
-        val bottomRight = luma(pixels[bottomRow + rightX])
+        val topLeft = luma(pixels[topRowStart + leftX])
+        val top = luma(pixels[topRowStart + x])
+        val topRight = luma(pixels[topRowStart + rightX])
+        val left = luma(pixels[rowStart + leftX])
+        val right = luma(pixels[rowStart + rightX])
+        val bottomLeft = luma(pixels[bottomRowStart + leftX])
+        val bottom = luma(pixels[bottomRowStart + x])
+        val bottomRight = luma(pixels[bottomRowStart + rightX])
         val horizontal = -topLeft - (2f * left) - bottomLeft + topRight + (2f * right) + bottomRight
         val vertical = -topLeft - (2f * top) - topRight + bottomLeft + (2f * bottom) + bottomRight
         return clamp(sqrt((horizontal * horizontal) + (vertical * vertical)), 0f, 1f)

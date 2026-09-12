@@ -1,5 +1,25 @@
 # PLAN
 
+## Task: Reuse row offsets in CPU renders
+
+Status: IN PROGRESS
+Created: 2026-09-12
+
+### Requirements
+
+- Compute neighboring row offsets once per image row.
+- Preserve CPU Beauty/Warp output and edge handling.
+
+### Checklist
+
+- [x] Pass current, top, and bottom row offsets to the pixel helper.
+- [x] Review the diff and document validation limits.
+
+### Notes
+
+- This removes repeated row-index multiplications from the non-warp neighborhood and edge paths.
+- Gradle validation is blocked because Java/JAVA_HOME is unavailable in this environment.
+
 ## Task: Reuse the existing pixel index in CPU renders
 
 Status: IN PROGRESS
