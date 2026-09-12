@@ -211,7 +211,14 @@ class FilterViewModel(application: Application) : AndroidViewModel(application) 
         val recipe = state.selectedRecipe
         return withContext(Dispatchers.Default) {
             if (recipe == FilterRecipe() && state.adjustments == Adjustments()) {
-                return@withContext source.copy(source.config ?: Bitmap.Config.ARGB_8888, true)
+                return@withContext FilterBitmapRenderer.getBitmap(
+                    source = source,
+                    recipe = recipe,
+                    adjustments = state.adjustments,
+                    makeupFeatures = state.makeupFeatures,
+                    maxWidth = maxWidth,
+                    maxHeight = maxHeight,
+                )
             }
 
             fun renderCpu() =

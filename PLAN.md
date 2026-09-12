@@ -1,5 +1,25 @@
 # PLAN
 
+## Task: Reuse no-op renderer in export path
+
+Status: IN PROGRESS
+Created: 2026-09-12
+
+### Requirements
+
+- Keep the default-filter fast path out of GPU setup.
+- Preserve max-size output behavior.
+
+### Checklist
+
+- [x] Route the default recipe through the CPU no-op fast path.
+- [x] Preserve makeup feature and size arguments.
+- [ ] Run unit tests, compile, and review the diff.
+
+### Notes
+
+- The old direct source copy ignored optional output bounds.
+
 ## Task: Bypass GPU for no-op thumbnails
 
 Status: IN PROGRESS
