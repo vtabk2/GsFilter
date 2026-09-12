@@ -1,5 +1,26 @@
 # PLAN
 
+## Task: Bypass EGL for no-op GPU renders
+
+Status: IN PROGRESS
+Created: 2026-09-12
+
+### Requirements
+
+- Skip EGL/texture setup when the effective recipe has no visible changes.
+- Preserve output bounds, cancellation, and bitmap ownership.
+
+### Checklist
+
+- [x] Reuse the CPU no-op predicate.
+- [x] Check cancellation before and after the bypass.
+- [x] Keep non-no-op GPU rendering unchanged.
+- [ ] Run unit tests, compile, and review the diff.
+
+### Notes
+
+- No-op GPU calls now avoid the global render lock and offscreen context creation.
+
 ## Task: Reuse default thumbnail adjustments
 
 Status: IN PROGRESS

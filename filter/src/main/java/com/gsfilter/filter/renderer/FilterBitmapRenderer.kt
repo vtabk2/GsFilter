@@ -139,6 +139,12 @@ object FilterBitmapRenderer {
         return output
     }
 
+    internal fun isNoOp(
+        recipe: FilterRecipe,
+        adjustments: Adjustments,
+        makeupFeatures: MakeupFeatures? = null,
+    ): Boolean = isNoOp(ShaderFilterParams.from(recipe, adjustments, makeupFeatures))
+
     internal fun filterPixel(
         pixels: IntArray,
         x: Int,
