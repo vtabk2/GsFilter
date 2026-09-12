@@ -1,5 +1,27 @@
 # PLAN
 
+## Task: Skip inactive Art effect branch
+
+Status: IN PROGRESS
+Created: 2026-09-12
+
+### Requirements
+
+- Skip the Art effect calculation when intensity is zero.
+- Preserve the existing output for active Art effects and finishing adjustments.
+- Keep CPU and GPU behavior aligned.
+
+### Checklist
+
+- [x] Gate the CPU Art effect branch by intensity.
+- [x] Gate the GPU Art effect branch by intensity.
+- [ ] Run unit tests, compile, and review the diff.
+
+### Notes
+
+- At zero intensity, the effect branch previously calculated and discarded its result before mixing with the original.
+- The later fade, vignette, and grain stages remain unchanged.
+
 ## Task: Skip redundant preview uniform uploads
 
 Status: IN PROGRESS

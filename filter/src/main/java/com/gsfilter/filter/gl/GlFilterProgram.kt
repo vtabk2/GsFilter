@@ -1055,11 +1055,11 @@ internal object GlFilterProgram {
                 rgb = mix(rgb, sampleLut(rgb), uLutStrength);
             }
 
-            if (uEffect > 0.5) {
+            if (uEffect > 0.5 && uIntensity > 0.0) {
                 vec3 beforeEffect = rgb;
                 float sourceGray = dot(color.rgb, vec3(0.299, 0.587, 0.114));
                 float edge = 0.0;
-                if (uIntensity > 0.0 && uEffectStrength > 0.0) {
+                if (uEffectStrength > 0.0) {
                     edge = edgeAt(vTexCoord);
                 }
                 if (uEffect > 5.5) {

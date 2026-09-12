@@ -160,7 +160,10 @@ object FilterBitmapRenderer {
             hasActiveWarp(params),
             sharpAmount,
             params.skinSmoothing != 0f || sharpAmount != 0f,
-            params.skinSmoothing != 0f || params.effect != FilterEffect.Color,
+            params.skinSmoothing != 0f ||
+                (params.effect != FilterEffect.Color &&
+                    params.intensity != 0f &&
+                    params.effectStrength != 0f),
             params.skinSmoothing != 0f ||
                 params.skinWhitening != 0f ||
                 params.blush != 0f ||
@@ -612,7 +615,7 @@ object FilterBitmapRenderer {
                 blue = crossHatch
             }
         }
-        if (params.effect != FilterEffect.Color) {
+        if (params.effect != FilterEffect.Color && params.intensity != 0f) {
             red = mix(beforeEffectRed, red, params.intensity)
             green = mix(beforeEffectGreen, green, params.intensity)
             blue = mix(beforeEffectBlue, blue, params.intensity)
