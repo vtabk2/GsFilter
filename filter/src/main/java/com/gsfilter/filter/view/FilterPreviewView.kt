@@ -24,6 +24,9 @@ class FilterPreviewView @JvmOverloads constructor(
     private val filterRenderer = FilterRenderer()
     private var lastSourceBitmap: Bitmap? = null
     private var lastSourceGenerationId = 0
+    private var pendingSourceBitmap: Bitmap? = null
+    private var hasPendingSourceBitmap = false
+    private var isSourceUpdatePosted = false
     private var lastFilterParams: ShaderFilterParams? = null
     private var pendingFilterParams: ShaderFilterParams? = null
     private var isFilterRenderPosted = false
@@ -42,9 +45,23 @@ class FilterPreviewView @JvmOverloads constructor(
         }
         lastSourceBitmap = bitmap
         lastSourceGenerationId = generationId
+        pendingSourceBitmap = bitmap
+        hasPendingSourceBitmap = true
+        if (isSourceUpdatePosted) {
+            return
+        }
+        isSourceUpdatePosted = true
         queueEvent {
-            filterRenderer.setSourceBitmap(bitmap)
-            requestRender()
+            if (hasPendingSourceBitmap) {
+                val nextBitmap = pendingSourceBitmap
+                pendingSourceBitmap = null
+                hasPendingSourceBitmap = false
+                isSourceUpdatePosted = false
+                filterRenderer.setSourceBitmap(nextBitmap)
+                requestRender()
+            } else {
+                isSourceUpdatePosted = false
+            }
         }
     }
 

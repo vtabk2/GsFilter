@@ -1,5 +1,27 @@
 # PLAN
 
+## Task: Coalesce preview source updates
+
+Status: IN PROGRESS
+Created: 2026-09-12
+
+### Requirements
+
+- Upload only the newest source bitmap when updates arrive before the GL event runs.
+- Preserve source generation invalidation and null source handling.
+- Keep filter parameter coalescing and render scheduling unchanged.
+
+### Checklist
+
+- [x] Coalesce pending source bitmap events.
+- [x] Preserve null and generation handling.
+- [ ] Run unit tests, compile, and review the diff.
+
+### Notes
+
+- Rapid source changes now replace one pending GL update instead of queueing one event per bitmap.
+- `git diff --check` remains available; Gradle daemon startup is still blocked by the current shell loopback error.
+
 ## Task: Skip inactive Art edge sampling
 
 Status: IN PROGRESS
