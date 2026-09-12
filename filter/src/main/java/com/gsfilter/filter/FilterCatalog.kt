@@ -25,7 +25,7 @@ object FilterCatalog {
             id = ORIGINAL,
             categoryIds = emptySet(),
             nameRes = R.string.gs_action_original,
-            recipe = FilterRecipe(),
+            recipe = FilterRecipe.DEFAULT,
         ),
         FilterOption(
             id = "fresh",

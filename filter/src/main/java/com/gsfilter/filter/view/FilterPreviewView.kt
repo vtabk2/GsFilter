@@ -114,7 +114,7 @@ class FilterPreviewView @JvmOverloads constructor(
         private var surfaceHeight = 0
         private var renderWidth = 0
         private var renderHeight = 0
-        private var params = ShaderFilterParams.from(FilterRecipe(), Adjustments())
+        private var params = ShaderFilterParams.from(FilterRecipe.DEFAULT, Adjustments.DEFAULT)
         private var makeupUniformsNeedUpload = true
         private var adjustmentUniformsNeedUpload = true
         private var effectUniformsNeedUpload = true

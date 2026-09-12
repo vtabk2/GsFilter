@@ -1,5 +1,25 @@
 # PLAN
 
+## Task: Reuse neutral filter model instances
+
+Status: IN PROGRESS
+Created: 2026-09-12
+
+### Requirements
+
+- Reuse immutable neutral recipe and adjustment instances in production paths.
+- Preserve value equality and all default behavior.
+
+### Checklist
+
+- [x] Replace redundant neutral allocations.
+- [x] Review the diff and document validation limits.
+
+### Notes
+
+- Tests may still construct fresh defaults for readability; only production paths change.
+- Gradle validation is blocked because the shell has no Java installation or `JAVA_HOME`.
+
 ## Task: Scroll focused filter category into view
 
 Status: IN PROGRESS

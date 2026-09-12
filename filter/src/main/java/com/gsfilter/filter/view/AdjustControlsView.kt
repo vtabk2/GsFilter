@@ -31,7 +31,7 @@ internal class AdjustControlsView @JvmOverloads constructor(
     private val icons = mutableMapOf<AdjustControl, ImageView>()
     private val dots = mutableMapOf<AdjustControl, View>()
     private var selectedControl = AdjustControl.Brightness
-    private var adjustments = Adjustments()
+    private var adjustments = Adjustments.DEFAULT
     private var isRendering = false
 
     var onAdjustmentChanged: ((AdjustControl, Int) -> Unit)? = null
@@ -63,7 +63,7 @@ internal class AdjustControlsView @JvmOverloads constructor(
         resetButton?.iconRippleRes = style.resetIconRes
         style.resetIconPadding?.let { resetButton?.paddingRipple = it }
         resetButton?.setOnClickListener {
-            onAdjustmentChanged?.invoke(selectedControl, selectedControl.valueIn(Adjustments()))
+            onAdjustmentChanged?.invoke(selectedControl, selectedControl.valueIn(Adjustments.DEFAULT))
         }
         seekBar?.progressBackgroundTintList = ColorStateList.valueOf(style.trackColor)
         seekBar?.progressTintList = ColorStateList.valueOf(style.selectedColor)
@@ -126,7 +126,7 @@ internal class AdjustControlsView @JvmOverloads constructor(
     private fun renderAdjustments() {
         isRendering = true
         val activeValue = selectedControl.valueIn(adjustments)
-        val defaults = Adjustments()
+        val defaults = Adjustments.DEFAULT
         val defaultValue = selectedControl.valueIn(defaults)
         resetButton?.isEnabled = activeValue != defaultValue
         seekBar?.max = selectedControl.progressMax

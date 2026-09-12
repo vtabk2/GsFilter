@@ -29,7 +29,7 @@ data class FilterUiState(
     val faceSlimming: Int = FilterCatalog.default.recipe.faceSlimming,
     val eyeEnlargement: Int = FilterCatalog.default.recipe.eyeEnlargement,
     val makeupFeatures: MakeupFeatures? = null,
-    val adjustments: Adjustments = Adjustments(),
+    val adjustments: Adjustments = Adjustments.DEFAULT,
     val isLoading: Boolean = false,
     val error: FilterError? = null,
 ) {
@@ -112,7 +112,7 @@ internal fun FilterUiState.restoreFilterState(saved: SavedFilterState?): FilterU
         eyebrow = recipe.eyebrow,
         faceSlimming = recipe.faceSlimming,
         eyeEnlargement = recipe.eyeEnlargement,
-        adjustments = saved?.adjustments ?: Adjustments(),
+        adjustments = saved?.adjustments ?: Adjustments.DEFAULT,
     )
 }
 

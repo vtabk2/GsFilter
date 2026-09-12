@@ -495,7 +495,7 @@ class FilterControlsView @JvmOverloads constructor(
     }
 
     private fun renderFilterIntensity() {
-        val canAdjustIntensity = style.showIntensity && selectedFilter.recipe != FilterRecipe()
+        val canAdjustIntensity = style.showIntensity && selectedFilter.recipe != FilterRecipe.DEFAULT
         filterIntensityRow?.visibility = if (canAdjustIntensity) VISIBLE else GONE
         if (!canAdjustIntensity) {
             return
