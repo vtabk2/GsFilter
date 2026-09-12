@@ -45,13 +45,14 @@ object FilterRenderer {
                 maxHeight = maxHeight,
             )
         }
-        batches.values.forEach { batch ->
+        batches.forEach { (renderSize, batch) ->
             batch.forEach { indexedSource ->
                 val bitmap = getBitmapWithParams(
                     source = indexedSource.value,
                     params = params,
                     maxWidth = maxWidth,
                     maxHeight = maxHeight,
+                    renderSize = renderSize,
                 )
                 onBitmap(indexedSource.index, bitmap)
                 completedCount++
@@ -65,6 +66,7 @@ object FilterRenderer {
         params: ShaderFilterParams,
         maxWidth: Int?,
         maxHeight: Int?,
+        renderSize: FilterBitmapRenderer.RenderSize? = null,
     ): Bitmap {
         if (FilterBitmapRenderer.isNoOp(params)) {
             return FilterBitmapRenderer.getBitmapWithParams(
@@ -72,6 +74,7 @@ object FilterRenderer {
                 params = params,
                 maxWidth = maxWidth,
                 maxHeight = maxHeight,
+                renderSize = renderSize,
             )
         }
         return try {
@@ -80,6 +83,7 @@ object FilterRenderer {
                 params = params,
                 maxWidth = maxWidth,
                 maxHeight = maxHeight,
+                renderSize = renderSize,
             )
         } catch (_: RuntimeException) {
             // Fall back for devices/contexts where offscreen EGL is unavailable.

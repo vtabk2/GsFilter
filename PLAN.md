@@ -53,6 +53,7 @@ Created: 2026-09-12
 ### Checklist
 
 - [x] Group by post-scale render dimensions.
+- [x] Pass the grouped render size into each renderer.
 - [x] Keep `onBitmap` indexed by original source position.
 - [x] Preserve incremental progress callbacks.
 - [ ] Run unit tests, compile, and review the diff.

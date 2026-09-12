@@ -40,8 +40,12 @@ object FilterBitmapRenderer {
         params: ShaderFilterParams,
         maxWidth: Int? = null,
         maxHeight: Int? = null,
+        renderSize: RenderSize? = null,
     ): Bitmap {
-        val renderSource = scaledSource(source, maxWidth, maxHeight)
+        val renderSource = scaledSource(
+            source = source,
+            size = renderSize ?: targetSize(source.width, source.height, maxWidth, maxHeight),
+        )
         val width = renderSource.width
         val height = renderSource.height
         val pixels = IntArray(width * height)
@@ -80,7 +84,10 @@ object FilterBitmapRenderer {
     }
 
     internal fun scaledSource(source: Bitmap, maxWidth: Int?, maxHeight: Int?): Bitmap {
-        val size = targetSize(source.width, source.height, maxWidth, maxHeight)
+        return scaledSource(source, targetSize(source.width, source.height, maxWidth, maxHeight))
+    }
+
+    internal fun scaledSource(source: Bitmap, size: RenderSize): Bitmap {
         if (size.width == source.width && size.height == source.height) {
             return source
         }
