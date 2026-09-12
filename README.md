@@ -2,7 +2,7 @@
 
 GsFilter là demo filter ảnh Android nhỏ, đồng thời là module thư viện filter có thể tái sử dụng.
 
-Phiên bản thư viện hiện tại: `1.0.3` trên JitPack.
+Phiên bản thư viện hiện tại: `1.0.4` trên JitPack.
 
 Dự án gồm:
 
@@ -47,7 +47,7 @@ Thêm GsFilter vào module app:
 
 ```kotlin
 dependencies {
-    implementation("com.github.vtabk2:GsFilter:1.0.3")
+    implementation("com.github.vtabk2:GsFilter:1.0.4")
 }
 ```
 
@@ -66,7 +66,7 @@ dependencyResolutionManagement {
 
 ```groovy
 dependencies {
-    implementation 'com.github.vtabk2:GsFilter:1.0.3'
+    implementation 'com.github.vtabk2:GsFilter:1.0.4'
 }
 ```
 
