@@ -33,7 +33,7 @@ object FilterGpuBitmapRenderer {
     fun getBitmap(
         source: Bitmap,
         recipe: FilterRecipe,
-        adjustments: Adjustments = Adjustments(),
+        adjustments: Adjustments = Adjustments.DEFAULT,
         maxWidth: Int? = null,
         maxHeight: Int? = null,
         scaleSource: Boolean = true,

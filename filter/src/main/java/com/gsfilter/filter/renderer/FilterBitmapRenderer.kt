@@ -23,7 +23,7 @@ object FilterBitmapRenderer {
     fun getBitmap(
         source: Bitmap,
         recipe: FilterRecipe,
-        adjustments: Adjustments = Adjustments(),
+        adjustments: Adjustments = Adjustments.DEFAULT,
         maxWidth: Int? = null,
         maxHeight: Int? = null,
         makeupFeatures: MakeupFeatures? = null,

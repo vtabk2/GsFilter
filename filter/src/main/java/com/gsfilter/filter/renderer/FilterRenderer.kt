@@ -11,7 +11,7 @@ object FilterRenderer {
     fun getBitmap(
         source: Bitmap,
         recipe: FilterRecipe,
-        adjustments: Adjustments = Adjustments(),
+        adjustments: Adjustments = Adjustments.DEFAULT,
         maxWidth: Int? = null,
         maxHeight: Int? = null,
     ): Bitmap {
@@ -32,7 +32,7 @@ object FilterRenderer {
     fun renderBatch(
         sources: List<Bitmap>,
         recipe: FilterRecipe,
-        adjustments: Adjustments = Adjustments(),
+        adjustments: Adjustments = Adjustments.DEFAULT,
         maxWidth: Int? = null,
         maxHeight: Int? = null,
         onProgress: (FilterRenderProgress) -> Unit = {},

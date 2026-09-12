@@ -15,4 +15,8 @@ data class Adjustments(
     val fade: Int = 0,
     val vignette: Int = 0,
     val grain: Int = 0,
-)
+) {
+    companion object {
+        val DEFAULT = Adjustments()
+    }
+}

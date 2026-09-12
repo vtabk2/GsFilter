@@ -1,5 +1,26 @@
 # PLAN
 
+## Task: Reuse neutral filter values
+
+Status: IN PROGRESS
+Created: 2026-09-12
+
+### Requirements
+
+- Avoid allocating neutral recipe and adjustment objects in hot render paths.
+- Preserve value equality and all default behavior.
+
+### Checklist
+
+- [x] Add immutable default instances.
+- [x] Use them for renderer defaults and thumbnail no-op checks.
+- [x] Use them in the ViewModel's hot default-state checks.
+- [ ] Run unit tests, compile, and review the diff.
+
+### Notes
+
+- The singleton values are immutable data-class instances; callers can still construct custom values normally.
+
 ## Task: Reduce CPU pixel-loop indexing
 
 Status: IN PROGRESS

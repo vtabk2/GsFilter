@@ -23,8 +23,12 @@ data class FilterRecipe(
     val redShift: Int = 0,
     val greenShift: Int = 0,
     val blueShift: Int = 0,
-    val adjustments: Adjustments = Adjustments(),
-)
+    val adjustments: Adjustments = Adjustments.DEFAULT,
+) {
+    companion object {
+        val DEFAULT = FilterRecipe()
+    }
+}
 
 enum class FilterEffect(
     val jsonName: String,

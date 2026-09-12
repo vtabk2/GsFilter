@@ -33,7 +33,7 @@ object FilterThumbnailRenderer {
     fun render(
         source: Bitmap,
         recipe: FilterRecipe,
-        adjustments: Adjustments = Adjustments(),
+        adjustments: Adjustments = Adjustments.DEFAULT,
         maxWidth: Int = THUMBNAIL_MAX_SIZE,
         maxHeight: Int = THUMBNAIL_MAX_SIZE,
         isCancelled: () -> Boolean = { false },
@@ -41,7 +41,9 @@ object FilterThumbnailRenderer {
     ): Bitmap {
         throwIfCancelled(isCancelled)
         val thumbnailRecipe = thumbnailRecipe(recipe)
-        if (adjustments == Adjustments() && (thumbnailRecipe == FilterRecipe() || thumbnailRecipe.intensity == 0)) {
+        if (adjustments == Adjustments.DEFAULT &&
+            (thumbnailRecipe == FilterRecipe.DEFAULT || thumbnailRecipe.intensity == 0)
+        ) {
             return copyThumbnail(source, maxWidth, maxHeight)
         }
         return if (shouldUseFullSourceTexture(thumbnailRecipe)) {

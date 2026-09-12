@@ -114,12 +114,12 @@ class FilterViewModel(application: Application) : AndroidViewModel(application) 
     }
 
     fun resetAdjustments() {
-        _state.update { it.copy(adjustments = Adjustments()) }
+        _state.update { it.copy(adjustments = Adjustments.DEFAULT) }
     }
 
     fun setFilterIntensity(value: Int) {
         _state.update { state ->
-            if (state.selectedFilter.recipe == FilterRecipe()) {
+            if (state.selectedFilter.recipe == FilterRecipe.DEFAULT) {
                 return@update state
             }
 
@@ -210,7 +210,7 @@ class FilterViewModel(application: Application) : AndroidViewModel(application) 
         val source = state.sourceBitmap ?: return null
         val recipe = state.selectedRecipe
         return withContext(Dispatchers.Default) {
-            if (recipe == FilterRecipe() && state.adjustments == Adjustments()) {
+            if (recipe == FilterRecipe.DEFAULT && state.adjustments == Adjustments.DEFAULT) {
                 return@withContext FilterBitmapRenderer.getBitmap(
                     source = source,
                     recipe = recipe,
