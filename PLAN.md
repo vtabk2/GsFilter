@@ -1,5 +1,25 @@
 # PLAN
 
+## Task: Skip zero-intensity effect work
+
+Status: IN PROGRESS
+Created: 2026-09-12
+
+### Requirements
+
+- Do not execute Art effect math when effect intensity is zero.
+- Preserve active effect output.
+
+### Checklist
+
+- [x] Guard CPU effect processing by effect and intensity.
+- [x] Calculate source grayscale only for effects that use it.
+- [ ] Run unit tests, compile, and review the diff.
+
+### Notes
+
+- The CPU path now matches the existing GPU early guard for zero intensity.
+
 ## Task: Skip inactive Beauty sub-stages
 
 Status: IN PROGRESS

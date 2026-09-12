@@ -204,7 +204,6 @@ object FilterBitmapRenderer {
         var red = sourceRed
         var green = sourceGreen
         var blue = sourceBlue
-        val sourceGray = gray(sourceRed, sourceGreen, sourceBlue)
         val left: Int
         val right: Int
         val up: Int
@@ -556,69 +555,73 @@ object FilterBitmapRenderer {
             blue = mix(blue, lutOutput[2], params.lutStrength)
         }
 
-        val beforeEffectRed = red
-        val beforeEffectGreen = green
-        val beforeEffectBlue = blue
-        when (params.effect) {
-            FilterEffect.Color -> Unit
-            FilterEffect.Sketch -> {
-                val line = lineFromEdge(edge, params, 0.12f)
-                val sketch = clamp(mix(1f, sourceGray, params.effectTone) - (line * 0.8f), 0f, 1f)
-                red = sketch
-                green = sketch
-                blue = sketch
-            }
-
-            FilterEffect.Ink -> {
-                val line = lineFromEdge(edge, params, 0.08f)
-                val ink = 1f - line
-                red = ink
-                green = ink
-                blue = ink
-            }
-
-            FilterEffect.Pencil -> {
-                val line = lineFromEdge(edge, params, 0.10f)
-                val paper = mix(1f, sourceGray, 0.35f + (params.effectTone * 0.35f))
-                val pencil = clamp(paper - (line * 0.92f), 0f, 1f)
-                red = pencil
-                green = pencil
-                blue = pencil
-            }
-
-            FilterEffect.ColorPencil -> {
-                val line = lineFromEdge(edge, params, 0.11f)
-                red = clamp(mix(1f, sourceRed, 0.35f + (params.effectTone * 0.5f)) - (line * 0.58f), 0f, 1f)
-                green = clamp(mix(1f, sourceGreen, 0.35f + (params.effectTone * 0.5f)) - (line * 0.58f), 0f, 1f)
-                blue = clamp(mix(1f, sourceBlue, 0.35f + (params.effectTone * 0.5f)) - (line * 0.58f), 0f, 1f)
-            }
-
-            FilterEffect.Charcoal -> {
-                val line = lineFromEdge(edge, params, 0.14f)
-                val texture = (random(textureX * 680f, textureY * 920f) - 0.5f) * 0.28f * params.effectStrength
-                val charcoal = clamp(
-                    mix(0.92f, sourceGray, 0.65f + (params.effectTone * 0.2f)) - (line * 0.95f) - texture,
-                    0f,
-                    1f,
-                )
-                red = charcoal
-                green = charcoal
-                blue = charcoal
-            }
-
-            FilterEffect.CrossHatch -> {
-                val dark = 1f - sourceGray
-                var hatch = stripe((textureX + textureY) * 34f) * if (dark >= 0.18f) 1f else 0f
-                hatch += stripe((textureX - textureY) * 38f) * if (dark >= 0.42f) 1f else 0f
-                hatch += stripe(textureX * 46f) * if (dark >= 0.68f) 1f else 0f
-                val line = lineFromEdge(edge, params, 0.10f) * 0.45f
-                val crossHatch = 1f - clamp(((hatch * 0.55f) + line) * params.effectStrength, 0f, 0.95f)
-                red = crossHatch
-                green = crossHatch
-                blue = crossHatch
-            }
-        }
         if (params.effect != FilterEffect.Color && params.intensity != 0f) {
+            val beforeEffectRed = red
+            val beforeEffectGreen = green
+            val beforeEffectBlue = blue
+            when (params.effect) {
+                FilterEffect.Color -> Unit
+                FilterEffect.Sketch -> {
+                    val sourceGray = gray(sourceRed, sourceGreen, sourceBlue)
+                    val line = lineFromEdge(edge, params, 0.12f)
+                    val sketch = clamp(mix(1f, sourceGray, params.effectTone) - (line * 0.8f), 0f, 1f)
+                    red = sketch
+                    green = sketch
+                    blue = sketch
+                }
+
+                FilterEffect.Ink -> {
+                    val line = lineFromEdge(edge, params, 0.08f)
+                    val ink = 1f - line
+                    red = ink
+                    green = ink
+                    blue = ink
+                }
+
+                FilterEffect.Pencil -> {
+                    val sourceGray = gray(sourceRed, sourceGreen, sourceBlue)
+                    val line = lineFromEdge(edge, params, 0.10f)
+                    val paper = mix(1f, sourceGray, 0.35f + (params.effectTone * 0.35f))
+                    val pencil = clamp(paper - (line * 0.92f), 0f, 1f)
+                    red = pencil
+                    green = pencil
+                    blue = pencil
+                }
+
+                FilterEffect.ColorPencil -> {
+                    val line = lineFromEdge(edge, params, 0.11f)
+                    red = clamp(mix(1f, sourceRed, 0.35f + (params.effectTone * 0.5f)) - (line * 0.58f), 0f, 1f)
+                    green = clamp(mix(1f, sourceGreen, 0.35f + (params.effectTone * 0.5f)) - (line * 0.58f), 0f, 1f)
+                    blue = clamp(mix(1f, sourceBlue, 0.35f + (params.effectTone * 0.5f)) - (line * 0.58f), 0f, 1f)
+                }
+
+                FilterEffect.Charcoal -> {
+                    val sourceGray = gray(sourceRed, sourceGreen, sourceBlue)
+                    val line = lineFromEdge(edge, params, 0.14f)
+                    val texture = (random(textureX * 680f, textureY * 920f) - 0.5f) * 0.28f * params.effectStrength
+                    val charcoal = clamp(
+                        mix(0.92f, sourceGray, 0.65f + (params.effectTone * 0.2f)) - (line * 0.95f) - texture,
+                        0f,
+                        1f,
+                    )
+                    red = charcoal
+                    green = charcoal
+                    blue = charcoal
+                }
+
+                FilterEffect.CrossHatch -> {
+                    val sourceGray = gray(sourceRed, sourceGreen, sourceBlue)
+                    val dark = 1f - sourceGray
+                    var hatch = stripe((textureX + textureY) * 34f) * if (dark >= 0.18f) 1f else 0f
+                    hatch += stripe((textureX - textureY) * 38f) * if (dark >= 0.42f) 1f else 0f
+                    hatch += stripe(textureX * 46f) * if (dark >= 0.68f) 1f else 0f
+                    val line = lineFromEdge(edge, params, 0.10f) * 0.45f
+                    val crossHatch = 1f - clamp(((hatch * 0.55f) + line) * params.effectStrength, 0f, 0.95f)
+                    red = crossHatch
+                    green = crossHatch
+                    blue = crossHatch
+                }
+            }
             red = mix(beforeEffectRed, red, params.intensity)
             green = mix(beforeEffectGreen, green, params.intensity)
             blue = mix(beforeEffectBlue, blue, params.intensity)
