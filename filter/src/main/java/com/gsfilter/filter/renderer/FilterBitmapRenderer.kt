@@ -153,6 +153,7 @@ object FilterBitmapRenderer {
                     y,
                     width,
                     height,
+                    index,
                     params,
                     lutOutput,
                     warpCoordinate,
@@ -192,6 +193,7 @@ object FilterBitmapRenderer {
             y,
             width,
             height,
+            y * width + x,
             params,
             FloatArray(3),
             FloatArray(2),
@@ -220,6 +222,7 @@ object FilterBitmapRenderer {
         y: Int,
         width: Int,
         height: Int,
+        pixelIndex: Int,
         params: ShaderFilterParams,
         lutOutput: FloatArray,
         warpCoordinate: FloatArray,
@@ -247,7 +250,6 @@ object FilterBitmapRenderer {
         }
         val sourceX = warpCoordinate[0]
         val sourceY = warpCoordinate[1]
-        val pixelIndex = y * width + x
         val color = if (hasWarp) {
             sampleBilinear(pixels, sourceX, sourceY, width, height)
         } else {

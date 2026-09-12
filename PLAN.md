@@ -1,5 +1,25 @@
 # PLAN
 
+## Task: Reuse the existing pixel index in CPU renders
+
+Status: IN PROGRESS
+Created: 2026-09-12
+
+### Requirements
+
+- Avoid recomputing the linear pixel index inside each rendered pixel.
+- Preserve CPU renderer output and helper behavior.
+
+### Checklist
+
+- [x] Pass the existing render-loop index to the pixel helper.
+- [x] Review the diff and document validation limits.
+
+### Notes
+
+- This removes one integer multiplication and addition per rendered pixel.
+- Gradle validation is blocked because Java/JAVA_HOME is unavailable in this environment.
+
 ## Task: Reuse face rotation trigonometry in CPU renders
 
 Status: IN PROGRESS
