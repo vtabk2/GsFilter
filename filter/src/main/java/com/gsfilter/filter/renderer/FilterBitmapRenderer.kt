@@ -105,6 +105,8 @@ object FilterBitmapRenderer {
                 params.intensity != 0f &&
                 params.effectStrength != 0f)
         val hasFeatureBeauty = hasFeatureBeautyControls(params)
+        val needsFaceMask = needsFaceMask(params)
+        val needsBeautyMask = needsBeautyMask(params)
         val hasBeauty = params.skinSmoothing != 0f ||
             params.skinWhitening != 0f ||
             hasFeatureBeauty
@@ -129,6 +131,8 @@ object FilterBitmapRenderer {
                     needsEdge,
                     hasBeauty,
                     hasFeatureBeauty,
+                    needsFaceMask,
+                    needsBeautyMask,
                 )
             }
         }
@@ -165,6 +169,8 @@ object FilterBitmapRenderer {
                     params.effectStrength != 0f),
             hasBeautyControls(params),
             hasFeatureBeautyControls(params),
+            needsFaceMask(params),
+            needsBeautyMask(params),
         )
     }
 
@@ -186,6 +192,8 @@ object FilterBitmapRenderer {
         needsEdge: Boolean,
         hasBeauty: Boolean,
         hasFeatureBeauty: Boolean,
+        needsFaceMask: Boolean,
+        needsBeautyMask: Boolean,
     ): Int {
         val textureX = (x + 0.5f) / width
         val textureY = (y + 0.5f) / height
@@ -254,24 +262,32 @@ object FilterBitmapRenderer {
         val faceMask: Float
         val beautyMask: Float
         if (hasBeauty) {
-            faceMask = params.makeupFeatures?.let { features ->
-                if (features.faceRadiusX > 0f && features.faceRadiusY > 0f) {
-                    ellipseMask(
-                        textureX,
-                        textureY,
-                        features.faceCenterX,
-                        features.faceCenterY,
-                        features.faceRadiusX,
-                        features.faceRadiusY,
-                        features.rotationRadians,
-                        innerEdge = 0.55f,
-                        outerEdge = 1.05f,
-                    )
-                } else {
-                    1f
-                }
-            } ?: 1f
-            beautyMask = skinMask(sourceRed, sourceGreen, sourceBlue) * faceMask
+            faceMask = if (needsFaceMask) {
+                params.makeupFeatures?.let { features ->
+                    if (features.faceRadiusX > 0f && features.faceRadiusY > 0f) {
+                        ellipseMask(
+                            textureX,
+                            textureY,
+                            features.faceCenterX,
+                            features.faceCenterY,
+                            features.faceRadiusX,
+                            features.faceRadiusY,
+                            features.rotationRadians,
+                            innerEdge = 0.55f,
+                            outerEdge = 1.05f,
+                        )
+                    } else {
+                        1f
+                    }
+                } ?: 1f
+            } else {
+                1f
+            }
+            beautyMask = if (needsBeautyMask) {
+                skinMask(sourceRed, sourceGreen, sourceBlue) * faceMask
+            } else {
+                0f
+            }
             val beautySmoothAmount = if (params.skinSmoothing != 0f) {
                 val localContrast = maxOf(
                     abs(sourceRed - blurredRed),
@@ -786,6 +802,18 @@ object FilterBitmapRenderer {
                 params.eyeliner != 0f ||
                 params.eyebrow != 0f
             )
+
+    private fun needsFaceMask(params: ShaderFilterParams): Boolean =
+        params.skinSmoothing != 0f ||
+            params.skinWhitening != 0f ||
+            params.underEye != 0f ||
+            params.teethWhitening != 0f ||
+            params.eyeShadow != 0f ||
+            params.eyeliner != 0f ||
+            params.eyebrow != 0f
+
+    private fun needsBeautyMask(params: ShaderFilterParams): Boolean =
+        params.skinSmoothing != 0f || params.skinWhitening != 0f || params.underEye != 0f
 
     private fun isNoOp(params: ShaderFilterParams): Boolean =
         (params.effect == FilterEffect.Color || params.intensity == 0f) &&

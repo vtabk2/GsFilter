@@ -1,5 +1,25 @@
 # PLAN
 
+## Task: Avoid unused Beauty masks
+
+Status: IN PROGRESS
+Created: 2026-09-12
+
+### Requirements
+
+- Skip face and skin mask work when the active feature does not use it.
+- Preserve feature output and CPU/GPU alignment.
+
+### Checklist
+
+- [x] Gate CPU face and skin masks by the active controls.
+- [x] Gate GPU face and skin masks by the active controls.
+- [ ] Run unit tests, compile, and review the diff.
+
+### Notes
+
+- Blush/lipstick-only Beauty no longer computes unused face or skin masks.
+
 ## Task: Reuse GPU face mask per pixel
 
 Status: IN PROGRESS

@@ -931,12 +931,26 @@ internal object GlFilterProgram {
             bool beautyEnabled = uSkinSmoothing > 0.0 ||
                 uSkinWhitening > 0.0 ||
                 featureBeautyEnabled;
+            bool needsFaceMask = uSkinSmoothing > 0.0 ||
+                uSkinWhitening > 0.0 ||
+                uUnderEye > 0.0 ||
+                uTeethWhitening > 0.0 ||
+                uEyeShadow > 0.0 ||
+                uEyeliner > 0.0 ||
+                uEyebrow > 0.0;
+            bool needsBeautyMask = uSkinSmoothing > 0.0 ||
+                uSkinWhitening > 0.0 ||
+                uUnderEye > 0.0;
             float beautyMask = 0.0;
             float faceMask = 1.0;
             vec3 rgb = color.rgb;
             if (beautyEnabled) {
-                faceMask = faceAreaMask(vTexCoord);
-                beautyMask = skinMask(color.rgb) * faceMask;
+                if (needsFaceMask) {
+                    faceMask = faceAreaMask(vTexCoord);
+                }
+                if (needsBeautyMask) {
+                    beautyMask = skinMask(color.rgb) * faceMask;
+                }
                 if (uSkinSmoothing > 0.0) {
                     vec3 localContrast = abs(color.rgb - blur);
                     float edgeGuard = 1.0 - smoothstep(
