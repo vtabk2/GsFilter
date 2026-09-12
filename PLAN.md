@@ -1,5 +1,25 @@
 # PLAN
 
+## Task: Use constant-time category priority lookup
+
+Status: IN PROGRESS
+Created: 2026-09-12
+
+### Requirements
+
+- Preserve category priority ordering.
+- Avoid repeated linear scans during sorting.
+
+### Checklist
+
+- [x] Build lazy rank maps from the existing priority lists.
+- [x] Sort using direct id-to-rank lookup.
+- [ ] Run unit tests, compile, and review the diff.
+
+### Notes
+
+- Filters without an explicit priority retain their existing trailing order.
+
 ## Task: Cache filter lookup by id
 
 Status: IN PROGRESS

@@ -1959,9 +1959,9 @@ object FilterCatalog {
 
     fun filtersForCategory(categoryId: String): List<FilterOption> {
         val filters = pack.filtersForCategory(categoryId)
-        val priority = categoryFilterPriority[categoryId] ?: return filters
+        val priority = categoryFilterRanks[categoryId] ?: return filters
         return filters.sortedBy { filter ->
-            priority.indexOf(filter.id).takeIf { it >= 0 } ?: Int.MAX_VALUE
+            priority[filter.id] ?: Int.MAX_VALUE
         }
     }
 
@@ -2042,6 +2042,12 @@ object FilterCatalog {
         CREATIVE to listOf("neon", "cyberpunk", "purple", "dream", "fantasy"),
         ART to listOf("pencil", "soft_sketch", "color_pencil", "fine_line", "ink", "charcoal", "cross_hatch"),
     )
+
+    private val categoryFilterRanks: Map<String, Map<String, Int>> by lazy {
+        categoryFilterPriority.mapValues { (_, filterIds) ->
+            filterIds.withIndex().associate { indexed -> indexed.value to indexed.index }
+        }
+    }
 
     private const val ORIGINAL = "original"
     private const val POPULAR = "popular"
