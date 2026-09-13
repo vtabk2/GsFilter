@@ -60,6 +60,11 @@ class FilterControlsView @JvmOverloads constructor(
     private var filterIntensityRowOriginalIndex = -1
     private var beautySeekRowOriginalIndex = -1
     private var adjustSeekRowOriginalIndex = -1
+    private var pendingFilterIntensity: Int? = null
+    private var filterIntensityDispatchPosted = false
+    private val filterIntensityDispatchRunnable = Runnable {
+        dispatchPendingFilterIntensity()
+    }
 
     var onCloseClick: (() -> Unit)? = null
     var onOriginalClick: (() -> Unit)? = null
@@ -271,12 +276,18 @@ class FilterControlsView @JvmOverloads constructor(
     }
 
     fun setAdjustments(adjustments: Adjustments) {
+        if (this.adjustments == adjustments) {
+            return
+        }
         this.adjustments = adjustments
         adjustContent.setAdjustments(adjustments)
         renderCompactControls()
     }
 
     override fun onDetachedFromWindow() {
+        removeCallbacks(filterIntensityDispatchRunnable)
+        pendingFilterIntensity = null
+        filterIntensityDispatchPosted = false
         super.onDetachedFromWindow()
     }
 
@@ -452,15 +463,36 @@ class FilterControlsView @JvmOverloads constructor(
         filterIntensitySeekBar?.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
             override fun onProgressChanged(view: SeekBar, progress: Int, fromUser: Boolean) {
                 if (fromUser && !isRenderingFilterIntensity) {
-                    onFilterIntensityChanged?.invoke(progress)
+                    dispatchFilterIntensity(progress)
                 }
             }
 
             override fun onStartTrackingTouch(view: SeekBar) = Unit
 
-            override fun onStopTrackingTouch(view: SeekBar) = Unit
+            override fun onStopTrackingTouch(view: SeekBar) {
+                dispatchFilterIntensity(view.progress, flush = true)
+            }
         })
         bindSeekBarTouch(filterIntensitySeekBar)
+    }
+
+    private fun dispatchFilterIntensity(progress: Int, flush: Boolean = false) {
+        pendingFilterIntensity = progress
+        if (flush) {
+            removeCallbacks(filterIntensityDispatchRunnable)
+            filterIntensityDispatchPosted = false
+            dispatchPendingFilterIntensity()
+        } else if (!filterIntensityDispatchPosted) {
+            filterIntensityDispatchPosted = true
+            postOnAnimation(filterIntensityDispatchRunnable)
+        }
+    }
+
+    private fun dispatchPendingFilterIntensity() {
+        filterIntensityDispatchPosted = false
+        val intensity = pendingFilterIntensity ?: return
+        pendingFilterIntensity = null
+        onFilterIntensityChanged?.invoke(intensity)
     }
 
     private fun bindSeekBarTouch(seekBar: SeekBar?) {
@@ -555,21 +587,29 @@ class FilterControlsView @JvmOverloads constructor(
     private fun renderCompactSeekRow(row: View?, seekBar: SeekBar?, isCompact: Boolean) {
         row ?: return
         val rowParams = row.layoutParams as? LinearLayout.LayoutParams ?: return
-        rowParams.width = if (isCompact) 0 else LayoutParams.MATCH_PARENT
-        rowParams.weight = if (isCompact) 1f else 0f
-        rowParams.topMargin = if (isCompact) {
+        val width = if (isCompact) 0 else LayoutParams.MATCH_PARENT
+        val weight = if (isCompact) 1f else 0f
+        val topMargin = if (isCompact) {
             0
         } else {
             resources.getDimensionPixelSize(R.dimen.gs_filter_category_top_spacing)
         }
-        row.layoutParams = rowParams
+        if (rowParams.width != width || rowParams.weight != weight || rowParams.topMargin != topMargin) {
+            rowParams.width = width
+            rowParams.weight = weight
+            rowParams.topMargin = topMargin
+            row.layoutParams = rowParams
+        }
         seekBar?.layoutParams?.let { seekBarParams ->
-            seekBarParams.height = if (isCompact) {
+            val height = if (isCompact) {
                 resources.getDimensionPixelSize(R.dimen.gs_filter_compact_seekbar_touch_height)
             } else {
                 LayoutParams.WRAP_CONTENT
             }
-            seekBar.layoutParams = seekBarParams
+            if (seekBarParams.height != height) {
+                seekBarParams.height = height
+                seekBar.layoutParams = seekBarParams
+            }
         }
     }
 

@@ -1,5 +1,34 @@
 # PLAN
 
+## Task: Throttle seekbar preview updates
+
+Status: DONE
+Created: 2026-09-13
+Completed: 2026-09-13
+
+### Requirements
+
+- Limit filter-intensity callbacks to at most once per UI frame while dragging.
+- Always dispatch the final seekbar value when tracking stops or is canceled.
+- Drop stale preview updates that were already queued for the GL thread.
+- Avoid repeated compact-row layout requests when layout values are unchanged.
+- Preserve existing seekbar and preview behavior.
+
+### Checklist
+
+- [x] Add frame-throttled filter-intensity dispatch.
+- [x] Dispatch the final value on stop/cancel.
+- [x] Skip redundant compact-row layout updates.
+- [x] Drop stale queued preview updates.
+- [x] Run focused validation and review the diff.
+
+### Notes
+
+- Filter intensity updates are limited to one callback per UI frame and the final progress is flushed on tracking stop.
+- Queued GL preview updates will use latest-state-wins generation checks.
+- Compact-row layout params are only reassigned when their values change.
+- `git diff --check` passed; Gradle compilation was blocked because Java/JAVA_HOME is unavailable.
+
 ## Task: Add compact filter controls when the header is hidden
 
 Status: DONE

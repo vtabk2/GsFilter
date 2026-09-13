@@ -32,6 +32,10 @@ class FilterPreviewView @JvmOverloads constructor(
     private var lastAdjustments: Adjustments? = null
     private var lastMakeupFeatures: MakeupFeatures? = null
     private var pendingFilterParams: ShaderFilterParams? = null
+    private var pendingFilterGeneration = 0L
+    private var nextFilterGeneration = 0L
+    @Volatile
+    private var latestFilterGeneration = 0L
     private var isFilterRenderPosted = false
 
     init {
@@ -89,7 +93,10 @@ class FilterPreviewView @JvmOverloads constructor(
         }
 
         lastFilterParams = params
+        val filterGeneration = ++nextFilterGeneration
+        latestFilterGeneration = filterGeneration
         pendingFilterParams = params
+        pendingFilterGeneration = filterGeneration
         if (isFilterRenderPosted) {
             return
         }
@@ -97,12 +104,15 @@ class FilterPreviewView @JvmOverloads constructor(
         isFilterRenderPosted = true
         postOnAnimation {
             val nextParams = pendingFilterParams
+            val nextGeneration = pendingFilterGeneration
             pendingFilterParams = null
             isFilterRenderPosted = false
             if (nextParams != null) {
                 queueEvent {
-                    filterRenderer.setFilterParams(nextParams)
-                    requestRender()
+                    if (nextGeneration == latestFilterGeneration) {
+                        filterRenderer.setFilterParams(nextParams)
+                        requestRender()
+                    }
                 }
             }
         }
