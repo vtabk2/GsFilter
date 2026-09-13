@@ -9,6 +9,7 @@ import android.graphics.Rect
 import android.util.AttributeSet
 import android.view.Gravity
 import android.view.LayoutInflater
+import android.view.MotionEvent
 import android.view.View
 import android.view.ViewGroup
 import android.widget.FrameLayout
@@ -47,17 +48,22 @@ class FilterControlsView @JvmOverloads constructor(
     private var selectedCategory = catalog.defaultCategory
     private var selectedFilter = catalog.defaultFilter
     private var selectedRecipe = selectedFilter.recipe
+    private var adjustments = Adjustments.DEFAULT
     private var thumbnailBitmap: Bitmap? = null
     private var thumbnailKey: String? = null
     private var thumbnailGenerationId = 0
+    private var showHeader = style.showHeader
+    private var isOriginalPreviewPressed = false
     private var isRenderingFilterIntensity = false
     private var isRenderingBeauty = false
 
     var onCloseClick: (() -> Unit)? = null
+    var onOriginalClick: (() -> Unit)? = null
     var onControlTabSelected: ((ControlTab) -> Unit)? = null
     var onCategorySelected: ((FilterCategory) -> Unit)? = null
     var onFilterSelected: ((FilterOption) -> Unit)? = null
     var onFilterIntensityChanged: ((Int) -> Unit)? = null
+    var onOriginalFilterPressedChanged: ((Boolean) -> Unit)? = null
     var onBeautyChanged: ((BeautyControl, Int) -> Unit)? = null
     var onResetBeautyClick: (() -> Unit)? = null
     var onAdjustmentChanged: ((AdjustControl, Int) -> Unit)? = null
@@ -68,6 +74,7 @@ class FilterControlsView @JvmOverloads constructor(
     private val tabFilter: LinearLayout?
     private val tabBeauty: LinearLayout?
     private val tabAdjust: LinearLayout?
+    private val header: View?
     private val buttonClose: RippleImageView?
     private val buttonOriginalFilter: RippleImageView?
     private val categoryContainer: LinearLayout?
@@ -77,6 +84,9 @@ class FilterControlsView @JvmOverloads constructor(
     private val filterIntensitySeekBar: SeekBar?
     private val filterIntensityValue: TextView?
     private val filterIntensityRow: View?
+    private val compactControls: LinearLayout?
+    private val compactReset: RippleImageView?
+    private val compactOriginal: RippleImageView?
     private val filterContent: LinearLayout?
     private val beautyContainer: LinearLayout?
     private val beautyControlsContainer: LinearLayout?
@@ -96,8 +106,11 @@ class FilterControlsView @JvmOverloads constructor(
         if (background == null) setBackgroundResource(R.color.gs_panel_background)
         style.backgroundRes?.let { setBackgroundResource(it) }
         LayoutInflater.from(context).inflate(R.layout.gs_view_filter_controls, this, true)
-        setShowHeader(style.showHeader)
 
+        header = findViewById(R.id.gs_filter_header)
+        header?.isClickable = false
+        header?.isFocusable = false
+        style.headerBackgroundRes?.let { header?.setBackgroundResource(it) }
         tabFilter = findViewById(R.id.gs_filter_tab_filter)
         tabBeauty = findViewById(R.id.gs_filter_tab_beauty)
         tabBeauty?.visibility = if (style.showBeauty) VISIBLE else GONE
@@ -111,6 +124,12 @@ class FilterControlsView @JvmOverloads constructor(
         filterIntensitySeekBar = findViewById(R.id.gs_filter_intensity_seek_bar)
         filterIntensityValue = findViewById(R.id.gs_filter_intensity_value)
         filterIntensityRow = findViewById(R.id.gs_filter_intensity_row)
+        compactControls = findViewById(R.id.gs_filter_compact_controls)
+        compactReset = findViewById(R.id.gs_filter_compact_reset)
+        compactOriginal = findViewById(R.id.gs_filter_compact_original)
+        style.compactBackgroundRes?.let { compactControls?.setBackgroundResource(it) }
+        compactControls?.isClickable = false
+        compactControls?.isFocusable = false
         filterContent = findViewById(R.id.gs_filter_content)
         beautyContainer = findViewById(R.id.gs_beauty_container)
         beautyControlsContainer = findViewById(R.id.gs_beauty_controls_container)
@@ -120,6 +139,7 @@ class FilterControlsView @JvmOverloads constructor(
         beautyResetAll = findViewById(R.id.gs_beauty_reset_all)
         adjustContainer = findViewById(R.id.gs_adjust_container)
         adjustContent = AdjustControlsView(context, attrs)
+        setShowHeader(showHeader)
         adjustContainer?.addView(
             adjustContent,
             FrameLayout.LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT),
@@ -134,7 +154,26 @@ class FilterControlsView @JvmOverloads constructor(
     }
 
     fun setShowHeader(show: Boolean) {
+        if (show && isOriginalPreviewPressed) {
+            releaseOriginalPreview()
+        }
+        showHeader = show
         findViewById<View>(R.id.gs_filter_header)?.visibility = if (show) VISIBLE else GONE
+        renderCategoryRowSpacing()
+        renderCompactControls()
+    }
+
+    private fun renderCategoryRowSpacing() {
+        val categoryRow = findViewById<View>(R.id.gs_filter_category_row) ?: return
+        val params = categoryRow.layoutParams as? LinearLayout.LayoutParams ?: return
+        params.topMargin = resources.getDimensionPixelSize(
+            if (showHeader) {
+                R.dimen.gs_filter_category_top_spacing
+            } else {
+                R.dimen.gs_filter_compact_category_top_spacing
+            },
+        )
+        categoryRow.layoutParams = params
     }
 
     fun setSelectedTab(tab: ControlTab) {
@@ -222,7 +261,9 @@ class FilterControlsView @JvmOverloads constructor(
     }
 
     fun setAdjustments(adjustments: Adjustments) {
+        this.adjustments = adjustments
         adjustContent.setAdjustments(adjustments)
+        renderCompactControls()
     }
 
     override fun onDetachedFromWindow() {
@@ -356,7 +397,38 @@ class FilterControlsView @JvmOverloads constructor(
     private fun bindFilterContent() {
         buttonOriginalFilter?.iconRippleRes = style.noneIconRes
         style.iconPadding?.let { buttonOriginalFilter?.paddingRipple = it }
+        buttonOriginalFilter?.contentDescription = context.getString(R.string.gs_action_show_original)
         buttonOriginalFilter?.setOnClickListener { selectFilter(catalog.defaultFilter) }
+        compactReset?.iconRippleRes = R.drawable.selector_ic_gs_adjust_reset
+        style.iconPadding?.let { compactReset?.paddingRipple = it }
+        compactReset?.contentDescription = context.getString(R.string.gs_action_reset_filter_intensity)
+        compactReset?.setOnClickListener {
+            onFilterIntensityChanged?.invoke(selectedFilter.recipe.intensity)
+        }
+        compactOriginal?.iconRippleRes = R.drawable.ic_gs_filter_original
+        style.iconPadding?.let { compactOriginal?.paddingRipple = it }
+        compactOriginal?.contentDescription = context.getString(R.string.gs_action_preview_original)
+        compactOriginal?.setOnClickListener { onOriginalClick?.invoke() }
+        compactOriginal?.setOnLongClickListener {
+            if (showHeader) {
+                false
+            } else {
+                if (!isOriginalPreviewPressed) {
+                    isOriginalPreviewPressed = true
+                    onOriginalFilterPressedChanged?.invoke(true)
+                }
+                true
+            }
+        }
+        compactOriginal?.setOnTouchListener { _, event ->
+            if (
+                !showHeader &&
+                (event.actionMasked == MotionEvent.ACTION_UP || event.actionMasked == MotionEvent.ACTION_CANCEL)
+            ) {
+                releaseOriginalPreview()
+            }
+            false
+        }
         filterRecyclerView?.layoutManager = LinearLayoutManager(context, RecyclerView.HORIZONTAL, false)
         filterRecyclerView?.adapter = filterAdapter
         filterRecyclerView?.setHasFixedSize(true)
@@ -378,6 +450,71 @@ class FilterControlsView @JvmOverloads constructor(
 
             override fun onStopTrackingTouch(view: SeekBar) = Unit
         })
+        filterIntensitySeekBar?.setOnTouchListener { view, event ->
+            when (event.actionMasked) {
+                MotionEvent.ACTION_DOWN,
+                MotionEvent.ACTION_MOVE -> view.parent?.requestDisallowInterceptTouchEvent(true)
+
+                MotionEvent.ACTION_UP,
+                MotionEvent.ACTION_CANCEL -> view.parent?.requestDisallowInterceptTouchEvent(false)
+            }
+            false
+        }
+    }
+
+    private fun renderCompactControls() {
+        val compact = compactControls ?: return
+        val intensityRow = filterIntensityRow ?: return
+        val canAdjustIntensity = style.showIntensity && selectedFilter.recipe != FilterRecipe.DEFAULT
+        val useCompactControls = !showHeader
+
+        compact.visibility = if (useCompactControls) VISIBLE else GONE
+        compactOriginal?.visibility = if (useCompactControls && hasOriginalPreviewChanges()) {
+            VISIBLE
+        } else {
+            INVISIBLE
+        }
+        if (useCompactControls) {
+            if (intensityRow.parent !== compact) {
+                (intensityRow.parent as? ViewGroup)?.removeView(intensityRow)
+                val originalIndex = compactOriginal?.let { compact.indexOfChild(it) } ?: compact.childCount
+                compact.addView(intensityRow, originalIndex)
+            }
+        } else if (intensityRow.parent !== filterContent) {
+            (intensityRow.parent as? ViewGroup)?.removeView(intensityRow)
+            filterContent?.addView(intensityRow)
+        }
+
+        val rowParams = intensityRow.layoutParams as? LinearLayout.LayoutParams ?: return
+        rowParams.width = if (showHeader) LayoutParams.MATCH_PARENT else 0
+        rowParams.weight = if (showHeader) 0f else 1f
+        rowParams.topMargin = if (showHeader) {
+            resources.getDimensionPixelSize(R.dimen.gs_filter_category_top_spacing)
+        } else {
+            0
+        }
+        intensityRow.layoutParams = rowParams
+        filterIntensitySeekBar?.layoutParams?.let { seekBarParams ->
+            seekBarParams.height = if (showHeader) {
+                LayoutParams.WRAP_CONTENT
+            } else {
+                resources.getDimensionPixelSize(R.dimen.gs_filter_compact_seekbar_touch_height)
+            }
+            filterIntensitySeekBar?.layoutParams = seekBarParams
+        }
+        filterIntensityLabel?.visibility = if (showHeader) VISIBLE else GONE
+        compactReset?.visibility = if (useCompactControls && canAdjustIntensity) VISIBLE else GONE
+    }
+
+    private fun hasOriginalPreviewChanges(): Boolean =
+        selectedRecipe != FilterRecipe.DEFAULT || adjustments != Adjustments.DEFAULT
+
+    private fun releaseOriginalPreview() {
+        if (!isOriginalPreviewPressed) {
+            return
+        }
+        isOriginalPreviewPressed = false
+        onOriginalFilterPressedChanged?.invoke(false)
     }
 
     private fun bindBeautyContent() {
@@ -505,7 +642,14 @@ class FilterControlsView @JvmOverloads constructor(
 
     private fun renderFilterIntensity() {
         val canAdjustIntensity = style.showIntensity && selectedFilter.recipe != FilterRecipe.DEFAULT
-        filterIntensityRow?.visibility = if (canAdjustIntensity) VISIBLE else INVISIBLE
+        filterIntensityRow?.visibility = when {
+            canAdjustIntensity -> VISIBLE
+            else -> INVISIBLE
+        }
+        compactReset?.visibility = if (!showHeader && canAdjustIntensity) VISIBLE else GONE
+        if (!showHeader) {
+            renderCompactControls()
+        }
         if (!canAdjustIntensity) {
             return
         }
@@ -669,6 +813,8 @@ class FilterControlsView @JvmOverloads constructor(
         val selectedCardForegroundRes: Int,
         val labelBackgroundRes: Int,
         val backgroundRes: Int?,
+        val headerBackgroundRes: Int?,
+        val compactBackgroundRes: Int?,
         val labelTextColor: Int,
         val closeIconRes: Int,
         val noneIconRes: Int,
@@ -765,6 +911,16 @@ class FilterControlsView @JvmOverloads constructor(
             ),
             backgroundRes = if (array.hasValue(R.styleable.FilterControlsView_gsFilterBackground)) {
                 array.getResourceId(R.styleable.FilterControlsView_gsFilterBackground, 0)
+            } else {
+                null
+            },
+            headerBackgroundRes = if (array.hasValue(R.styleable.FilterControlsView_gsFilterHeaderBackground)) {
+                array.getResourceId(R.styleable.FilterControlsView_gsFilterHeaderBackground, 0)
+            } else {
+                null
+            },
+            compactBackgroundRes = if (array.hasValue(R.styleable.FilterControlsView_gsFilterCompactBackground)) {
+                array.getResourceId(R.styleable.FilterControlsView_gsFilterCompactBackground, 0)
             } else {
                 null
             },

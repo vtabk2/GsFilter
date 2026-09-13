@@ -8,7 +8,9 @@
         android:layout_height="wrap_content"
         android:baselineAligned="false"
         android:gravity="center_vertical"
-        android:orientation="horizontal">
+        android:orientation="horizontal"
+        android:paddingHorizontal="@dimen/gs_filter_margin"
+        android:paddingVertical="3dp">
 
         <com.core.gscore.view.RippleImageView
             android:layout_width="wrap_content"
@@ -122,10 +124,38 @@
     </LinearLayout>
 
     <LinearLayout
+        android:id="@+id/gs_filter_compact_controls"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/gs_filter_item_spacing"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:paddingHorizontal="@dimen/gs_filter_margin"
+        android:visibility="gone">
+
+        <com.core.gscore.view.RippleImageView
+            android:id="@+id/gs_filter_compact_reset"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_vertical"
+            android:visibility="gone"/>
+
+        <com.core.gscore.view.RippleImageView
+            android:id="@+id/gs_filter_compact_original"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_vertical"
+            android:layout_marginStart="@dimen/gs_filter_margin"
+            android:visibility="gone"/>
+    </LinearLayout>
+
+    <LinearLayout
         android:id="@+id/gs_filter_content"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="vertical">
+        android:layout_marginBottom="@dimen/gs_filter_item_spacing"
+        android:orientation="vertical"
+        android:paddingHorizontal="@dimen/gs_filter_margin">
 
         <LinearLayout
             android:id="@+id/gs_filter_category_row"
@@ -207,7 +237,9 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="@dimen/gs_filter_category_top_spacing"
+        android:layout_marginBottom="@dimen/gs_filter_item_spacing"
         android:orientation="vertical"
+        android:paddingHorizontal="@dimen/gs_filter_margin"
         android:visibility="gone">
 
         <HorizontalScrollView
@@ -266,5 +298,7 @@
         android:id="@+id/gs_adjust_container"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="@dimen/gs_filter_category_top_spacing"/>
+        android:layout_marginTop="@dimen/gs_filter_category_top_spacing"
+        android:layout_marginBottom="@dimen/gs_filter_item_spacing"
+        android:paddingHorizontal="@dimen/gs_filter_margin"/>
 </merge>

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.core.widget.NestedScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
@@ -8,108 +8,114 @@
 
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:padding="@dimen/screen_padding">
+        android:layout_height="match_parent"
+        android:orientation="vertical">
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:baselineAligned="false"
-            android:gravity="center_vertical"
-            android:orientation="horizontal">
+            android:orientation="vertical"
+            android:padding="@dimen/screen_padding">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:baselineAligned="false"
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="@string/app_name"
+                    android:textColor="@color/text_primary"
+                    android:textSize="28sp"
+                    android:textStyle="bold"/>
+
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/section_spacing"
+                android:baselineAligned="false"
+                android:orientation="horizontal">
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="@string/source_preview"
+                        android:textColor="@color/text_secondary"
+                        android:textSize="14sp"/>
+
+                    <ImageView
+                        android:id="@+id/imageOriginal"
+                        android:layout_width="match_parent"
+                        android:layout_height="@dimen/preview_height"
+                        android:layout_marginTop="@dimen/item_spacing"
+                        android:adjustViewBounds="true"
+                        android:background="@color/preview_background"
+                        android:scaleType="fitCenter"/>
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="@dimen/item_spacing"
+                    android:layout_weight="1"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="@string/result_preview"
+                        android:textColor="@color/text_secondary"
+                        android:textSize="14sp"/>
+
+                    <FrameLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="@dimen/preview_height"
+                        android:layout_marginTop="@dimen/item_spacing"
+                        android:background="@color/preview_background">
+
+                        <com.gsfilter.filter.view.FilterPreviewView
+                            android:id="@+id/filterPreview"
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"/>
+
+                        <ProgressBar
+                            android:id="@+id/progressBar"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_gravity="center"/>
+                    </FrameLayout>
+                </LinearLayout>
+            </LinearLayout>
+
+            <Button
+                android:id="@+id/nextImageButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_horizontal"
+                android:layout_marginTop="@dimen/item_spacing"
+                android:enabled="false"
+                android:text="@string/next_image"/>
 
             <TextView
-                android:layout_width="0dp"
+                android:id="@+id/errorText"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:text="@string/app_name"
-                android:textColor="@color/text_primary"
-                android:textSize="28sp"
-                android:textStyle="bold"/>
-
+                android:layout_marginTop="@dimen/item_spacing"
+                android:textColor="@android:color/holo_red_dark"
+                android:visibility="gone"/>
         </LinearLayout>
-
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="@dimen/section_spacing"
-            android:baselineAligned="false"
-            android:orientation="horizontal">
-
-            <LinearLayout
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:orientation="vertical">
-
-                <TextView
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:text="@string/source_preview"
-                    android:textColor="@color/text_secondary"
-                    android:textSize="14sp"/>
-
-                <ImageView
-                    android:id="@+id/imageOriginal"
-                    android:layout_width="match_parent"
-                    android:layout_height="@dimen/preview_height"
-                    android:layout_marginTop="@dimen/item_spacing"
-                    android:adjustViewBounds="true"
-                    android:background="@color/preview_background"
-                    android:scaleType="fitCenter"/>
-            </LinearLayout>
-
-            <LinearLayout
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="@dimen/item_spacing"
-                android:layout_weight="1"
-                android:orientation="vertical">
-
-                <TextView
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:text="@string/result_preview"
-                    android:textColor="@color/text_secondary"
-                    android:textSize="14sp"/>
-
-                <FrameLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="@dimen/preview_height"
-                    android:layout_marginTop="@dimen/item_spacing"
-                    android:background="@color/preview_background">
-
-                    <com.gsfilter.filter.view.FilterPreviewView
-                        android:id="@+id/filterPreview"
-                        android:layout_width="match_parent"
-                        android:layout_height="match_parent"/>
-
-                    <ProgressBar
-                        android:id="@+id/progressBar"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_gravity="center"/>
-                </FrameLayout>
-            </LinearLayout>
-        </LinearLayout>
-
-        <Button
-            android:id="@+id/nextImageButton"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center_horizontal"
-            android:layout_marginTop="@dimen/item_spacing"
-            android:enabled="false"
-            android:text="@string/next_image" />
-
-        <TextView
-            android:id="@+id/errorText"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="@dimen/item_spacing"
-            android:textColor="@android:color/holo_red_dark"
-            android:visibility="gone"/>
 
         <com.gsfilter.filter.view.FilterControlsView
             android:id="@+id/filterControls"
@@ -122,19 +128,21 @@
             app:gsAdjustTextColor="@color/text_primary"
             app:gsAdjustTrackColor="@color/filter_card_border"
             app:gsFilterCloseIcon="@drawable/ic_gs_tick"
+            app:gsFilterCompactBackground="@android:color/transparent"
+            app:gsFilterCompactTabs="true"
+            app:gsFilterHeaderBackground="@android:color/transparent"
             app:gsFilterIntensityProgressColor="@color/filter_selected"
             app:gsFilterIntensityTextColor="@color/text_primary"
             app:gsFilterIntensityTrackColor="@color/filter_card_border"
-            app:gsFilterCompactTabs="true"
             app:gsFilterSelectedTabTextColor="@color/filter_selected"
+            app:gsFilterShowHeader="false"
             app:gsFilterShowPopular="true"
             app:gsFilterShowTabIndicator="true"
-            app:gsFilterTabSpacing="0dp"
             app:gsFilterTabIndicatorColor="@color/filter_selected"
             app:gsFilterTabIndicatorWidthMode="text"
+            app:gsFilterTabSpacing="0dp"
             app:gsFilterTabTextColor="@color/text_primary"
             app:gsFilterTextColor="@color/text_primary"
             app:gsFilterUseTabBackground="false"/>
-
     </LinearLayout>
-</ScrollView>
+</androidx.core.widget.NestedScrollView>

@@ -232,6 +232,7 @@ Wire callback từ host:
 
 ```kotlin
 binding.filterControls.onCloseClick = { finish() }
+binding.filterControls.onOriginalClick = { /* Host xử lý Original */ }
 binding.filterControls.onControlTabSelected = { tab ->
     selectedControlTab = tab
     renderControlTabs()
@@ -239,6 +240,9 @@ binding.filterControls.onControlTabSelected = { tab ->
 binding.filterControls.onCategorySelected = { category -> viewModel.selectCategory(category) }
 binding.filterControls.onFilterSelected = { filter -> viewModel.selectFilter(filter) }
 binding.filterControls.onFilterIntensityChanged = { value -> viewModel.setFilterIntensity(value) }
+binding.filterControls.onOriginalFilterPressedChanged = { pressed ->
+    // Host tự hiển thị Original khi pressed == true và khôi phục khi false.
+}
 binding.filterControls.onAdjustmentChanged = { control, value -> viewModel.setAdjustment(control, value) }
 binding.filterControls.onResetAllAdjustClick = { viewModel.resetAdjustments() }
 ```
@@ -263,6 +267,7 @@ Nếu host không có override intensity theo filter, có thể dùng overload `
 Ghi chú:
 
 - `Original` là action cố định ở đầu, dùng none icon.
+- Khi `gsFilterShowHeader="false"`, hàng compact phía trên filter rail luôn hiển thị; nếu filter có intensity thì gồm Reset và seekbar Intensity. Icon Original compact là nút riêng, chỉ hiện khi Filter/Beauty/Adjust có thay đổi và là `INVISIBLE` khi trạng thái sạch. Hàng category cùng nút None hiện tại vẫn giữ nguyên bên dưới. Reset dùng `onFilterIntensityChanged`, còn icon Original chỉ phát `onOriginalClick` hoặc `onOriginalFilterPressedChanged(true/false)` để host tự xử lý.
 - Đổi category chỉ đổi danh sách filter đang hiển thị.
 - Filter chỉ được áp dụng sau khi người dùng bấm vào từng filter item.
 - Bấm lại category đang hiển thị có thể đưa UI về category chứa filter đang chọn.
@@ -384,9 +389,11 @@ Các XML attributes hiện có:
 | `gsFilterIconPadding`            | Override padding icon close/original nếu cần; bỏ trống thì dùng default của `RippleImageView`                                        |
 | `gsFilterShowTabIndicator`       | Hiển thị indicator dưới tab Filter/Adjust đang chọn                                                                                  |
 | `gsFilterCompactTabs`            | Kéo label/indicator của tab Filter và Adjust gần nhau hơn trong khi vùng bấm vẫn rộng                                                |
-| `gsFilterShowHeader`              | Hiển thị/ẩn toàn bộ header `gs_filter_header`; mặc định `true`                                                                      |
-| `gsFilterBackground`              | Background của toàn bộ `FilterControlsView`; mặc định `@color/gs_panel_background`                                                  |
-| `gsFilterShowBeauty`              | Hiển thị/ẩn tab và nội dung Beauty; mặc định `true`                                                                                   |
+| `gsFilterShowHeader`             | Hiển thị/ẩn toàn bộ header `gs_filter_header`; mặc định `true`                                                                       |
+| `gsFilterBackground`             | Background của toàn bộ `FilterControlsView`; mặc định `@color/gs_panel_background`                                                   |
+| `gsFilterHeaderBackground`       | Background riêng của header; có thể đặt `@android:color/transparent`                                                                 |
+| `gsFilterCompactBackground`      | Background riêng của `gs_filter_compact_controls`; có thể đặt `@android:color/transparent`                                           |
+| `gsFilterShowBeauty`             | Hiển thị/ẩn tab và nội dung Beauty; mặc định `true`                                                                                  |
 | `gsFilterTabSpacing`             | Khoảng cách giữa tab Filter và Adjust khi cần chỉnh gần/xa nhau                                                                      |
 | `gsFilterTabIndicatorColor`      | Màu tab indicator                                                                                                                    |
 | `gsFilterTabIndicatorHeight`     | Chiều cao tab indicator                                                                                                              |

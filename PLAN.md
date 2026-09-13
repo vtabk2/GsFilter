@@ -1,5 +1,61 @@
 # PLAN
 
+## Task: Add compact filter controls when the header is hidden
+
+Status: DONE
+Created: 2026-09-13
+Completed: 2026-09-13
+
+### Requirements
+
+- Move only the existing filter intensity seekbar above the filter rail when `FilterControlsView` hides its header.
+- Keep the category row and Original button in their existing positions.
+- Show Reset on the left of the compact seekbar while keeping Original in the category row.
+- Add a separate compact Original icon that only emits host callbacks.
+- Hide the compact intensity controls when the selected filter has no adjustable intensity.
+- Keep the compact controls container visible whenever the header is hidden.
+- Show the compact Original icon only while Filter, Beauty, or Adjust has changes; keep it `INVISIBLE` when clean.
+- Keep seekbar drag gestures from being intercepted by the scroll parent in compact mode.
+- Give the compact seekbar a full touch target instead of relying on the thin visual track.
+- Do not re-parent the seekbar during its own progress callbacks.
+- Keep compact row height stable when returning to the default/None filter.
+- Use a smaller dedicated top margin for `gs_filter_category_row` when the header is hidden.
+- Allow `gs_filter_compact_controls` to receive an independent background, including transparent.
+- Keep the compact container itself non-clickable so empty transparent areas do not consume touch.
+- Allow the header background to be configured independently and keep the header container non-clickable.
+- Emit only a press-state callback while the Original button is held.
+- Preserve the current header-visible layout and API 24 compatibility.
+
+### Checklist
+
+- [x] Keep compact controls visible for Original/default filters, with Original `INVISIBLE` when clean.
+- [x] Add the separate compact Original icon and callback.
+- [x] Document the callback and compact behavior.
+- [x] Add the independent header background configuration.
+- [x] Review the diff and run focused validation.
+- [x] Keep compact seekbar dragging reliable inside the scrolling host.
+- [x] Keep compact row height stable when the filter has no intensity.
+- [x] Apply the compact category-row top margin only when the header is hidden.
+- [x] Add independent compact-controls background configuration.
+- [x] Keep transparent compact background touch-through where no child control handles the event.
+
+### Notes
+
+- Header-hidden mode reuses the existing intensity row, moving only it into a compact row above the filter rail; the category row and Original button stay in place.
+- `onOriginalFilterPressedChanged` emits `true` after long-press and `false` on release/cancel; the host owns the temporary Original preview.
+- `gsFilterHeaderBackground` configures the header background independently; the header container itself remains non-clickable while tab/button children stay interactive.
+- Compact mode now shows Reset and Intensity while preserving the category row and its None button.
+- The compact container remains visible with header hidden; Reset and intensity hide when the selected filter is Original/default.
+- The compact Original icon is separate from the category None filter action and only emits host callbacks.
+- The compact Original icon is `INVISIBLE` until Filter, Beauty, or Adjust has a non-default change.
+- The intensity seekbar temporarily disallows parent scroll interception while dragging, then restores it on release/cancel.
+- Compact mode gives the seekbar a 56dp touch height; header-visible mode restores `wrap_content`.
+- Compact state updates no longer re-parent the seekbar while its progress callback is running.
+- Compact row height remains stable when the selected filter has no intensity.
+- `gs_filter_category_row` uses 10dp top spacing with the header hidden and the existing 20dp spacing otherwise.
+- `gsFilterCompactBackground` configures the compact row independently; the compact container is non-clickable/focusable so empty transparent areas do not consume touch.
+- XML parsing, focused static assertions, and `git diff --check` passed; Gradle compilation was blocked because Java/JAVA_HOME is unavailable.
+
 ## Task: Add programmatic FilterControlsView visibility and background configuration
 
 Status: IN PROGRESS
