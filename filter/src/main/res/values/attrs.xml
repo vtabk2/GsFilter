@@ -15,6 +15,7 @@
         <attr name="gsFilterCardForeground" format="reference"/>
         <attr name="gsFilterSelectedCardForeground" format="reference"/>
         <attr name="gsFilterLabelBackground" format="reference"/>
+        <attr name="gsFilterBackground" format="reference"/>
         <attr name="gsFilterLabelTextColor" format="color|reference"/>
         <attr name="gsFilterCloseIcon" format="reference"/>
         <attr name="gsFilterNoneIcon" format="reference"/>

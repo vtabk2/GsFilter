@@ -1,5 +1,27 @@
 # PLAN
 
+## Task: Add programmatic FilterControlsView visibility and background configuration
+
+Status: IN PROGRESS
+Created: 2026-09-13
+
+### Requirements
+
+- Allow hosts to configure header visibility without XML attributes.
+- Allow hosts to configure the FilterControlsView root background without XML attributes.
+- Preserve existing XML defaults and API 24 compatibility.
+
+### Checklist
+
+- [x] Add public programmatic header visibility API.
+- [x] Add root background XML attribute and default.
+- [x] Document the configuration APIs.
+- [x] Review the diff and run focused validation.
+
+### Notes
+
+- Gradle validation is blocked by `Unable to establish loopback connection` in the current Windows environment.
+
 ## Task: Add a switch for the Beauty tab
 
 Status: IN PROGRESS

@@ -221,6 +221,13 @@ Trong app mẫu, `FilterViewModel.renderFilteredBitmap(maxWidth, maxHeight, useG
     app:gsFilterTabSpacing="20dp" />
 ```
 
+Nếu tạo view bằng Kotlin, có thể cấu hình tương đương mà không cần XML:
+
+```kotlin
+binding.filterControls.setShowHeader(false)
+binding.filterControls.setBackgroundColor(Color.TRANSPARENT)
+```
+
 Wire callback từ host:
 
 ```kotlin
@@ -378,6 +385,7 @@ Các XML attributes hiện có:
 | `gsFilterShowTabIndicator`       | Hiển thị indicator dưới tab Filter/Adjust đang chọn                                                                                  |
 | `gsFilterCompactTabs`            | Kéo label/indicator của tab Filter và Adjust gần nhau hơn trong khi vùng bấm vẫn rộng                                                |
 | `gsFilterShowHeader`              | Hiển thị/ẩn toàn bộ header `gs_filter_header`; mặc định `true`                                                                      |
+| `gsFilterBackground`              | Background của toàn bộ `FilterControlsView`; mặc định `@color/gs_panel_background`                                                  |
 | `gsFilterShowBeauty`              | Hiển thị/ẩn tab và nội dung Beauty; mặc định `true`                                                                                   |
 | `gsFilterTabSpacing`             | Khoảng cách giữa tab Filter và Adjust khi cần chỉnh gần/xa nhau                                                                      |
 | `gsFilterTabIndicatorColor`      | Màu tab indicator                                                                                                                    |

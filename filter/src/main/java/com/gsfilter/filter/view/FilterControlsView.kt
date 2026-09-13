@@ -93,8 +93,10 @@ class FilterControlsView @JvmOverloads constructor(
 
     init {
         orientation = VERTICAL
+        if (background == null) setBackgroundResource(R.color.gs_panel_background)
+        style.backgroundRes?.let { setBackgroundResource(it) }
         LayoutInflater.from(context).inflate(R.layout.gs_view_filter_controls, this, true)
-        findViewById<View>(R.id.gs_filter_header)?.visibility = if (style.showHeader) VISIBLE else GONE
+        setShowHeader(style.showHeader)
 
         tabFilter = findViewById(R.id.gs_filter_tab_filter)
         tabBeauty = findViewById(R.id.gs_filter_tab_beauty)
@@ -129,6 +131,10 @@ class FilterControlsView @JvmOverloads constructor(
         bindAdjustContent()
         setCatalog(catalog)
         setSelectedTab(ControlTab.Filter)
+    }
+
+    fun setShowHeader(show: Boolean) {
+        findViewById<View>(R.id.gs_filter_header)?.visibility = if (show) VISIBLE else GONE
     }
 
     fun setSelectedTab(tab: ControlTab) {
@@ -499,7 +505,7 @@ class FilterControlsView @JvmOverloads constructor(
 
     private fun renderFilterIntensity() {
         val canAdjustIntensity = style.showIntensity && selectedFilter.recipe != FilterRecipe.DEFAULT
-        filterIntensityRow?.visibility = if (canAdjustIntensity) VISIBLE else GONE
+        filterIntensityRow?.visibility = if (canAdjustIntensity) VISIBLE else INVISIBLE
         if (!canAdjustIntensity) {
             return
         }
@@ -662,6 +668,7 @@ class FilterControlsView @JvmOverloads constructor(
         val cardForegroundRes: Int,
         val selectedCardForegroundRes: Int,
         val labelBackgroundRes: Int,
+        val backgroundRes: Int?,
         val labelTextColor: Int,
         val closeIconRes: Int,
         val noneIconRes: Int,
@@ -756,6 +763,11 @@ class FilterControlsView @JvmOverloads constructor(
                 R.styleable.FilterControlsView_gsFilterLabelBackground,
                 R.drawable.gs_bg_filter_label,
             ),
+            backgroundRes = if (array.hasValue(R.styleable.FilterControlsView_gsFilterBackground)) {
+                array.getResourceId(R.styleable.FilterControlsView_gsFilterBackground, 0)
+            } else {
+                null
+            },
             labelTextColor = array.getColor(
                 R.styleable.FilterControlsView_gsFilterLabelTextColor,
                 Color.WHITE,
