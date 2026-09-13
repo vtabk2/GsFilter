@@ -56,6 +56,10 @@ class FilterControlsView @JvmOverloads constructor(
     private var isOriginalPreviewPressed = false
     private var isRenderingFilterIntensity = false
     private var isRenderingBeauty = false
+    private var selectedTab = ControlTab.Filter
+    private var filterIntensityRowOriginalIndex = -1
+    private var beautySeekRowOriginalIndex = -1
+    private var adjustSeekRowOriginalIndex = -1
 
     var onCloseClick: (() -> Unit)? = null
     var onOriginalClick: (() -> Unit)? = null
@@ -89,6 +93,7 @@ class FilterControlsView @JvmOverloads constructor(
     private val compactOriginal: RippleImageView?
     private val filterContent: LinearLayout?
     private val beautyContainer: LinearLayout?
+    private val beautySeekRow: View?
     private val beautyControlsContainer: LinearLayout?
     private val beautyResetButton: RippleImageView?
     private val beautySeekBar: SeekBar?
@@ -96,6 +101,7 @@ class FilterControlsView @JvmOverloads constructor(
     private val beautyResetAll: TextView?
     private val adjustContainer: FrameLayout?
     private val adjustContent: AdjustControlsView
+    private val adjustSeekRow: View?
     private val beautyLabels = mutableMapOf<BeautyControl, TextView>()
     private val beautyIcons = mutableMapOf<BeautyControl, ImageView>()
     private val beautyDots = mutableMapOf<BeautyControl, View>()
@@ -132,6 +138,7 @@ class FilterControlsView @JvmOverloads constructor(
         compactControls?.isFocusable = false
         filterContent = findViewById(R.id.gs_filter_content)
         beautyContainer = findViewById(R.id.gs_beauty_container)
+        beautySeekRow = findViewById(R.id.gs_beauty_seek_row)
         beautyControlsContainer = findViewById(R.id.gs_beauty_controls_container)
         beautyResetButton = findViewById(R.id.gs_beauty_reset)
         beautySeekBar = findViewById(R.id.gs_beauty_seek_bar)
@@ -139,11 +146,12 @@ class FilterControlsView @JvmOverloads constructor(
         beautyResetAll = findViewById(R.id.gs_beauty_reset_all)
         adjustContainer = findViewById(R.id.gs_adjust_container)
         adjustContent = AdjustControlsView(context, attrs)
-        setShowHeader(showHeader)
         adjustContainer?.addView(
             adjustContent,
             FrameLayout.LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT),
         )
+        adjustSeekRow = adjustContent.seekRow
+        setShowHeader(showHeader)
 
         bindHeader()
         bindFilterContent()
@@ -178,12 +186,14 @@ class FilterControlsView @JvmOverloads constructor(
 
     fun setSelectedTab(tab: ControlTab) {
         val effectiveTab = if (!style.showBeauty && tab == ControlTab.Beauty) ControlTab.Filter else tab
+        selectedTab = effectiveTab
         renderTab(tabFilter, effectiveTab == ControlTab.Filter)
         renderTab(tabBeauty, effectiveTab == ControlTab.Beauty)
         renderTab(tabAdjust, effectiveTab == ControlTab.Adjust)
         filterContent?.visibility = if (effectiveTab == ControlTab.Filter) VISIBLE else GONE
         beautyContainer?.visibility = if (effectiveTab == ControlTab.Beauty) VISIBLE else GONE
         adjustContainer?.visibility = if (effectiveTab == ControlTab.Adjust) VISIBLE else GONE
+        renderCompactControls()
     }
 
     fun setCatalog(catalog: FilterPack) {
@@ -450,7 +460,11 @@ class FilterControlsView @JvmOverloads constructor(
 
             override fun onStopTrackingTouch(view: SeekBar) = Unit
         })
-        filterIntensitySeekBar?.setOnTouchListener { view, event ->
+        bindSeekBarTouch(filterIntensitySeekBar)
+    }
+
+    private fun bindSeekBarTouch(seekBar: SeekBar?) {
+        seekBar?.setOnTouchListener { view, event ->
             when (event.actionMasked) {
                 MotionEvent.ACTION_DOWN,
                 MotionEvent.ACTION_MOVE -> view.parent?.requestDisallowInterceptTouchEvent(true)
@@ -464,9 +478,17 @@ class FilterControlsView @JvmOverloads constructor(
 
     private fun renderCompactControls() {
         val compact = compactControls ?: return
-        val intensityRow = filterIntensityRow ?: return
         val canAdjustIntensity = style.showIntensity && selectedFilter.recipe != FilterRecipe.DEFAULT
         val useCompactControls = !showHeader
+        val activeRow = if (useCompactControls) {
+            when (selectedTab) {
+                ControlTab.Filter -> filterIntensityRow
+                ControlTab.Beauty -> beautySeekRow
+                ControlTab.Adjust -> adjustSeekRow
+            }
+        } else {
+            null
+        }
 
         compact.visibility = if (useCompactControls) VISIBLE else GONE
         compactOriginal?.visibility = if (useCompactControls && hasOriginalPreviewChanges()) {
@@ -474,36 +496,81 @@ class FilterControlsView @JvmOverloads constructor(
         } else {
             INVISIBLE
         }
-        if (useCompactControls) {
-            if (intensityRow.parent !== compact) {
-                (intensityRow.parent as? ViewGroup)?.removeView(intensityRow)
-                val originalIndex = compactOriginal?.let { compact.indexOfChild(it) } ?: compact.childCount
-                compact.addView(intensityRow, originalIndex)
-            }
-        } else if (intensityRow.parent !== filterContent) {
-            (intensityRow.parent as? ViewGroup)?.removeView(intensityRow)
-            filterContent?.addView(intensityRow)
-        }
 
-        val rowParams = intensityRow.layoutParams as? LinearLayout.LayoutParams ?: return
-        rowParams.width = if (showHeader) LayoutParams.MATCH_PARENT else 0
-        rowParams.weight = if (showHeader) 0f else 1f
-        rowParams.topMargin = if (showHeader) {
-            resources.getDimensionPixelSize(R.dimen.gs_filter_category_top_spacing)
-        } else {
-            0
+        filterIntensityRowOriginalIndex = moveSeekRow(
+            row = filterIntensityRow,
+            originalParent = filterContent,
+            originalIndex = filterIntensityRowOriginalIndex,
+            compactParent = compact,
+            shouldBeCompact = activeRow === filterIntensityRow,
+        )
+        beautySeekRowOriginalIndex = moveSeekRow(
+            row = beautySeekRow,
+            originalParent = beautyContainer,
+            originalIndex = beautySeekRowOriginalIndex,
+            compactParent = compact,
+            shouldBeCompact = activeRow === beautySeekRow,
+        )
+        adjustSeekRowOriginalIndex = moveSeekRow(
+            row = adjustSeekRow,
+            originalParent = adjustContent,
+            originalIndex = adjustSeekRowOriginalIndex,
+            compactParent = compact,
+            shouldBeCompact = activeRow === adjustSeekRow,
+        )
+
+        renderCompactSeekRow(filterIntensityRow, filterIntensitySeekBar, activeRow === filterIntensityRow)
+        renderCompactSeekRow(beautySeekRow, beautySeekBar, activeRow === beautySeekRow)
+        renderCompactSeekRow(adjustSeekRow, adjustContent.seekBarView, activeRow === adjustSeekRow)
+        filterIntensityLabel?.visibility = if (activeRow === filterIntensityRow) GONE else VISIBLE
+        compactReset?.visibility = if (activeRow === filterIntensityRow && canAdjustIntensity) VISIBLE else GONE
+    }
+
+    private fun moveSeekRow(
+        row: View?,
+        originalParent: ViewGroup?,
+        originalIndex: Int,
+        compactParent: ViewGroup,
+        shouldBeCompact: Boolean,
+    ): Int {
+        if (row == null || originalParent == null) {
+            return originalIndex
         }
-        intensityRow.layoutParams = rowParams
-        filterIntensitySeekBar?.layoutParams?.let { seekBarParams ->
-            seekBarParams.height = if (showHeader) {
-                LayoutParams.WRAP_CONTENT
-            } else {
-                resources.getDimensionPixelSize(R.dimen.gs_filter_compact_seekbar_touch_height)
+        if (shouldBeCompact) {
+            if (row.parent !== compactParent) {
+                val savedIndex = if (originalIndex >= 0) originalIndex else originalParent.indexOfChild(row)
+                (row.parent as? ViewGroup)?.removeView(row)
+                val originalButtonIndex = compactOriginal?.let { compactParent.indexOfChild(it) }
+                    ?: compactParent.childCount
+                compactParent.addView(row, originalButtonIndex)
+                return if (originalIndex >= 0) originalIndex else savedIndex
             }
-            filterIntensitySeekBar?.layoutParams = seekBarParams
+        } else if (row.parent !== originalParent) {
+            (row.parent as? ViewGroup)?.removeView(row)
+            originalParent.addView(row, originalIndex.coerceIn(0, originalParent.childCount))
         }
-        filterIntensityLabel?.visibility = if (showHeader) VISIBLE else GONE
-        compactReset?.visibility = if (useCompactControls && canAdjustIntensity) VISIBLE else GONE
+        return originalIndex
+    }
+
+    private fun renderCompactSeekRow(row: View?, seekBar: SeekBar?, isCompact: Boolean) {
+        row ?: return
+        val rowParams = row.layoutParams as? LinearLayout.LayoutParams ?: return
+        rowParams.width = if (isCompact) 0 else LayoutParams.MATCH_PARENT
+        rowParams.weight = if (isCompact) 1f else 0f
+        rowParams.topMargin = if (isCompact) {
+            0
+        } else {
+            resources.getDimensionPixelSize(R.dimen.gs_filter_category_top_spacing)
+        }
+        row.layoutParams = rowParams
+        seekBar?.layoutParams?.let { seekBarParams ->
+            seekBarParams.height = if (isCompact) {
+                resources.getDimensionPixelSize(R.dimen.gs_filter_compact_seekbar_touch_height)
+            } else {
+                LayoutParams.WRAP_CONTENT
+            }
+            seekBar.layoutParams = seekBarParams
+        }
     }
 
     private fun hasOriginalPreviewChanges(): Boolean =
@@ -546,6 +613,7 @@ class FilterControlsView @JvmOverloads constructor(
 
             override fun onStopTrackingTouch(view: SeekBar) = Unit
         })
+        bindSeekBarTouch(beautySeekBar)
         beautyValueText?.setTextColor(style.intensityTextColor)
         beautyResetAll?.text = context.getString(R.string.gs_action_reset_beauty)
         beautyResetAll?.setTextColor(style.intensityTextColor)
@@ -579,6 +647,7 @@ class FilterControlsView @JvmOverloads constructor(
     }
 
     private fun bindAdjustContent() {
+        bindSeekBarTouch(adjustContent.seekBarView)
         adjustContent.onAdjustmentChanged = { control, value ->
             onAdjustmentChanged?.invoke(control, value)
         }

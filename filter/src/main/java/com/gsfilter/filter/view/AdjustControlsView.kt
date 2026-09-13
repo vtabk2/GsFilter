@@ -25,6 +25,9 @@ internal class AdjustControlsView @JvmOverloads constructor(
     private val resetButton: RippleImageView?
     private val seekBar: SeekBar?
     private val valueText: TextView?
+    internal val seekRow: View?
+    internal val seekBarView: SeekBar?
+        get() = seekBar
     private val controlsContainer: LinearLayout?
     private val resetAll: TextView?
     private val labels = mutableMapOf<AdjustControl, TextView>()
@@ -43,6 +46,7 @@ internal class AdjustControlsView @JvmOverloads constructor(
         resetButton = findViewById(R.id.gs_adjust_reset)
         seekBar = findViewById(R.id.gs_adjust_seek_bar)
         valueText = findViewById(R.id.gs_adjust_value)
+        seekRow = findViewById(R.id.gs_adjust_seek_row)
         controlsContainer = findViewById(R.id.gs_adjust_controls_container)
         resetAll = findViewById(R.id.gs_adjust_reset_all)
         bindSeekRow()

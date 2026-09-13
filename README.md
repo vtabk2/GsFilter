@@ -267,7 +267,7 @@ Nếu host không có override intensity theo filter, có thể dùng overload `
 Ghi chú:
 
 - `Original` là action cố định ở đầu, dùng none icon.
-- Khi `gsFilterShowHeader="false"`, hàng compact phía trên filter rail luôn hiển thị; nếu filter có intensity thì gồm Reset và seekbar Intensity. Icon Original compact là nút riêng, chỉ hiện khi Filter/Beauty/Adjust có thay đổi và là `INVISIBLE` khi trạng thái sạch. Hàng category cùng nút None hiện tại vẫn giữ nguyên bên dưới. Reset dùng `onFilterIntensityChanged`, còn icon Original chỉ phát `onOriginalClick` hoặc `onOriginalFilterPressedChanged(true/false)` để host tự xử lý.
+- Khi `gsFilterShowHeader="false"`, hàng compact phía trên nội dung luôn hiển thị; seekbar của tab đang chọn (Filter/Beauty/Adjust) được đưa vào cùng hàng để thống nhất UI. Icon Original compact là nút riêng, chỉ hiện khi Filter/Beauty/Adjust có thay đổi và là `INVISIBLE` khi trạng thái sạch. Hàng category cùng nút None hiện tại vẫn giữ nguyên bên dưới. Reset dùng `onFilterIntensityChanged`, còn icon Original chỉ phát `onOriginalClick` hoặc `onOriginalFilterPressedChanged(true/false)` để host tự xử lý.
 - Đổi category chỉ đổi danh sách filter đang hiển thị.
 - Filter chỉ được áp dụng sau khi người dùng bấm vào từng filter item.
 - Bấm lại category đang hiển thị có thể đưa UI về category chứa filter đang chọn.

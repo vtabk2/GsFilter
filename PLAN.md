@@ -22,6 +22,7 @@ Completed: 2026-09-13
 - Use a smaller dedicated top margin for `gs_filter_category_row` when the header is hidden.
 - Allow `gs_filter_compact_controls` to receive an independent background, including transparent.
 - Keep the compact container itself non-clickable so empty transparent areas do not consume touch.
+- Reuse compact placement for the active Filter, Beauty, or Adjust seekbar.
 - Allow the header background to be configured independently and keep the header container non-clickable.
 - Emit only a press-state callback while the Original button is held.
 - Preserve the current header-visible layout and API 24 compatibility.
@@ -38,6 +39,7 @@ Completed: 2026-09-13
 - [x] Apply the compact category-row top margin only when the header is hidden.
 - [x] Add independent compact-controls background configuration.
 - [x] Keep transparent compact background touch-through where no child control handles the event.
+- [x] Move the active Beauty/Adjust seek row into compact mode consistently with Filter.
 
 ### Notes
 
@@ -54,6 +56,7 @@ Completed: 2026-09-13
 - Compact row height remains stable when the selected filter has no intensity.
 - `gs_filter_category_row` uses 10dp top spacing with the header hidden and the existing 20dp spacing otherwise.
 - `gsFilterCompactBackground` configures the compact row independently; the compact container is non-clickable/focusable so empty transparent areas do not consume touch.
+- Header-hidden compact mode now moves the active Filter, Beauty, or Adjust seek row into the same shared control row and restores each row to its original parent when needed.
 - XML parsing, focused static assertions, and `git diff --check` passed; Gradle compilation was blocked because Java/JAVA_HOME is unavailable.
 
 ## Task: Add programmatic FilterControlsView visibility and background configuration
