@@ -267,12 +267,12 @@ Nếu host không có override intensity theo filter, có thể dùng overload `
 Ghi chú:
 
 - `Original` là action cố định ở đầu, dùng none icon.
-- Khi `gsFilterShowHeader="false"`, hàng compact phía trên nội dung luôn hiển thị; seekbar của tab đang chọn (Filter/Beauty/Adjust) được đưa vào cùng hàng để thống nhất UI. Icon Original compact là nút riêng, chỉ hiện khi Filter/Beauty/Adjust có thay đổi và là `INVISIBLE` khi trạng thái sạch. Hàng category cùng nút None hiện tại vẫn giữ nguyên bên dưới. Reset dùng `onFilterIntensityChanged`, còn icon Original chỉ phát `onOriginalClick` hoặc `onOriginalFilterPressedChanged(true/false)` để host tự xử lý.
+- Khi `gsFilterShowHeader="false"`, hàng compact phía trên nội dung luôn hiển thị; toàn bộ seek row của tab đang chọn (Filter/Beauty/Adjust), gồm reset từng control, seekbar và value, được đưa lên hàng này để thống nhất UI. Chỉ nút `Reset All` và danh sách control giữ ở bên dưới; Filter vẫn giữ category cùng nút None bên dưới. Icon Original compact là nút riêng, chỉ hiện khi Filter/Beauty/Adjust có thay đổi và là `INVISIBLE` khi trạng thái sạch. Reset Filter dùng `onFilterIntensityChanged`, còn icon Original chỉ phát `onOriginalClick` hoặc `onOriginalFilterPressedChanged(true/false)` để host tự xử lý.
 - Đổi category chỉ đổi danh sách filter đang hiển thị.
 - Filter chỉ được áp dụng sau khi người dùng bấm vào từng filter item.
 - Bấm lại category đang hiển thị có thể đưa UI về category chứa filter đang chọn.
 - Tab Adjust được render trong cùng `FilterControlsView`; host nhận callback adjust và gửi `Adjustments` hiện tại lại bằng `setAdjustments()`.
-- Trong tab Adjust, hàng icon control nằm trên seekbar/value hiện tại; nút reset control và Reset All dùng trạng thái disabled khi không có gì để reset.
+- Trong tab Adjust, hàng icon control nằm trên seekbar/value hiện tại; khi header ẩn, seekbar row (gồm reset control và value) chuyển lên compact row, còn Reset All vẫn ở dưới danh sách control. Các nút reset dùng trạng thái disabled khi không có gì để reset.
 - `gsFilterCompactTabs` kéo label/indicator của tab Filter và Adjust gần nhau hơn; `gsFilterTabSpacing` chỉnh khoảng cách giữa hai tab.
 - `gsFilterCloseIcon` đổi icon của `gs_filter_close_button`; app mẫu đang dùng `ic_gs_tick`.
 - `gsAdjustResetIcon` mặc định dùng selector có disabled/pressed state.
@@ -296,6 +296,8 @@ Các control hiện có:
 - `Eye Enlargement`: phóng to mắt bằng warp theo vùng mắt và góc nghiêng.
 
 Beauty state được giữ trong `FilterRecipe`, render bằng GPU và có CPU fallback. Nút `Reset Beauty` đưa control đang chọn về giá trị của filter hiện tại; `Reset All Beauty` đưa toàn bộ Beauty về giá trị mặc định của filter. Khi đang ở `Original`, các giá trị mặc định đều là `0`.
+
+Khi `gsFilterShowHeader="false"`, seekbar row của Beauty (reset control, seekbar và value) được hiển thị trong `gs_filter_compact_controls`; danh sách control và `Reset All Beauty` vẫn nằm bên dưới.
 
 Host app nhận thay đổi Beauty qua callback:
 
