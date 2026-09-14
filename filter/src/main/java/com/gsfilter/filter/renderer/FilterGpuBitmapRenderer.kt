@@ -18,6 +18,7 @@ import com.gsfilter.filter.gl.GlLutTexture
 import java.lang.ref.WeakReference
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
+import java.nio.IntBuffer
 import java.util.concurrent.CancellationException
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.locks.ReentrantLock
@@ -249,10 +250,12 @@ object FilterGpuBitmapRenderer {
         val pixelCount = width * height
         readbackBuffers.ensure(pixelCount)
         val buffer = requireNotNull(readbackBuffers.buffer)
+        val pixelBuffer = requireNotNull(readbackBuffers.pixelBuffer)
         val pixels = readbackBuffers.pixels
         buffer.clear()
         GLES20.glReadPixels(0, 0, width, height, GLES20.GL_RGBA, GLES20.GL_UNSIGNED_BYTE, buffer)
-        buffer.asIntBuffer().get(pixels, 0, pixelCount)
+        pixelBuffer.clear()
+        pixelBuffer.get(pixels, 0, pixelCount)
         var topRow = 0
         var bottomRow = (height - 1) * width
         repeat(height / 2) {
@@ -277,12 +280,14 @@ object FilterGpuBitmapRenderer {
 
     private class ReadbackBuffers {
         var buffer: ByteBuffer? = null
+        var pixelBuffer: IntBuffer? = null
         var pixels = IntArray(0)
 
         fun ensure(pixelCount: Int) {
             val byteCount = pixelCount * BYTES_PER_PIXEL
             if ((buffer?.capacity() ?: 0) < byteCount) {
                 buffer = ByteBuffer.allocateDirect(byteCount).order(ByteOrder.BIG_ENDIAN)
+                pixelBuffer = buffer?.asIntBuffer()
             }
             if (pixels.size < pixelCount) {
                 pixels = IntArray(pixelCount)
@@ -292,6 +297,7 @@ object FilterGpuBitmapRenderer {
         fun trim() {
             if (pixels.size > MAX_CACHED_READBACK_PIXELS) {
                 buffer = null
+                pixelBuffer = null
                 pixels = IntArray(0)
             }
         }

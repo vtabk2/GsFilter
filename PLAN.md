@@ -1,5 +1,27 @@
 # PLAN
 
+## Task: Reuse GPU readback buffer view
+
+Status: DONE
+Created: 2026-09-14
+Completed: 2026-09-14
+
+### Requirements
+
+- Reuse the `IntBuffer` view used to read GPU pixels.
+- Preserve readback bytes, channel conversion, and output bitmap behavior.
+- Change only the filter module source.
+
+### Checklist
+
+- [x] Cache and clear the readback view with its backing buffer.
+- [x] Run diff and static-reference checks and review the diff.
+
+### Notes
+
+- `IntBuffer` is now created only when the backing `ByteBuffer` grows.
+- Gradle compilation was attempted but is unavailable in this environment because no JDK/java executable is installed.
+
 ## Task: Throttle seekbar preview updates
 
 Status: DONE
