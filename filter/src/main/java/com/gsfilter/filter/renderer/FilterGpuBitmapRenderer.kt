@@ -122,7 +122,7 @@ object FilterGpuBitmapRenderer {
         val width = if (scaleSource) renderSource.width else outputSize.width
         val height = if (scaleSource) renderSource.height else outputSize.height
         val session = sessionFor(width, height)
-        val paramsChanged = session.lastParams != params
+        val paramsChanged = session.lastParams !== params && session.lastParams != params
         val texelSizeChanged =
             session.lastRenderWidth != width ||
                 session.lastRenderHeight != height ||

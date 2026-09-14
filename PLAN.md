@@ -1,5 +1,27 @@
 # PLAN
 
+## Task: Fast-path identical GPU shader params
+
+Status: DONE
+Created: 2026-09-14
+Completed: 2026-09-14
+
+### Requirements
+
+- Avoid structural `ShaderFilterParams.equals()` when the same instance is reused.
+- Preserve structural equality behavior for distinct but equal params.
+- Change only the `filter` module source.
+
+### Checklist
+
+- [x] Add the identity fast-path in the offscreen render session.
+- [x] Run diff/static checks and review the diff.
+
+### Notes
+
+- Reused batch params now skip structural equality checks; distinct equal params still use `equals()`.
+- Gradle validation was attempted but is unavailable in this environment because no JDK/java executable is installed.
+
 ## Task: Skip neutral sharpen arithmetic in the GPU shader
 
 Status: DONE
