@@ -1,5 +1,28 @@
 # PLAN
 
+## Task: Skip unchanged adjustment control rendering
+
+Status: DONE
+Created: 2026-09-14
+Completed: 2026-09-14
+
+### Requirements
+
+- Avoid re-rendering unchanged adjustment control labels, icons, and dots.
+- Update both the previously selected and newly selected controls.
+- Preserve initial rendering and adjustment state behavior.
+- Change only the `filter` module source.
+
+### Checklist
+
+- [x] Track the last rendered adjustments and selected control.
+- [x] Update only changed adjustment controls.
+- [x] Run focused checks and review the diff.
+
+### Notes
+
+- `git diff --check` passed; Gradle verification was attempted but is unavailable because no JDK is configured.
+
 ## Task: Remove repeated beauty seekbar max assignment
 
 Status: DONE

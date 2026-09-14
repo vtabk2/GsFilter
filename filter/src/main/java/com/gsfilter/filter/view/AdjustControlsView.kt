@@ -35,6 +35,8 @@ internal class AdjustControlsView @JvmOverloads constructor(
     private val dots = mutableMapOf<AdjustControl, View>()
     private var selectedControl = AdjustControl.Brightness
     private var adjustments = Adjustments.DEFAULT
+    private var renderedAdjustments: Adjustments? = null
+    private var renderedSelectedControl: AdjustControl? = null
     private var isRendering = false
 
     var onAdjustmentChanged: ((AdjustControl, Int) -> Unit)? = null
@@ -138,16 +140,28 @@ internal class AdjustControlsView @JvmOverloads constructor(
         valueText?.text = activeValue.toString()
 
         var hasChangedValue = false
+        val previousAdjustments = renderedAdjustments
+        val previousSelectedControl = renderedSelectedControl
         AdjustControl.entries.forEach { control ->
-            val isSelected = control == selectedControl
             val hasChanged = control.valueIn(adjustments) != control.valueIn(defaults)
             hasChangedValue = hasChangedValue || hasChanged
+            val valueChanged = previousAdjustments == null ||
+                control.valueIn(previousAdjustments) != control.valueIn(adjustments)
+            val selectionChanged = previousSelectedControl == null ||
+                control == previousSelectedControl ||
+                control == selectedControl
+            if (!valueChanged && !selectionChanged) {
+                return@forEach
+            }
+            val isSelected = control == selectedControl
             val textColor = if (isSelected) style.selectedColor else style.secondaryTextColor
             dots[control]?.visibility = if (hasChanged) VISIBLE else INVISIBLE
             icons[control]?.setColorFilter(textColor)
             labels[control]?.setTextColor(textColor)
         }
         resetAll?.isEnabled = hasChangedValue
+        renderedAdjustments = adjustments
+        renderedSelectedControl = selectedControl
         isRendering = false
     }
 
