@@ -1,5 +1,37 @@
 # PLAN
 
+## Task: Separate compact seekbar and filter content backgrounds
+
+Status: IN PROGRESS
+Created: 2026-09-14
+
+### Requirements
+
+- Keep the compact seekbar row transparent.
+- Keep the category and thumbnail filter group on the panel background.
+- Preserve the existing default behavior for library consumers.
+
+### Checklist
+
+- [x] Add a configurable filter-content background.
+- [x] Configure the demo app with a transparent root and colored filter content.
+- [x] Run focused checks and review the diff.
+
+## Task: Make the demo filter panel background transparent
+
+Status: IN PROGRESS
+Created: 2026-09-14
+
+### Requirements
+
+- Keep the filter panel background transparent in the demo app.
+- Preserve the existing filter layout and behavior.
+
+### Checklist
+
+- [x] Set the app's `FilterControlsView` background to transparent.
+- [x] Run focused checks and review the diff.
+
 ## Task: Add independent filter close-button visibility
 
 Status: IN PROGRESS

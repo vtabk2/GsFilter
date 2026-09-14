@@ -142,6 +142,7 @@ class FilterControlsView @JvmOverloads constructor(
         compactControls?.isClickable = false
         compactControls?.isFocusable = false
         filterContent = findViewById(R.id.gs_filter_content)
+        style.contentBackgroundRes?.let { filterContent?.setBackgroundResource(it) }
         beautyContainer = findViewById(R.id.gs_beauty_container)
         beautySeekRow = findViewById(R.id.gs_beauty_seek_row)
         beautyControlsContainer = findViewById(R.id.gs_beauty_controls_container)
@@ -926,6 +927,7 @@ class FilterControlsView @JvmOverloads constructor(
         val selectedCardForegroundRes: Int,
         val labelBackgroundRes: Int,
         val backgroundRes: Int?,
+        val contentBackgroundRes: Int?,
         val headerBackgroundRes: Int?,
         val compactBackgroundRes: Int?,
         val labelTextColor: Int,
@@ -1025,6 +1027,11 @@ class FilterControlsView @JvmOverloads constructor(
             ),
             backgroundRes = if (array.hasValue(R.styleable.FilterControlsView_gsFilterBackground)) {
                 array.getResourceId(R.styleable.FilterControlsView_gsFilterBackground, 0)
+            } else {
+                null
+            },
+            contentBackgroundRes = if (array.hasValue(R.styleable.FilterControlsView_gsFilterContentBackground)) {
+                array.getResourceId(R.styleable.FilterControlsView_gsFilterContentBackground, 0)
             } else {
                 null
             },
