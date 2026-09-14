@@ -1,5 +1,29 @@
 # PLAN
 
+## Task: Add realtime camera example in the app
+
+Status: IN PROGRESS
+Created: 2026-09-14
+
+### Requirements
+
+- Add one button to toggle between the sample source and a realtime camera source.
+- Feed CameraX RGBA analysis frames into the existing bitmap-based filter preview.
+- Keep frame processing off the main thread and drop stale frames when UI delivery is pending.
+- Handle runtime camera permission and restore the sample source when camera mode is disabled.
+
+### Checklist
+
+- [x] Add camera permission and camera toggle UI.
+- [ ] Connect realtime RGBA frames to the existing filter preview and save path.
+- [ ] Add the camera frame pipeline.
+- [x] Run focused checks and review the diff.
+
+### Notes
+
+- Step 1 is complete: permission request and UI button are wired; realtime frame processing is intentionally deferred.
+- `git diff --check` passed; Gradle compilation was attempted but is unavailable because no JDK is configured.
+
 ## Task: Short-circuit empty render batches
 
 Status: DONE

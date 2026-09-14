@@ -1,11 +1,15 @@
 package com.gsfilter
 
+import android.Manifest
+import android.content.pm.PackageManager
 import android.graphics.Bitmap
 import android.os.Bundle
 import android.util.Log
 import android.widget.Toast
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.ComponentActivity
 import androidx.activity.viewModels
+import androidx.core.content.ContextCompat
 import androidx.core.view.isVisible
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
@@ -26,6 +30,15 @@ class MainActivity : ComponentActivity() {
     private var selectedControlTab = FilterControlsView.ControlTab.Filter
     private var renderedBitmap: Bitmap? = null
     private var isSaving = false
+    private val cameraPermissionLauncher = registerForActivityResult(
+        ActivityResultContracts.RequestPermission(),
+    ) { granted ->
+        Toast.makeText(
+            this,
+            if (granted) R.string.camera_permission_granted else R.string.camera_permission_denied,
+            Toast.LENGTH_SHORT,
+        ).show()
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -37,6 +50,7 @@ class MainActivity : ComponentActivity() {
         bindBeautyControls()
         bindAdjustControls()
         binding.nextImageButton.setOnClickListener { viewModel.nextImage() }
+        binding.cameraButton.setOnClickListener { requestCameraPermission() }
         collectState()
     }
 
@@ -103,6 +117,7 @@ class MainActivity : ComponentActivity() {
     private fun render(state: FilterUiState) {
         binding.progressBar.isVisible = state.isLoading || isSaving
         binding.nextImageButton.isEnabled = state.imageAssetCount > 1 && !state.isLoading && !isSaving
+        binding.cameraButton.isEnabled = !state.isLoading && !isSaving
         binding.errorText.isVisible = state.error != null
         binding.errorText.text = state.error?.toMessage().orEmpty()
         val selectedRecipe = state.selectedRecipe
@@ -124,6 +139,14 @@ class MainActivity : ComponentActivity() {
             selectedRecipe = selectedRecipe,
         )
         binding.filterControls.setAdjustments(state.adjustments)
+    }
+
+    private fun requestCameraPermission() {
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED) {
+            Toast.makeText(this, R.string.camera_permission_granted, Toast.LENGTH_SHORT).show()
+        } else {
+            cameraPermissionLauncher.launch(Manifest.permission.CAMERA)
+        }
     }
 
     private fun saveFilteredImage() {
