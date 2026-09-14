@@ -8,8 +8,9 @@
     <string name="result_preview">Result</string>
     <string name="next_image">Next image</string>
     <string name="use_camera">Use camera</string>
-    <string name="camera_permission_granted">Camera permission granted</string>
+    <string name="stop_camera">Stop camera</string>
     <string name="camera_permission_denied">Camera permission is required</string>
+    <string name="camera_open_failed">Could not open camera</string>
     <string name="loading_image">Loading image</string>
     <string name="asset_load_failed">Could not load the sample image</string>
     <string name="image_saved_to_app_storage">Filtered image saved in app storage</string>

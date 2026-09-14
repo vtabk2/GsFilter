@@ -1,10 +1,22 @@
 package com.gsfilter
 
 import android.Manifest
+import android.annotation.SuppressLint
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
+import android.graphics.SurfaceTexture
+import android.hardware.camera2.CameraAccessException
+import android.hardware.camera2.CameraCaptureSession
+import android.hardware.camera2.CameraCharacteristics
+import android.hardware.camera2.CameraDevice
+import android.hardware.camera2.CameraManager
+import android.hardware.camera2.CaptureRequest
+import android.os.Handler
+import android.os.HandlerThread
 import android.os.Bundle
 import android.util.Log
+import android.view.Surface
+import android.view.TextureView
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.ComponentActivity
@@ -30,14 +42,21 @@ class MainActivity : ComponentActivity() {
     private var selectedControlTab = FilterControlsView.ControlTab.Filter
     private var renderedBitmap: Bitmap? = null
     private var isSaving = false
+    private var isCameraMode = false
+    private var cameraDevice: CameraDevice? = null
+    private var cameraSession: CameraCaptureSession? = null
+    private var cameraThread: HandlerThread? = null
+    private var cameraHandler: Handler? = null
+    private var cameraRawSurface: Surface? = null
+    private var cameraFilteredSurface: Surface? = null
     private val cameraPermissionLauncher = registerForActivityResult(
         ActivityResultContracts.RequestPermission(),
     ) { granted ->
-        Toast.makeText(
-            this,
-            if (granted) R.string.camera_permission_granted else R.string.camera_permission_denied,
-            Toast.LENGTH_SHORT,
-        ).show()
+        if (granted) {
+            startCameraMode()
+        } else {
+            Toast.makeText(this, R.string.camera_permission_denied, Toast.LENGTH_SHORT).show()
+        }
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -50,18 +69,32 @@ class MainActivity : ComponentActivity() {
         bindBeautyControls()
         bindAdjustControls()
         binding.nextImageButton.setOnClickListener { viewModel.nextImage() }
-        binding.cameraButton.setOnClickListener { requestCameraPermission() }
+        binding.cameraButton.setOnClickListener {
+            if (isCameraMode) stopCameraMode() else requestCameraPermission()
+        }
+        binding.cameraPreview.surfaceTextureListener = cameraSurfaceTextureListener
         collectState()
     }
 
     override fun onResume() {
         super.onResume()
         binding.filterPreview.onResume()
+        if (isCameraMode) {
+            startCameraResources()
+        }
     }
 
     override fun onPause() {
+        if (isCameraMode) {
+            stopCameraResources()
+        }
         binding.filterPreview.onPause()
         super.onPause()
+    }
+
+    override fun onDestroy() {
+        stopCameraMode()
+        super.onDestroy()
     }
 
     private fun bindFilterControls() {
@@ -129,7 +162,7 @@ class MainActivity : ComponentActivity() {
         binding.filterPreview.setFilterState(
             recipe = selectedRecipe,
             adjustments = state.adjustments,
-            makeupFeatures = state.makeupFeatures,
+            makeupFeatures = if (isCameraMode) null else state.makeupFeatures,
         )
         binding.filterControls.setState(
             selectedCategory = state.selectedCategory,
@@ -143,9 +176,211 @@ class MainActivity : ComponentActivity() {
 
     private fun requestCameraPermission() {
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED) {
-            Toast.makeText(this, R.string.camera_permission_granted, Toast.LENGTH_SHORT).show()
+            startCameraMode()
         } else {
             cameraPermissionLauncher.launch(Manifest.permission.CAMERA)
+        }
+    }
+
+    private fun startCameraMode() {
+        if (isCameraMode) {
+            return
+        }
+        isCameraMode = true
+        binding.imageOriginal.isVisible = false
+        binding.cameraPreview.isVisible = true
+        binding.nextImageButton.isVisible = false
+        binding.cameraButton.contentDescription = getString(R.string.stop_camera)
+        val state = viewModel.state.value
+        binding.filterPreview.setFilterState(
+            recipe = state.selectedRecipe,
+            adjustments = state.adjustments,
+            makeupFeatures = null,
+        )
+        startCameraResources()
+    }
+
+    private fun stopCameraMode() {
+        if (!isCameraMode) {
+            return
+        }
+        isCameraMode = false
+        stopCameraResources()
+        binding.filterPreview.setCameraSource(false)
+        binding.cameraPreview.isVisible = false
+        binding.imageOriginal.isVisible = true
+        binding.nextImageButton.isVisible = true
+        binding.cameraButton.contentDescription = getString(R.string.use_camera)
+        val state = viewModel.state.value
+        binding.filterPreview.setSourceBitmap(state.sourceBitmap)
+        binding.filterPreview.setFilterState(
+            recipe = state.selectedRecipe,
+            adjustments = state.adjustments,
+            makeupFeatures = state.makeupFeatures,
+        )
+    }
+
+    private fun startCameraResources() {
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
+            return
+        }
+        startCameraThread()
+        binding.filterPreview.setCameraSource(true) { surface ->
+            cameraFilteredSurface = surface
+            if (surface == null) {
+                showCameraError(null)
+            } else {
+                openCameraIfReady()
+            }
+        }
+        openCameraIfReady()
+    }
+
+    private fun stopCameraResources() {
+        cameraSession?.close()
+        cameraSession = null
+        cameraDevice?.close()
+        cameraDevice = null
+        cameraRawSurface?.release()
+        cameraRawSurface = null
+        cameraFilteredSurface = null
+        cameraThread?.quitSafely()
+        cameraThread = null
+        cameraHandler = null
+    }
+
+    private fun startCameraThread() {
+        if (cameraThread != null) {
+            return
+        }
+        cameraThread = HandlerThread("GsFilterCamera").also { it.start() }
+        cameraHandler = Handler(cameraThread!!.looper)
+    }
+
+    @SuppressLint("MissingPermission")
+    private fun openCameraIfReady() {
+        if (!isCameraMode || cameraDevice != null || cameraFilteredSurface == null || !binding.cameraPreview.isAvailable) {
+            return
+        }
+        val handler = cameraHandler ?: return
+        val texture = binding.cameraPreview.surfaceTexture ?: return
+        val manager = getSystemService(CameraManager::class.java)
+        val cameraId = try {
+            findBackCamera(manager)
+        } catch (error: CameraAccessException) {
+            showCameraError(error)
+            return
+        }
+        if (cameraId == null) {
+            showCameraError(null)
+            return
+        }
+
+        texture.setDefaultBufferSize(CAMERA_WIDTH, CAMERA_HEIGHT)
+        cameraRawSurface = Surface(texture)
+        try {
+            manager.openCamera(cameraId, cameraStateCallback, handler)
+        } catch (error: CameraAccessException) {
+            showCameraError(error)
+        } catch (error: SecurityException) {
+            showCameraError(error)
+        }
+    }
+
+    private fun findBackCamera(manager: CameraManager): String? =
+        manager.cameraIdList.firstOrNull { id ->
+            manager.getCameraCharacteristics(id).get(CameraCharacteristics.LENS_FACING) ==
+                CameraCharacteristics.LENS_FACING_BACK
+        } ?: manager.cameraIdList.firstOrNull()
+
+    private val cameraSurfaceTextureListener = object : TextureView.SurfaceTextureListener {
+        override fun onSurfaceTextureAvailable(surface: SurfaceTexture, width: Int, height: Int) {
+            if (isCameraMode) {
+                openCameraIfReady()
+            }
+        }
+
+        override fun onSurfaceTextureSizeChanged(surface: SurfaceTexture, width: Int, height: Int) = Unit
+
+        override fun onSurfaceTextureDestroyed(surface: SurfaceTexture): Boolean {
+            if (isCameraMode) {
+                stopCameraResources()
+            }
+            return true
+        }
+
+        override fun onSurfaceTextureUpdated(surface: SurfaceTexture) = Unit
+    }
+
+    private val cameraStateCallback = object : CameraDevice.StateCallback() {
+        override fun onOpened(device: CameraDevice) {
+            if (!isCameraMode) {
+                device.close()
+                return
+            }
+            cameraDevice = device
+            createCameraSession(device)
+        }
+
+        override fun onDisconnected(device: CameraDevice) {
+            device.close()
+            if (cameraDevice === device) {
+                cameraDevice = null
+            }
+        }
+
+        override fun onError(device: CameraDevice, error: Int) {
+            device.close()
+            if (cameraDevice === device) {
+                cameraDevice = null
+            }
+            showCameraError(null)
+        }
+    }
+
+    private fun createCameraSession(device: CameraDevice) {
+        val rawSurface = cameraRawSurface ?: return
+        val filteredSurface = cameraFilteredSurface ?: return
+        try {
+            device.createCaptureSession(
+                listOf(rawSurface, filteredSurface),
+                object : CameraCaptureSession.StateCallback() {
+                    override fun onConfigured(session: CameraCaptureSession) {
+                        if (!isCameraMode || cameraDevice !== device) {
+                            session.close()
+                            return
+                        }
+                        cameraSession = session
+                        val request = device.createCaptureRequest(CameraDevice.TEMPLATE_PREVIEW).apply {
+                            addTarget(rawSurface)
+                            addTarget(filteredSurface)
+                            set(
+                                CaptureRequest.CONTROL_AF_MODE,
+                                CaptureRequest.CONTROL_AF_MODE_CONTINUOUS_PICTURE,
+                            )
+                        }
+                        session.setRepeatingRequest(request.build(), null, cameraHandler)
+                    }
+
+                    override fun onConfigureFailed(session: CameraCaptureSession) {
+                        session.close()
+                        showCameraError(null)
+                    }
+                },
+                cameraHandler,
+            )
+        } catch (error: CameraAccessException) {
+            showCameraError(error)
+        }
+    }
+
+    private fun showCameraError(error: Exception?) {
+        Log.e(TAG, "Camera preview failed", error)
+        runOnUiThread {
+            if (isCameraMode) {
+                Toast.makeText(this, R.string.camera_open_failed, Toast.LENGTH_SHORT).show()
+                stopCameraMode()
+            }
         }
     }
 
@@ -234,6 +469,9 @@ class MainActivity : ComponentActivity() {
         }
 
     private companion object {
+        const val TAG = "GsFilterCamera"
+        const val CAMERA_WIDTH = 640
+        const val CAMERA_HEIGHT = 480
         const val FILTERED_IMAGES_DIR = "filtered"
         const val FILTERED_IMAGE_PREFIX = "filtered_"
         const val FILTERED_IMAGE_SUFFIX = ".jpg"

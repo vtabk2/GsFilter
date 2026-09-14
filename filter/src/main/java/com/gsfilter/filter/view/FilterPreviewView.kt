@@ -2,10 +2,13 @@ package com.gsfilter.filter.view
 
 import android.content.Context
 import android.graphics.Bitmap
+import android.graphics.SurfaceTexture
+import android.opengl.GLES11Ext
 import android.opengl.GLES20
 import android.opengl.GLSurfaceView
 import android.opengl.GLUtils
 import android.util.AttributeSet
+import android.view.Surface
 import com.gsfilter.filter.Adjustments
 import com.gsfilter.filter.FilterLut
 import com.gsfilter.filter.FilterRecipe
@@ -72,6 +75,18 @@ class FilterPreviewView @JvmOverloads constructor(
         }
     }
 
+    fun setCameraSource(enabled: Boolean, onSurfaceReady: ((Surface?) -> Unit)? = null) {
+        queueEvent {
+            filterRenderer.setCameraSource(
+                enabled = enabled,
+                width = CAMERA_WIDTH,
+                height = CAMERA_HEIGHT,
+                onFrameAvailable = ::requestRender,
+            ) { surface -> post { onSurfaceReady?.invoke(surface) } }
+            requestRender()
+        }
+    }
+
     fun setFilterState(
         recipe: FilterRecipe,
         adjustments: Adjustments,
@@ -124,8 +139,11 @@ class FilterPreviewView @JvmOverloads constructor(
         private val textureBuffer = GlFilterProgram.floatBufferOf(GlFilterProgram.TEXTURE_COORDS)
 
         private var program = 0
+        private var bitmapProgram = 0
+        private var cameraProgram = 0
         private var handles: GlFilterProgram.ProgramHandles? = null
         private var textureId = 0
+        private var cameraTextureId = 0
         private var textureConfig: Bitmap.Config? = null
         private var lutTextureId = 0
         private var lutTexture = FilterLut.None
@@ -142,9 +160,16 @@ class FilterPreviewView @JvmOverloads constructor(
         private var adjustmentUniformsNeedUpload = true
         private var effectUniformsNeedUpload = true
         private var texelSizeNeedUpload = true
+        private var cameraSurfaceTexture: SurfaceTexture? = null
+        private var cameraSurface: Surface? = null
+        private var cameraWidth = 0
+        private var cameraHeight = 0
+        @Volatile
+        private var cameraFrameAvailable = false
 
         override fun onSurfaceCreated(gl: GL10?, config: EGLConfig?) {
-            program = GlFilterProgram.buildProgram()
+            bitmapProgram = GlFilterProgram.buildProgram()
+            program = bitmapProgram
             val currentHandles = GlFilterProgram.resolveHandles(program)
             handles = currentHandles
             GLES20.glUseProgram(program)
@@ -175,14 +200,23 @@ class FilterPreviewView @JvmOverloads constructor(
 
         override fun onDrawFrame(gl: GL10?) {
             GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT)
-            uploadPendingBitmap()
-            if (textureId == 0 || program == 0) {
+            val cameraTexture = cameraSurfaceTexture
+            if (cameraTexture != null) {
+                if (cameraFrameAvailable) {
+                    cameraSurfaceTexture?.updateTexImage()
+                    cameraFrameAvailable = false
+                }
+            } else {
+                uploadPendingBitmap()
+            }
+            val inputTextureId = if (cameraTexture != null) cameraTextureId else textureId
+            if (inputTextureId == 0 || program == 0) {
                 return
             }
             val currentHandles = handles ?: return
             GlFilterProgram.bindUniforms(
                 handles = currentHandles,
-                textureId = textureId,
+                textureId = inputTextureId,
                 lutTextureId = lutTextureFor(params),
                 renderWidth = renderWidth,
                 renderHeight = renderHeight,
@@ -192,6 +226,11 @@ class FilterPreviewView @JvmOverloads constructor(
                 uploadAdjustmentUniforms = adjustmentUniformsNeedUpload,
                 uploadEffectUniforms = effectUniformsNeedUpload,
                 uploadTexelSize = texelSizeNeedUpload,
+                inputTextureTarget = if (cameraTexture != null) {
+                    GLES11Ext.GL_TEXTURE_EXTERNAL_OES
+                } else {
+                    GLES20.GL_TEXTURE_2D
+                },
             )
             makeupUniformsNeedUpload = false
             adjustmentUniformsNeedUpload = false
@@ -203,6 +242,92 @@ class FilterPreviewView @JvmOverloads constructor(
         fun setSourceBitmap(bitmap: Bitmap?) {
             sourceBitmap = bitmap
             pendingBitmap = bitmap
+        }
+
+        fun setCameraSource(
+            enabled: Boolean,
+            width: Int,
+            height: Int,
+            onFrameAvailable: () -> Unit,
+            onSurfaceReady: (Surface?) -> Unit,
+        ) {
+            if (!enabled) {
+                cameraSurfaceTexture?.setOnFrameAvailableListener(null)
+                cameraSurface?.release()
+                cameraSurfaceTexture?.release()
+                cameraSurface = null
+                cameraSurfaceTexture = null
+                cameraFrameAvailable = false
+                if (cameraTextureId != 0) {
+                    GLES20.glDeleteTextures(1, intArrayOf(cameraTextureId), 0)
+                    cameraTextureId = 0
+                }
+                if (cameraProgram != 0) {
+                    GLES20.glDeleteProgram(cameraProgram)
+                    cameraProgram = 0
+                }
+                program = bitmapProgram
+                handles = if (program != 0) GlFilterProgram.resolveHandles(program) else null
+                if (handles != null) {
+                    GLES20.glUseProgram(program)
+                    GlFilterProgram.bindAttributes(handles!!, vertexBuffer, textureBuffer)
+                }
+                pendingBitmap = sourceBitmap
+                return
+            }
+            if (cameraSurface != null) {
+                onSurfaceReady(cameraSurface)
+                return
+            }
+
+            cameraWidth = width
+            cameraHeight = height
+            cameraProgram = try {
+                GlFilterProgram.buildProgram(useExternalTexture = true)
+            } catch (error: IllegalStateException) {
+                onSurfaceReady(null)
+                return
+            }
+            val textures = IntArray(1)
+            GLES20.glGenTextures(1, textures, 0)
+            cameraTextureId = textures[0]
+            GLES20.glBindTexture(GLES11Ext.GL_TEXTURE_EXTERNAL_OES, cameraTextureId)
+            GLES20.glTexParameteri(
+                GLES11Ext.GL_TEXTURE_EXTERNAL_OES,
+                GLES20.GL_TEXTURE_MIN_FILTER,
+                GLES20.GL_LINEAR,
+            )
+            GLES20.glTexParameteri(
+                GLES11Ext.GL_TEXTURE_EXTERNAL_OES,
+                GLES20.GL_TEXTURE_MAG_FILTER,
+                GLES20.GL_LINEAR,
+            )
+            GLES20.glTexParameteri(
+                GLES11Ext.GL_TEXTURE_EXTERNAL_OES,
+                GLES20.GL_TEXTURE_WRAP_S,
+                GLES20.GL_CLAMP_TO_EDGE,
+            )
+            GLES20.glTexParameteri(
+                GLES11Ext.GL_TEXTURE_EXTERNAL_OES,
+                GLES20.GL_TEXTURE_WRAP_T,
+                GLES20.GL_CLAMP_TO_EDGE,
+            )
+            cameraSurfaceTexture = SurfaceTexture(cameraTextureId).apply {
+                setDefaultBufferSize(width, height)
+                setOnFrameAvailableListener {
+                    cameraFrameAvailable = true
+                    onFrameAvailable()
+                }
+            }
+            cameraSurface = Surface(requireNotNull(cameraSurfaceTexture))
+            program = cameraProgram
+            handles = GlFilterProgram.resolveHandles(program)
+            GLES20.glUseProgram(program)
+            GlFilterProgram.bindAttributes(handles!!, vertexBuffer, textureBuffer)
+            imageWidth = width
+            imageHeight = height
+            updateVertexBuffer()
+            onSurfaceReady(cameraSurface)
         }
 
         fun setFilterParams(nextParams: ShaderFilterParams) {
@@ -364,5 +489,10 @@ class FilterPreviewView @JvmOverloads constructor(
                 .put(scaleY)
                 .position(0)
         }
+    }
+
+    private companion object {
+        const val CAMERA_WIDTH = 640
+        const val CAMERA_HEIGHT = 480
     }
 }

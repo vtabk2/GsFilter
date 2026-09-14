@@ -63,14 +63,25 @@
                         android:textColor="@color/text_secondary"
                         android:textSize="14sp"/>
 
-                    <ImageView
-                        android:id="@+id/imageOriginal"
+                    <FrameLayout
                         android:layout_width="match_parent"
                         android:layout_height="@dimen/preview_height"
                         android:layout_marginTop="@dimen/item_spacing"
-                        android:adjustViewBounds="true"
-                        android:background="@color/preview_background"
-                        android:scaleType="fitCenter"/>
+                        android:background="@color/preview_background">
+
+                        <ImageView
+                            android:id="@+id/imageOriginal"
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:adjustViewBounds="true"
+                            android:scaleType="fitCenter"/>
+
+                        <TextureView
+                            android:id="@+id/cameraPreview"
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:visibility="gone"/>
+                    </FrameLayout>
                 </LinearLayout>
 
                 <LinearLayout

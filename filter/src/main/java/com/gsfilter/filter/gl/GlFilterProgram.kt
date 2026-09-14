@@ -55,9 +55,10 @@ internal object GlFilterProgram {
         0f,
     )
 
-    fun buildProgram(): Int {
+    fun buildProgram(useExternalTexture: Boolean = false): Int {
         val vertex = compileShader(GLES20.GL_VERTEX_SHADER, VERTEX_SHADER)
-        val fragment = compileShader(GLES20.GL_FRAGMENT_SHADER, FRAGMENT_SHADER)
+        val fragmentShader = if (useExternalTexture) EXTERNAL_FRAGMENT_SHADER else FRAGMENT_SHADER
+        val fragment = compileShader(GLES20.GL_FRAGMENT_SHADER, fragmentShader)
         val program = GLES20.glCreateProgram()
         GLES20.glAttachShader(program, vertex)
         GLES20.glAttachShader(program, fragment)
@@ -167,10 +168,11 @@ internal object GlFilterProgram {
         uploadLutUniforms: Boolean = true,
         bindInputTexture: Boolean = true,
         bindTextureSampler: Boolean = true,
+        inputTextureTarget: Int = GLES20.GL_TEXTURE_2D,
     ) {
         if (bindInputTexture) {
             GLES20.glActiveTexture(GLES20.GL_TEXTURE0)
-            GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, textureId)
+            GLES20.glBindTexture(inputTextureTarget, textureId)
         }
         if (bindTextureSampler) {
             GLES20.glUniform1i(handles.texture, 0)
@@ -480,8 +482,10 @@ internal object GlFilterProgram {
         GLES20.glCompileShader(handle)
         val compileStatus = IntArray(1)
         GLES20.glGetShaderiv(handle, GLES20.GL_COMPILE_STATUS, compileStatus, 0)
-        check(compileStatus[0] == GLES20.GL_TRUE) {
-            GLES20.glGetShaderInfoLog(handle)
+        if (compileStatus[0] != GLES20.GL_TRUE) {
+            val log = GLES20.glGetShaderInfoLog(handle)
+            GLES20.glDeleteShader(handle)
+            error("Shader compilation failed: $log")
         }
         return handle
     }
@@ -1148,4 +1152,8 @@ internal object GlFilterProgram {
             gl_FragColor = vec4(clamp(rgb, 0.0, 1.0), color.a);
         }
         """
+
+    private val EXTERNAL_FRAGMENT_SHADER =
+        "#extension GL_OES_EGL_image_external : require\n" +
+            FRAGMENT_SHADER.replace("uniform sampler2D uTexture;", "uniform samplerExternalOES uTexture;")
 }

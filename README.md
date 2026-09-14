@@ -15,7 +15,7 @@ Phạm vi hiện tại:
 - Compile SDK 36; app mẫu target SDK 36.
 - Gradle wrapper 9.0.0, Android Gradle Plugin 8.13.2, Kotlin 2.2.21, KSP 2.2.21-2.0.4, Java 17.
 - Kotlin + XML views.
-- App mẫu đã có camera permission và nút camera; realtime camera frame flow chưa triển khai.
+- App mẫu có camera mode native Camera2: preview gốc và preview filter chạy realtime.
 - Preview GPU qua `FilterPreviewView`.
 - Filter preset là data recipe, gồm color/effect/LUT.
 - Adjust controls là bộ cố định.

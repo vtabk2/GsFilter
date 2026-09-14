@@ -1,5 +1,45 @@
 # PLAN
 
+## Task: Fix camera shader compile crash
+
+Status: IN PROGRESS
+Created: 2026-09-14
+
+### Requirements
+
+- Prevent the external camera shader path from crashing on GLThread.
+- Keep bitmap preview behavior unchanged.
+
+### Checklist
+
+- [x] Remove the unnecessary camera texture-matrix shader change.
+- [x] Run focused checks and review the diff.
+
+### Validation note
+
+- XML and diff checks pass; the camera shader now falls back without crashing if compilation fails.
+
+## Task: Add realtime camera preview
+
+Status: IN PROGRESS
+Created: 2026-09-14
+
+### Requirements
+
+- Use the existing camera button to enter and leave camera mode.
+- Show the raw camera preview and feed the same frames through the filter preview.
+- Close camera resources across pause/destroy and keep the bitmap mode intact.
+
+### Checklist
+
+- [x] Add the external camera texture path to the filter preview.
+- [x] Connect Camera2 preview surfaces and lifecycle.
+- [x] Run focused checks and review the diff.
+
+### Validation note
+
+- XML and diff checks pass; Gradle compilation is blocked because this environment has no Java/JAVA_HOME.
+
 ## Task: Share Reset All minimum height
 
 Status: DONE
