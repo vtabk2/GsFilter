@@ -1,5 +1,27 @@
 # PLAN
 
+## Task: Skip neutral sharpen arithmetic in the GPU shader
+
+Status: DONE
+Created: 2026-09-14
+Completed: 2026-09-14
+
+### Requirements
+
+- Skip the per-fragment sharpen expression when sharpness and clarity are neutral.
+- Preserve the active sharpen/clarity formula and stage order.
+- Change only the `filter` module source.
+
+### Checklist
+
+- [x] Guard the neutral sharpen expression.
+- [x] Run diff/static checks and review the diff.
+
+### Notes
+
+- Neutral GPU fragments now skip the sharpen/clarity arithmetic; active values retain the original expression.
+- Gradle validation was attempted but is unavailable in this environment because no JDK/java executable is installed.
+
 ## Task: Reuse GPU readback buffer view
 
 Status: DONE

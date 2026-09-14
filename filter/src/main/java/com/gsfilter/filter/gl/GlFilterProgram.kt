@@ -972,7 +972,9 @@ internal object GlFilterProgram {
                     rgb = mix(color.rgb, blur, smoothAmount);
                 }
             }
-            rgb = rgb + (rgb - blur) * ((uSharpness * 0.65) + (uClarity * 0.35));
+            if (uSharpness != 0.0 || uClarity != 0.0) {
+                rgb = rgb + (rgb - blur) * ((uSharpness * 0.65) + (uClarity * 0.35));
+            }
             if (beautyEnabled) {
             if (uSkinWhitening > 0.0) {
             float whitening = uSkinWhitening * beautyMask;
