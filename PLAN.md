@@ -1,5 +1,50 @@
 # PLAN
 
+## Task: Add independent filter close-button visibility
+
+Status: IN PROGRESS
+Created: 2026-09-14
+
+### Requirements
+
+- Add a separate boolean attribute for the filter close button.
+- Keep the default visible for backward compatibility.
+- Do not change the existing header visibility behavior.
+
+### Checklist
+
+- [x] Add and apply `gsFilterShowCloseButton`.
+- [x] Run focused checks and review the diff.
+
+### Follow-up
+
+- Keep the hidden close button space reserved with `INVISIBLE` so the header remains balanced.
+- `RippleImageView` exposes a drawable resource but no tint API; keep action icon colors in theme-aware drawable resources.
+
+## Task: Make filter icon colors follow dark mode
+
+Status: DONE
+Created: 2026-09-14
+
+### Requirements
+
+- Expose the filter icon tint through the existing `FilterControlsStyle` configuration.
+- Replace hardcoded filter icon colors with theme-aware resources.
+- Let the demo app follow the device light/dark mode for manual verification.
+
+### Checklist
+
+- [x] Add the icon color configuration and apply it to filter action icons.
+- [x] Add light and night resources for filter icons.
+- [x] Make the demo app select a light/dark theme from the system mode.
+- [x] Run focused checks and review the diff.
+
+### Notes
+
+- Keep the change local to filter UI configuration plus the demo app's theme resources.
+- XML resources parse successfully. Gradle compilation remains unavailable because no JDK is configured.
+- Keep filter-specific colors in `filter_colors.xml` instead of the generic `colors.xml` files.
+
 ## Task: Add realtime camera example in the app
 
 Status: IN PROGRESS

@@ -1,0 +1,7 @@
+<resources>
+    <color name="gs_panel_background">#121212</color>
+    <color name="gs_text_secondary">#B0B3B8</color>
+    <color name="gs_adjust_text_primary">#F1F3F4</color>
+    <color name="gs_adjust_text_secondary">#B0B3B8</color>
+    <color name="gs_adjust_track_background">#5F6368</color>
+</resources>

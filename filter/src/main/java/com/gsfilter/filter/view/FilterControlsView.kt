@@ -392,6 +392,7 @@ class FilterControlsView @JvmOverloads constructor(
             onControlTabSelected?.invoke(ControlTab.Adjust)
         }
         buttonClose?.iconRippleRes = style.closeIconRes
+        buttonClose?.visibility = if (style.showCloseButton) VISIBLE else INVISIBLE
         style.iconPadding?.let { buttonClose?.paddingRipple = it }
         buttonClose?.setOnClickListener { onCloseClick?.invoke() }
     }
@@ -939,6 +940,7 @@ class FilterControlsView @JvmOverloads constructor(
         val compactTabs: Boolean,
         val tabSpacing: Int,
         val showHeader: Boolean,
+        val showCloseButton: Boolean,
         val showBeauty: Boolean,
         val showIntensity: Boolean,
         val showPopular: Boolean,
@@ -1079,6 +1081,10 @@ class FilterControlsView @JvmOverloads constructor(
                 context.resources.getDimensionPixelSize(R.dimen.gs_filter_item_spacing),
             ),
             showHeader = array.getBoolean(R.styleable.FilterControlsView_gsFilterShowHeader, true),
+            showCloseButton = array.getBoolean(
+                R.styleable.FilterControlsView_gsFilterShowCloseButton,
+                true,
+            ),
             showBeauty = array.getBoolean(R.styleable.FilterControlsView_gsFilterShowBeauty, true),
             showIntensity = array.getBoolean(R.styleable.FilterControlsView_gsFilterShowIntensity, true),
             showPopular = array.getBoolean(R.styleable.FilterControlsView_gsFilterShowPopular, true),

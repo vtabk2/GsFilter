@@ -34,6 +34,7 @@
         </attr>
         <attr name="gsFilterTabIndicatorMinWidth" format="dimension"/>
         <attr name="gsFilterShowHeader" format="boolean"/>
+        <attr name="gsFilterShowCloseButton" format="boolean"/>
         <attr name="gsFilterShowBeauty" format="boolean"/>
         <attr name="gsFilterShowIntensity" format="boolean"/>
         <attr name="gsFilterShowPopular" format="boolean"/>
