@@ -413,12 +413,13 @@ Các XML attributes hiện có:
 | `gsFilterShowTabIndicator`       | Hiển thị indicator dưới tab Filter/Adjust đang chọn                                                                                  |
 | `gsFilterCompactTabs`            | Kéo label/indicator của tab Filter và Adjust gần nhau hơn trong khi vùng bấm vẫn rộng                                                |
 | `gsFilterShowHeader`             | Hiển thị/ẩn toàn bộ header `gs_filter_header`; mặc định `true`                                                                       |
-| `gsFilterShowCloseButton`        | Hiển thị/ẩn riêng nút đóng; dùng `INVISIBLE` khi `false` để giữ cân layout; mặc định `true`                                        |
+| `gsFilterShowCloseButton`        | Hiển thị/ẩn riêng nút đóng; dùng `INVISIBLE` khi `false` để giữ cân layout; mặc định `true`                                          |
 | `gsFilterBackground`             | Background của toàn bộ `FilterControlsView`; mặc định `@color/gs_panel_background`                                                   |
-| `gsFilterContentBackground`      | Background riêng cho cụm category/thumbnail `gs_filter_content`; mặc định không ghi đè                                              |
+| `gsFilterContentBackground`      | Background riêng cho cụm category/thumbnail `gs_filter_content`; mặc định không ghi đè                                               |
 | `gsFilterHeaderBackground`       | Background riêng của header; có thể đặt `@android:color/transparent`                                                                 |
 | `gsFilterCompactBackground`      | Background riêng của `gs_filter_compact_controls`; có thể đặt `@android:color/transparent`                                           |
 | `gsFilterShowBeauty`             | Hiển thị/ẩn tab và nội dung Beauty; mặc định `true`                                                                                  |
+| `gsFilterBeautyTextColor`        | Màu icon/label Beauty chưa chọn và text Reset All Beauty khi disabled; enabled dùng `gsFilterIntensityProgressColor`                 |
 | `gsFilterTabSpacing`             | Khoảng cách giữa tab Filter và Adjust khi cần chỉnh gần/xa nhau                                                                      |
 | `gsFilterTabIndicatorColor`      | Màu tab indicator                                                                                                                    |
 | `gsFilterTabIndicatorHeight`     | Chiều cao tab indicator                                                                                                              |

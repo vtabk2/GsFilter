@@ -1,5 +1,96 @@
 # PLAN
 
+## Task: Share Reset All minimum height
+
+Status: DONE
+Created: 2026-09-14
+
+### Requirements
+
+- Move the shared Reset All minimum height into a dimension resource.
+- Apply it to both Adjust and Beauty buttons without changing the current size.
+
+### Checklist
+
+- [x] Add the shared dimension and replace hardcoded values.
+- [x] Run focused checks.
+
+## Task: Keep Adjust seekbar below controls
+
+Status: DONE
+Created: 2026-09-14
+
+### Requirements
+
+- Keep the Adjust seekbar below its control rail in the regular layout.
+- Preserve compact-row movement when the header is hidden.
+
+### Checklist
+
+- [x] Preserve each seek row's original index.
+- [x] Restore rows to that index and run focused checks.
+
+### Validation note
+
+- Gradle compilation remains unverified because this environment has no Java/JAVA_HOME.
+
+## Task: Match Beauty reset-all button text colors
+
+Status: DONE
+Created: 2026-09-14
+
+### Requirements
+
+- Match the Beauty reset-all button state colors with Adjust reset-all.
+- Use secondary color when disabled and selected color when enabled.
+- Do not change Beauty seekbar or control-label colors.
+
+### Checklist
+
+- [x] Add the reset-all text color configuration and state list.
+- [x] Configure the demo app to reuse its secondary text color.
+- [x] Run focused checks and review the diff.
+
+### Follow-up
+
+- Point the demo layout at the consolidated `gsFilterBeautyTextColor` attribute so Beauty item colors match Adjust.
+
+### Follow-up
+
+- Use one shared Beauty secondary color for unselected controls and Reset All Beauty to keep it aligned with Adjust.
+
+## Task: Match Beauty and Adjust secondary text colors
+
+Status: IN PROGRESS
+Created: 2026-09-14
+
+### Requirements
+
+- Make unselected Beauty labels/icons use the same secondary color as Adjust.
+- Keep Beauty seekbar text and selected control colors unchanged.
+- Expose the behavior through the existing filter XML configuration.
+
+### Checklist
+
+- [ ] Add the Beauty text color attribute and apply it to unselected controls.
+- [ ] Configure the demo app to reuse its Adjust secondary color.
+- [ ] Run focused checks and review the diff.
+
+## Task: Fix Beauty reset icon color in dark mode
+
+Status: IN PROGRESS
+Created: 2026-09-14
+
+### Requirements
+
+- Use the secondary Adjust color for the default reset icon state.
+- Preserve selected and disabled selector colors.
+
+### Checklist
+
+- [x] Update the reset drawable color.
+- [x] Run focused checks and review the diff.
+
 ## Task: Update README for current filter UI configuration
 
 Status: IN PROGRESS

@@ -13,6 +13,7 @@
     <dimen name="gs_filter_thumbnail_height">102dp</dimen>
     <dimen name="gs_filter_thumbnail_label_height">24dp</dimen>
     <dimen name="gs_filter_thumbnail_label_padding">4dp</dimen>
+    <dimen name="gs_filter_reset_all_min_height">36dp</dimen>
     <dimen name="gs_adjust_button_min_height">48dp</dimen>
     <dimen name="gs_adjust_icon_size">24dp</dimen>
     <dimen name="gs_adjust_dot_size">5dp</dimen>

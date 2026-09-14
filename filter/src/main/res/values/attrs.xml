@@ -39,6 +39,7 @@
         <attr name="gsFilterShowBeauty" format="boolean"/>
         <attr name="gsFilterShowIntensity" format="boolean"/>
         <attr name="gsFilterShowPopular" format="boolean"/>
+        <attr name="gsFilterBeautyTextColor" format="color|reference"/>
         <attr name="gsFilterIntensityTextColor" format="color|reference"/>
         <attr name="gsFilterIntensityProgressColor" format="color|reference"/>
         <attr name="gsFilterIntensityTrackColor" format="color|reference"/>

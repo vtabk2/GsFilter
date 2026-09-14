@@ -291,6 +291,8 @@
             android:layout_gravity="center"
             android:layout_marginTop="@dimen/gs_filter_category_top_spacing"
             android:background="@drawable/gs_bg_adjust_reset_all"
+            android:gravity="center"
+            android:minHeight="@dimen/gs_filter_reset_all_min_height"
             android:textAllCaps="false"/>
     </LinearLayout>
 

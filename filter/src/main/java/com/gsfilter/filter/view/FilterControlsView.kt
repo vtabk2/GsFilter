@@ -157,6 +157,9 @@ class FilterControlsView @JvmOverloads constructor(
             FrameLayout.LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT),
         )
         adjustSeekRow = adjustContent.seekRow
+        filterIntensityRowOriginalIndex = filterIntensityRow?.let { filterContent?.indexOfChild(it) } ?: -1
+        beautySeekRowOriginalIndex = beautySeekRow?.let { beautyContainer?.indexOfChild(it) } ?: -1
+        adjustSeekRowOriginalIndex = adjustSeekRow?.let { adjustContent.indexOfChild(it) } ?: -1
         setShowHeader(showHeader)
 
         bindHeader()
@@ -583,8 +586,15 @@ class FilterControlsView @JvmOverloads constructor(
                 compactParent.addView(row, originalButtonIndex)
                 return if (originalIndex >= 0) originalIndex else savedIndex
             }
-        } else if (row.parent !== originalParent) {
-            (row.parent as? ViewGroup)?.removeView(row)
+        } else {
+            val currentParent = row.parent as? ViewGroup
+            val currentIndex = currentParent?.indexOfChild(row) ?: -1
+            if (originalIndex < 0 ||
+                (currentParent === originalParent && currentIndex == originalIndex)
+            ) {
+                return originalIndex
+            }
+            currentParent?.removeView(row)
             originalParent.addView(row, originalIndex.coerceIn(0, originalParent.childCount))
         }
         return originalIndex
@@ -662,7 +672,7 @@ class FilterControlsView @JvmOverloads constructor(
         bindSeekBarTouch(beautySeekBar)
         beautyValueText?.setTextColor(style.intensityTextColor)
         beautyResetAll?.text = context.getString(R.string.gs_action_reset_beauty)
-        beautyResetAll?.setTextColor(style.intensityTextColor)
+        beautyResetAll?.setTextColor(beautyResetAllTextColors())
         beautyResetAll?.setOnClickListener { onResetBeautyClick?.invoke() }
     }
 
@@ -789,7 +799,7 @@ class FilterControlsView @JvmOverloads constructor(
             val isSelected = control == selectedBeautyControl
             val hasChanged = beautyValue(control, selectedRecipe) != beautyValue(control, selectedFilter.recipe)
             hasChangedValue = hasChangedValue || hasChanged
-            val textColor = if (isSelected) style.intensityProgressColor else style.intensityTextColor
+            val textColor = if (isSelected) style.intensityProgressColor else style.beautyTextColor
             beautyDots[control]?.visibility = if (hasChanged) VISIBLE else INVISIBLE
             beautyIcons[control]?.setColorFilter(textColor)
             beautyLabels[control]?.setTextColor(textColor)
@@ -797,6 +807,15 @@ class FilterControlsView @JvmOverloads constructor(
         beautyResetAll?.isEnabled = hasChangedValue
         isRenderingBeauty = false
     }
+
+    private fun beautyResetAllTextColors(): ColorStateList =
+        ColorStateList(
+            arrayOf(
+                intArrayOf(-android.R.attr.state_enabled),
+                intArrayOf(),
+            ),
+            intArrayOf(style.beautyTextColor, style.intensityProgressColor),
+        )
 
     private fun beautyValue(control: BeautyControl, recipe: FilterRecipe): Int =
         when (control) {
@@ -946,6 +965,7 @@ class FilterControlsView @JvmOverloads constructor(
         val showBeauty: Boolean,
         val showIntensity: Boolean,
         val showPopular: Boolean,
+        val beautyTextColor: Int,
         val intensityTextColor: Int,
         val intensityProgressColor: Int,
         val intensityTrackColor: Int,
@@ -1095,6 +1115,10 @@ class FilterControlsView @JvmOverloads constructor(
             showBeauty = array.getBoolean(R.styleable.FilterControlsView_gsFilterShowBeauty, true),
             showIntensity = array.getBoolean(R.styleable.FilterControlsView_gsFilterShowIntensity, true),
             showPopular = array.getBoolean(R.styleable.FilterControlsView_gsFilterShowPopular, true),
+            beautyTextColor = array.getColor(
+                R.styleable.FilterControlsView_gsFilterBeautyTextColor,
+                context.getColor(R.color.gs_adjust_text_secondary),
+            ),
             intensityTextColor = array.getColor(
                 R.styleable.FilterControlsView_gsFilterIntensityTextColor,
                 array.getColor(
