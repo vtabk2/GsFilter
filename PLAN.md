@@ -1,5 +1,26 @@
 # PLAN
 
+## Task: Short-circuit empty render batches
+
+Status: DONE
+Created: 2026-09-14
+Completed: 2026-09-14
+
+### Requirements
+
+- Return immediately after the initial progress callback when no sources exist.
+- Preserve the existing empty-batch progress behavior.
+- Change only the `filter` module source.
+
+### Checklist
+
+- [x] Add the empty-batch guard.
+- [x] Run focused checks and review the diff.
+
+### Notes
+
+- `git diff --check` passed; Gradle verification remains unavailable because no JDK is configured.
+
 ## Task: Skip unchanged adjustment control rendering
 
 Status: DONE

@@ -40,6 +40,9 @@ object FilterRenderer {
     ) {
         val totalCount = sources.size
         onProgress(FilterRenderProgress(completedCount = 0, totalCount = totalCount))
+        if (sources.isEmpty()) {
+            return
+        }
         val params = ShaderFilterParams.from(recipe, adjustments)
         val isNoOp = FilterBitmapRenderer.isNoOp(params)
         val makeupControlsEnabled = if (isNoOp) false else GlFilterProgram.hasMakeupControls(params)
