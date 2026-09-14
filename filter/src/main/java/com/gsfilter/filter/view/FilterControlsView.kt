@@ -778,7 +778,6 @@ class FilterControlsView @JvmOverloads constructor(
         val activeValue = beautyValue(selectedBeautyControl, selectedRecipe).coerceIn(0, BEAUTY_MAX)
         val defaultValue = beautyValue(selectedBeautyControl, selectedFilter.recipe).coerceIn(0, BEAUTY_MAX)
         isRenderingBeauty = true
-        beautySeekBar?.max = BEAUTY_MAX
         beautySeekBar?.progress = activeValue
         beautyValueText?.text = activeValue.toString()
         beautyResetButton?.isEnabled = activeValue != defaultValue
