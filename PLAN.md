@@ -1,5 +1,21 @@
 # PLAN
 
+## Task: Update README for current filter UI configuration
+
+Status: IN PROGRESS
+Created: 2026-09-14
+
+### Requirements
+
+- Document the separate close-button visibility and content-background attributes.
+- Document the theme-aware filter colors and demo app dark-mode behavior.
+- Describe the camera demo status without claiming realtime processing is complete.
+
+### Checklist
+
+- [x] Update README examples and attribute table.
+- [x] Run focused documentation checks and review the diff.
+
 ## Task: Separate compact seekbar and filter content backgrounds
 
 Status: IN PROGRESS

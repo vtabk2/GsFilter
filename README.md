@@ -15,7 +15,7 @@ Phạm vi hiện tại:
 - Compile SDK 36; app mẫu target SDK 36.
 - Gradle wrapper 9.0.0, Android Gradle Plugin 8.13.2, Kotlin 2.2.21, KSP 2.2.21-2.0.4, Java 17.
 - Kotlin + XML views.
-- Không có camera flow.
+- App mẫu đã có camera permission và nút camera; realtime camera frame flow chưa triển khai.
 - Preview GPU qua `FilterPreviewView`.
 - Filter preset là data recipe, gồm color/effect/LUT.
 - Adjust controls là bộ cố định.
@@ -212,8 +212,12 @@ Trong app mẫu, `FilterViewModel.renderFilteredBitmap(maxWidth, maxHeight, useG
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     app:gsFilterCloseIcon="@drawable/ic_gs_tick"
+    app:gsFilterBackground="@android:color/transparent"
+    app:gsFilterContentBackground="@color/your_panel_color"
     app:gsFilterCompactTabs="true"
+    app:gsFilterCompactBackground="@android:color/transparent"
     app:gsFilterShowHeader="false"
+    app:gsFilterShowCloseButton="false"
     app:gsFilterShowBeauty="false"
     app:gsFilterShowTabIndicator="true"
     app:gsFilterTabIndicatorColor="@color/your_selected_color"
@@ -275,7 +279,24 @@ Ghi chú:
 - Trong tab Adjust, hàng icon control nằm trên seekbar/value hiện tại; khi header ẩn, seekbar row (gồm reset control và value) chuyển lên compact row, còn Reset All vẫn ở dưới danh sách control. Các nút reset dùng trạng thái disabled khi không có gì để reset.
 - `gsFilterCompactTabs` kéo label/indicator của tab Filter và Adjust gần nhau hơn; `gsFilterTabSpacing` chỉnh khoảng cách giữa hai tab.
 - `gsFilterCloseIcon` đổi icon của `gs_filter_close_button`; app mẫu đang dùng `ic_gs_tick`.
+- `gsFilterShowCloseButton` ẩn riêng nút đóng bằng `INVISIBLE`; mặc định `true`.
 - `gsAdjustResetIcon` mặc định dùng selector có disabled/pressed state.
+
+### Dark mode và nền filter
+
+Các màu mặc định của module được tách trong `filter/src/main/res/values/filter_colors.xml` và
+`filter/src/main/res/values-night/filter_colors.xml`. Host app có thể truyền màu riêng qua XML
+attributes bằng các resource tương ứng trong `values/` và `values-night/`.
+
+Để chỉ làm hàng seekbar compact trong suốt nhưng giữ cụm category/thumbnail có nền:
+
+```xml
+app:gsFilterBackground="@android:color/transparent"
+app:gsFilterCompactBackground="@android:color/transparent"
+app:gsFilterContentBackground="@color/your_panel_color"
+```
+
+App mẫu có `values-night` và `Theme.GsFilter` tương ứng để đi theo dark mode của thiết bị.
 
 ### Beauty
 
@@ -392,7 +413,9 @@ Các XML attributes hiện có:
 | `gsFilterShowTabIndicator`       | Hiển thị indicator dưới tab Filter/Adjust đang chọn                                                                                  |
 | `gsFilterCompactTabs`            | Kéo label/indicator của tab Filter và Adjust gần nhau hơn trong khi vùng bấm vẫn rộng                                                |
 | `gsFilterShowHeader`             | Hiển thị/ẩn toàn bộ header `gs_filter_header`; mặc định `true`                                                                       |
+| `gsFilterShowCloseButton`        | Hiển thị/ẩn riêng nút đóng; dùng `INVISIBLE` khi `false` để giữ cân layout; mặc định `true`                                        |
 | `gsFilterBackground`             | Background của toàn bộ `FilterControlsView`; mặc định `@color/gs_panel_background`                                                   |
+| `gsFilterContentBackground`      | Background riêng cho cụm category/thumbnail `gs_filter_content`; mặc định không ghi đè                                              |
 | `gsFilterHeaderBackground`       | Background riêng của header; có thể đặt `@android:color/transparent`                                                                 |
 | `gsFilterCompactBackground`      | Background riêng của `gs_filter_compact_controls`; có thể đặt `@android:color/transparent`                                           |
 | `gsFilterShowBeauty`             | Hiển thị/ẩn tab và nội dung Beauty; mặc định `true`                                                                                  |
