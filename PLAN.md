@@ -1,5 +1,27 @@
 # PLAN
 
+## Task: Skip redundant category row layout updates
+
+Status: DONE
+Created: 2026-09-14
+Completed: 2026-09-14
+
+### Requirements
+
+- Avoid reassigning category row layout params when its top margin is unchanged.
+- Preserve header visibility and spacing behavior.
+- Change only the `filter` module source.
+
+### Checklist
+
+- [x] Guard the category row layout update.
+- [x] Run diff/static checks and review the diff.
+
+### Notes
+
+- Repeated header/compact-state updates now avoid reassigning unchanged category row layout params.
+- Gradle validation was attempted but is unavailable in this environment because no JDK/java executable is installed.
+
 ## Task: Fast-path identical GPU shader params
 
 Status: DONE

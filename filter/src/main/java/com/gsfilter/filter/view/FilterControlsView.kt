@@ -179,13 +179,17 @@ class FilterControlsView @JvmOverloads constructor(
     private fun renderCategoryRowSpacing() {
         val categoryRow = findViewById<View>(R.id.gs_filter_category_row) ?: return
         val params = categoryRow.layoutParams as? LinearLayout.LayoutParams ?: return
-        params.topMargin = resources.getDimensionPixelSize(
+        val topMargin = resources.getDimensionPixelSize(
             if (showHeader) {
                 R.dimen.gs_filter_category_top_spacing
             } else {
                 R.dimen.gs_filter_compact_category_top_spacing
             },
         )
+        if (params.topMargin == topMargin) {
+            return
+        }
+        params.topMargin = topMargin
         categoryRow.layoutParams = params
     }
 
