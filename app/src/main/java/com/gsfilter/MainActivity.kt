@@ -45,6 +45,8 @@ class MainActivity : ComponentActivity() {
     private var renderedBitmap: Bitmap? = null
     private var isSaving = false
     private var isCameraMode = false
+    private var cameraFacing = CameraCharacteristics.LENS_FACING_BACK
+    private var hasFrontCamera = false
     private var cameraDevice: CameraDevice? = null
     private var cameraSession: CameraCaptureSession? = null
     private var cameraOpening = false
@@ -77,6 +79,7 @@ class MainActivity : ComponentActivity() {
         binding.cameraButton.setOnClickListener {
             if (isCameraMode) stopCameraMode() else requestCameraPermission()
         }
+        binding.switchCameraButton.setOnClickListener { switchCamera() }
         binding.cameraPreview.surfaceTextureListener = cameraSurfaceTextureListener
         collectState()
     }
@@ -192,10 +195,12 @@ class MainActivity : ComponentActivity() {
             return
         }
         isCameraMode = true
+        updateCameraAvailability()
         binding.imageOriginal.isVisible = false
         binding.cameraPreview.isVisible = true
         binding.nextImageButton.isVisible = false
         binding.cameraButton.contentDescription = getString(R.string.stop_camera)
+        updateCameraSwitchButton()
         val state = viewModel.state.value
         binding.filterPreview.setFilterState(
             recipe = state.selectedRecipe,
@@ -216,6 +221,7 @@ class MainActivity : ComponentActivity() {
         binding.imageOriginal.isVisible = true
         binding.nextImageButton.isVisible = true
         binding.cameraButton.contentDescription = getString(R.string.use_camera)
+        updateCameraSwitchButton()
         val state = viewModel.state.value
         binding.filterPreview.setSourceBitmap(state.sourceBitmap)
         binding.filterPreview.setFilterState(
@@ -272,6 +278,53 @@ class MainActivity : ComponentActivity() {
         openCameraIfReady()
     }
 
+    private fun switchCamera() {
+        if (!isCameraMode || !hasFrontCamera) {
+            return
+        }
+        val nextFacing = if (
+            cameraFacing == CameraCharacteristics.LENS_FACING_BACK
+        ) {
+            CameraCharacteristics.LENS_FACING_FRONT
+        } else {
+            CameraCharacteristics.LENS_FACING_BACK
+        }
+        val manager = getSystemService(CameraManager::class.java)
+        val cameraExists = try {
+            findCameraId(manager, nextFacing) != null
+        } catch (error: CameraAccessException) {
+            showCameraError(error)
+            return
+        }
+        if (!cameraExists) {
+            return
+        }
+        cameraFacing = nextFacing
+        updateCameraSwitchButton()
+        stopCameraResources()
+        startCameraResources()
+    }
+
+    private fun updateCameraAvailability() {
+        val manager = getSystemService(CameraManager::class.java)
+        hasFrontCamera = try {
+            findCameraId(manager, CameraCharacteristics.LENS_FACING_FRONT) != null
+        } catch (_: CameraAccessException) {
+            false
+        }
+    }
+
+    private fun updateCameraSwitchButton() {
+        binding.switchCameraButton.isVisible = isCameraMode && hasFrontCamera
+        binding.switchCameraButton.contentDescription = getString(
+            if (cameraFacing == CameraCharacteristics.LENS_FACING_BACK) {
+                R.string.use_front_camera
+            } else {
+                R.string.use_back_camera
+            },
+        )
+    }
+
     private fun stopCameraResources() {
         cameraDetectionGeneration++
         cameraFrameReader?.close()
@@ -312,7 +365,12 @@ class MainActivity : ComponentActivity() {
         val texture = binding.cameraPreview.surfaceTexture ?: return
         val manager = getSystemService(CameraManager::class.java)
         val cameraId = try {
-            findBackCamera(manager)
+            findCameraId(manager, cameraFacing)
+                ?: if (cameraFacing == CameraCharacteristics.LENS_FACING_BACK) {
+                    manager.cameraIdList.firstOrNull()
+                } else {
+                    null
+                }
         } catch (error: CameraAccessException) {
             showCameraError(error)
             return
@@ -337,11 +395,11 @@ class MainActivity : ComponentActivity() {
         }
     }
 
-    private fun findBackCamera(manager: CameraManager): String? =
+    private fun findCameraId(manager: CameraManager, lensFacing: Int): String? =
         manager.cameraIdList.firstOrNull { id ->
             manager.getCameraCharacteristics(id).get(CameraCharacteristics.LENS_FACING) ==
-                CameraCharacteristics.LENS_FACING_BACK
-        } ?: manager.cameraIdList.firstOrNull()
+                lensFacing
+        }
 
     private val cameraSurfaceTextureListener = object : TextureView.SurfaceTextureListener {
         override fun onSurfaceTextureAvailable(surface: SurfaceTexture, width: Int, height: Int) {

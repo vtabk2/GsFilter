@@ -9,6 +9,9 @@
     <string name="next_image">Next image</string>
     <string name="use_camera">Use camera</string>
     <string name="stop_camera">Stop camera</string>
+    <string name="switch_camera">Switch camera</string>
+    <string name="use_front_camera">Use front camera</string>
+    <string name="use_back_camera">Use back camera</string>
     <string name="camera_permission_denied">Camera permission is required</string>
     <string name="camera_open_failed">Could not open camera</string>
     <string name="loading_image">Loading image</string>
