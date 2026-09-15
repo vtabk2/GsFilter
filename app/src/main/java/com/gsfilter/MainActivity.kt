@@ -29,6 +29,7 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import com.gsfilter.databinding.ActivityMainBinding
+import com.gsfilter.filter.MakeupFeatures
 import com.gsfilter.filter.view.FilterControlsView
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
@@ -55,6 +56,8 @@ class MainActivity : ComponentActivity() {
     private var cameraRawSurface: Surface? = null
     private var cameraFilteredSurface: Surface? = null
     private var cameraFrameReader: ImageReader? = null
+    private var cameraMakeupFeatures: MakeupFeatures? = null
+    private var cameraRotationDegrees = 0
     private var cameraDetectionGeneration = 0L
     private val cameraPermissionLauncher = registerForActivityResult(
         ActivityResultContracts.RequestPermission(),
@@ -170,7 +173,7 @@ class MainActivity : ComponentActivity() {
         binding.filterPreview.setFilterState(
             recipe = selectedRecipe,
             adjustments = state.adjustments,
-            makeupFeatures = if (isCameraMode) null else state.makeupFeatures,
+            makeupFeatures = if (isCameraMode) cameraMakeupFeatures else state.makeupFeatures,
         )
         binding.filterControls.setState(
             selectedCategory = state.selectedCategory,
@@ -254,10 +257,11 @@ class MainActivity : ComponentActivity() {
                     image.close()
                     return@setOnImageAvailableListener
                 }
-                viewModel.detectCameraFrame(image, CAMERA_ROTATION_DEGREES) detector@{ features ->
+                viewModel.detectCameraFrame(image, cameraRotationDegrees) detector@{ features ->
                     if (!isCameraMode || detectionGeneration != cameraDetectionGeneration) {
                         return@detector
                     }
+                    cameraMakeupFeatures = features
                     val state = viewModel.state.value
                     binding.filterPreview.setFilterState(
                         recipe = state.selectedRecipe,
@@ -327,6 +331,7 @@ class MainActivity : ComponentActivity() {
 
     private fun stopCameraResources() {
         cameraDetectionGeneration++
+        cameraMakeupFeatures = null
         cameraFrameReader?.close()
         cameraFrameReader = null
         cameraSession?.close()
@@ -380,6 +385,19 @@ class MainActivity : ComponentActivity() {
             return
         }
 
+        val characteristics = manager.getCameraCharacteristics(cameraId)
+        val sensorOrientation = characteristics.get(CameraCharacteristics.SENSOR_ORIENTATION) ?: 0
+        val displayRotation = when (windowManager.defaultDisplay.rotation) {
+            Surface.ROTATION_90 -> 90
+            Surface.ROTATION_180 -> 180
+            Surface.ROTATION_270 -> 270
+            else -> 0
+        }
+        cameraRotationDegrees = if (cameraFacing == CameraCharacteristics.LENS_FACING_FRONT) {
+            (sensorOrientation + displayRotation) % 360
+        } else {
+            (sensorOrientation - displayRotation + 360) % 360
+        }
         texture.setDefaultBufferSize(CAMERA_WIDTH, CAMERA_HEIGHT)
         cameraRawSurface?.release()
         cameraRawSurface = Surface(texture)
@@ -461,9 +479,10 @@ class MainActivity : ComponentActivity() {
     private fun createCameraSession(device: CameraDevice) {
         val rawSurface = cameraRawSurface ?: return
         val filteredSurface = cameraFilteredSurface ?: return
+        val frameReaderSurface = cameraFrameReader?.surface
         try {
             device.createCaptureSession(
-                listOf(rawSurface, filteredSurface),
+                listOfNotNull(rawSurface, filteredSurface, frameReaderSurface),
                 object : CameraCaptureSession.StateCallback() {
                     override fun onConfigured(session: CameraCaptureSession) {
                         runOnUiThread {
@@ -475,6 +494,7 @@ class MainActivity : ComponentActivity() {
                             val request = device.createCaptureRequest(CameraDevice.TEMPLATE_PREVIEW).apply {
                                 addTarget(rawSurface)
                                 addTarget(filteredSurface)
+                                frameReaderSurface?.let { addTarget(it) }
                                 set(
                                     CaptureRequest.CONTROL_AF_MODE,
                                     CaptureRequest.CONTROL_AF_MODE_CONTINUOUS_PICTURE,
@@ -594,7 +614,6 @@ class MainActivity : ComponentActivity() {
         const val TAG = "GsFilterCamera"
         const val CAMERA_WIDTH = 640
         const val CAMERA_HEIGHT = 480
-        const val CAMERA_ROTATION_DEGREES = 0
         const val FILTERED_IMAGES_DIR = "filtered"
         const val FILTERED_IMAGE_PREFIX = "filtered_"
         const val FILTERED_IMAGE_SUFFIX = ".jpg"

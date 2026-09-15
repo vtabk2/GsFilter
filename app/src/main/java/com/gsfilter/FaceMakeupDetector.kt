@@ -2,6 +2,7 @@ package com.gsfilter
 
 import android.graphics.Bitmap
 import android.graphics.PointF
+import android.graphics.RectF
 import android.media.Image
 import com.google.mlkit.vision.common.InputImage
 import com.google.mlkit.vision.face.Face
@@ -43,7 +44,7 @@ internal class FaceMakeupDetector {
         }
         detector.process(InputImage.fromMediaImage(image, rotationDegrees))
             .addOnSuccessListener { faces ->
-                onResult(faces.firstOrNull()?.toMakeupFeatures(image.width, image.height))
+                onResult(faces.firstOrNull()?.toMakeupFeatures(image.width, image.height, rotationDegrees))
             }
             .addOnFailureListener { onResult(null) }
             .addOnCompleteListener {
@@ -56,52 +57,53 @@ internal class FaceMakeupDetector {
         detector.close()
     }
 
-    private fun Face.toMakeupFeatures(width: Int, height: Int): MakeupFeatures? {
-        val leftCheek = getLandmark(FaceLandmark.LEFT_CHEEK)?.position
-            ?: getContour(FaceContour.LEFT_CHEEK)?.points.orEmpty().center()
+    private fun Face.toMakeupFeatures(width: Int, height: Int, rotationDegrees: Int = 0): MakeupFeatures? {
+        val mapPoint = { point: PointF -> point.unrotate(width, height, rotationDegrees) }
+        val leftCheek = getLandmark(FaceLandmark.LEFT_CHEEK)?.position?.let(mapPoint)
+            ?: getContour(FaceContour.LEFT_CHEEK)?.points.orEmpty().map(mapPoint).center()
             ?: return null
-        val rightCheek = getLandmark(FaceLandmark.RIGHT_CHEEK)?.position
-            ?: getContour(FaceContour.RIGHT_CHEEK)?.points.orEmpty().center()
+        val rightCheek = getLandmark(FaceLandmark.RIGHT_CHEEK)?.position?.let(mapPoint)
+            ?: getContour(FaceContour.RIGHT_CHEEK)?.points.orEmpty().map(mapPoint).center()
             ?: return null
         val lipPoints = listOf(
             FaceContour.UPPER_LIP_TOP,
             FaceContour.UPPER_LIP_BOTTOM,
             FaceContour.LOWER_LIP_TOP,
             FaceContour.LOWER_LIP_BOTTOM,
-        ).flatMap { type -> getContour(type)?.points.orEmpty() }
+        ).flatMap { type -> getContour(type)?.points.orEmpty().map(mapPoint) }
         if (lipPoints.isEmpty()) {
             return null
         }
         val upperLipPoints = lipContourPolygon(
             FaceContour.UPPER_LIP_TOP,
             FaceContour.UPPER_LIP_BOTTOM,
-        )
+        ).map(mapPoint)
         val lowerLipPoints = lipContourPolygon(
             FaceContour.LOWER_LIP_TOP,
             FaceContour.LOWER_LIP_BOTTOM,
-        )
+        ).map(mapPoint)
         val outerLipPoints = (upperLipPoints + lowerLipPoints).takeIf { it.size >= 3 } ?: lipPoints
 
         val lipContourCenter = lipPoints.center() ?: return null
-        val mouthLeft = getLandmark(FaceLandmark.MOUTH_LEFT)?.position
-        val mouthRight = getLandmark(FaceLandmark.MOUTH_RIGHT)?.position
+        val mouthLeft = getLandmark(FaceLandmark.MOUTH_LEFT)?.position?.let(mapPoint)
+        val mouthRight = getLandmark(FaceLandmark.MOUTH_RIGHT)?.position?.let(mapPoint)
         val lipCenterX = if (mouthLeft != null && mouthRight != null) {
             (mouthLeft.x + mouthRight.x) * 0.5f
         } else {
             lipContourCenter.x
         }
         val lipCenterY = lipContourCenter.y
-        val bounds = boundingBox
-        val leftEyePoints = getContour(FaceContour.LEFT_EYE)?.points.orEmpty()
-        val rightEyePoints = getContour(FaceContour.RIGHT_EYE)?.points.orEmpty()
+        val bounds = boundingBox.toRectF(width, height, rotationDegrees)
+        val leftEyePoints = getContour(FaceContour.LEFT_EYE)?.points.orEmpty().map(mapPoint)
+        val rightEyePoints = getContour(FaceContour.RIGHT_EYE)?.points.orEmpty().map(mapPoint)
         val leftEyebrowPoints = eyebrowContour(
             FaceContour.LEFT_EYEBROW_TOP,
             FaceContour.LEFT_EYEBROW_BOTTOM,
-        )
+        ).map(mapPoint)
         val rightEyebrowPoints = eyebrowContour(
             FaceContour.RIGHT_EYEBROW_TOP,
             FaceContour.RIGHT_EYEBROW_BOTTOM,
-        )
+        ).map(mapPoint)
         val leftEye = leftEyePoints.center()
         val rightEye = rightEyePoints.center()
         val rotationRadians = if (leftEye != null && rightEye != null) {
@@ -226,4 +228,27 @@ internal class FaceMakeupDetector {
     private fun PointF.normalizedX(width: Int): Float = (x / width).coerceIn(0f, 1f)
 
     private fun PointF.normalizedY(height: Int): Float = (y / height).coerceIn(0f, 1f)
+
+    private fun PointF.unrotate(width: Int, height: Int, rotationDegrees: Int): PointF =
+        when ((rotationDegrees % 360 + 360) % 360) {
+            90 -> PointF(y, height - x)
+            180 -> PointF(width - x, height - y)
+            270 -> PointF(width - y, x)
+            else -> this
+        }
+
+    private fun android.graphics.Rect.toRectF(width: Int, height: Int, rotationDegrees: Int): RectF {
+        val points = listOf(
+            PointF(left.toFloat(), top.toFloat()).unrotate(width, height, rotationDegrees),
+            PointF(right.toFloat(), top.toFloat()).unrotate(width, height, rotationDegrees),
+            PointF(left.toFloat(), bottom.toFloat()).unrotate(width, height, rotationDegrees),
+            PointF(right.toFloat(), bottom.toFloat()).unrotate(width, height, rotationDegrees),
+        )
+        return RectF(
+            points.minOf { it.x },
+            points.minOf { it.y },
+            points.maxOf { it.x },
+            points.maxOf { it.y },
+        )
+    }
 }
