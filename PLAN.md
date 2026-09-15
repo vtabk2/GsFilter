@@ -1,5 +1,89 @@
 # PLAN
 
+## Task: Fix blank filtered camera preview
+
+Status: DONE
+Created: 2026-09-14
+
+### Requirements
+
+- Apply the camera `SurfaceTexture` transform before sampling the external texture.
+- Keep the external camera texture refreshed even when a frame callback does not wake the GL thread.
+- Use homogeneous coordinates and a known texture unit for the OES input.
+- Keep every configured Camera2 output surface in the repeating request.
+- Keep the existing shader program and bitmap path unchanged.
+
+### Checklist
+
+- [x] Transform camera texture coordinates on the GL thread.
+- [x] Refresh the camera texture continuously and run focused checks.
+- [x] Correct the OES texture binding and homogeneous transform, then rerun focused checks.
+- [x] Add the configured frame-reader surface to the repeating request and rerun focused checks.
+
+### Validation note
+
+- XML and diff checks pass; Gradle compilation is blocked because this environment has no Java/JAVA_HOME.
+
+## Task: Fix abandoned camera surface race
+
+Status: IN PROGRESS
+Created: 2026-09-14
+
+### Requirements
+
+- Do not create a capture session from a destroyed camera surface.
+- Serialize camera resource checks with lifecycle callbacks.
+- Avoid duplicate camera opens.
+
+### Checklist
+
+- [x] Guard camera opening and validate surfaces on the main thread.
+- [x] Run focused checks and review the diff.
+
+### Validation note
+
+- XML and diff checks pass; Gradle compilation remains blocked because this environment has no Java/JAVA_HOME.
+
+## Task: Fix camera filter sampler binding
+
+Status: IN PROGRESS
+Created: 2026-09-14
+
+### Requirements
+
+- Bind the camera shader input sampler to the external texture unit.
+- Preserve bitmap preview behavior.
+
+### Checklist
+
+- [x] Enable sampler binding for the live preview.
+- [x] Run focused checks and review the diff.
+
+### Validation note
+
+- XML and diff checks pass; Gradle compilation remains blocked because this environment has no Java/JAVA_HOME.
+
+## Task: Add realtime face tracking for camera
+
+Status: IN PROGRESS
+Created: 2026-09-14
+
+### Requirements
+
+- Reuse the existing ML Kit face detector for camera frames.
+- Update shader makeup features without blocking camera preview.
+- Drop stale frames and close every `Image` safely.
+
+### Checklist
+
+- [x] Add camera-frame face detection.
+- [x] Feed the latest features into the realtime preview.
+- [x] Run focused checks and review the diff.
+
+### Validation note
+
+- XML and diff checks pass; Gradle compilation is blocked because this environment has no Java/JAVA_HOME.
+
 ## Task: Fix camera shader compile crash
 
 Status: IN PROGRESS

@@ -176,6 +176,7 @@ internal object GlFilterProgram {
         }
         if (bindTextureSampler) {
             GLES20.glUniform1i(handles.texture, 0)
+            GLES20.glUniform1i(handles.lutTexture, 1)
         }
         if (uploadLutUniforms) {
             val lutStrength = if (lutTextureId != 0) params.lutStrength else 0f

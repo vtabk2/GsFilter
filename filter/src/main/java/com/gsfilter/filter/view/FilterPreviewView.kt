@@ -76,6 +76,7 @@ class FilterPreviewView @JvmOverloads constructor(
     }
 
     fun setCameraSource(enabled: Boolean, onSurfaceReady: ((Surface?) -> Unit)? = null) {
+        renderMode = RENDERMODE_WHEN_DIRTY
         queueEvent {
             filterRenderer.setCameraSource(
                 enabled = enabled,
@@ -137,6 +138,19 @@ class FilterPreviewView @JvmOverloads constructor(
 
         private val vertexBuffer = GlFilterProgram.floatBufferOf(GlFilterProgram.VERTICES)
         private val textureBuffer = GlFilterProgram.floatBufferOf(GlFilterProgram.TEXTURE_COORDS)
+        private val defaultTextureCoords = GlFilterProgram.TEXTURE_COORDS.copyOf()
+        private val cameraSourceCoords = floatArrayOf(
+            0f,
+            0f,
+            1f,
+            0f,
+            0f,
+            1f,
+            1f,
+            1f,
+        )
+        private val cameraTextureMatrix = FloatArray(16)
+        private val cameraTextureCoords = FloatArray(defaultTextureCoords.size)
 
         private var program = 0
         private var bitmapProgram = 0
@@ -166,7 +180,7 @@ class FilterPreviewView @JvmOverloads constructor(
         private var cameraHeight = 0
         @Volatile
         private var cameraFrameAvailable = false
-
+        private var hasCameraFrame = false
         override fun onSurfaceCreated(gl: GL10?, config: EGLConfig?) {
             bitmapProgram = GlFilterProgram.buildProgram()
             program = bitmapProgram
@@ -203,8 +217,16 @@ class FilterPreviewView @JvmOverloads constructor(
             val cameraTexture = cameraSurfaceTexture
             if (cameraTexture != null) {
                 if (cameraFrameAvailable) {
-                    cameraSurfaceTexture?.updateTexImage()
+                    GLES20.glActiveTexture(GLES20.GL_TEXTURE0)
+                    GLES20.glBindTexture(GLES11Ext.GL_TEXTURE_EXTERNAL_OES, cameraTextureId)
+                    cameraTexture.updateTexImage()
+                    cameraTexture.getTransformMatrix(cameraTextureMatrix)
+                    updateCameraTextureCoordinates()
                     cameraFrameAvailable = false
+                    hasCameraFrame = true
+                }
+                if (!hasCameraFrame) {
+                    return
                 }
             } else {
                 uploadPendingBitmap()
@@ -221,7 +243,6 @@ class FilterPreviewView @JvmOverloads constructor(
                 renderWidth = renderWidth,
                 renderHeight = renderHeight,
                 params = params,
-                bindTextureSampler = false,
                 uploadMakeupUniforms = makeupUniformsNeedUpload,
                 uploadAdjustmentUniforms = adjustmentUniformsNeedUpload,
                 uploadEffectUniforms = effectUniformsNeedUpload,
@@ -252,12 +273,18 @@ class FilterPreviewView @JvmOverloads constructor(
             onSurfaceReady: (Surface?) -> Unit,
         ) {
             if (!enabled) {
-                cameraSurfaceTexture?.setOnFrameAvailableListener(null)
                 cameraSurface?.release()
                 cameraSurfaceTexture?.release()
                 cameraSurface = null
                 cameraSurfaceTexture = null
                 cameraFrameAvailable = false
+                hasCameraFrame = false
+                makeupUniformsNeedUpload = true
+                adjustmentUniformsNeedUpload = true
+                effectUniformsNeedUpload = true
+                texelSizeNeedUpload = true
+                textureBuffer.clear()
+                textureBuffer.put(defaultTextureCoords).position(0)
                 if (cameraTextureId != 0) {
                     GLES20.glDeleteTextures(1, intArrayOf(cameraTextureId), 0)
                     cameraTextureId = 0
@@ -289,6 +316,7 @@ class FilterPreviewView @JvmOverloads constructor(
                 return
             }
             val textures = IntArray(1)
+            GLES20.glActiveTexture(GLES20.GL_TEXTURE0)
             GLES20.glGenTextures(1, textures, 0)
             cameraTextureId = textures[0]
             GLES20.glBindTexture(GLES11Ext.GL_TEXTURE_EXTERNAL_OES, cameraTextureId)
@@ -322,12 +350,36 @@ class FilterPreviewView @JvmOverloads constructor(
             cameraSurface = Surface(requireNotNull(cameraSurfaceTexture))
             program = cameraProgram
             handles = GlFilterProgram.resolveHandles(program)
+            makeupUniformsNeedUpload = true
+            adjustmentUniformsNeedUpload = true
+            effectUniformsNeedUpload = true
+            texelSizeNeedUpload = true
             GLES20.glUseProgram(program)
             GlFilterProgram.bindAttributes(handles!!, vertexBuffer, textureBuffer)
-            imageWidth = width
-            imageHeight = height
+            imageWidth = height
+            imageHeight = width
             updateVertexBuffer()
             onSurfaceReady(cameraSurface)
+        }
+
+        private fun updateCameraTextureCoordinates() {
+            var index = 0
+            while (index < defaultTextureCoords.size) {
+                val x = cameraSourceCoords[index]
+                val y = cameraSourceCoords[index + 1]
+                val transformedX =
+                    (cameraTextureMatrix[0] * x) + (cameraTextureMatrix[4] * y) + cameraTextureMatrix[12]
+                val transformedY =
+                    (cameraTextureMatrix[1] * x) + (cameraTextureMatrix[5] * y) + cameraTextureMatrix[13]
+                val transformedW =
+                    (cameraTextureMatrix[3] * x) + (cameraTextureMatrix[7] * y) + cameraTextureMatrix[15]
+                val safeW = if (transformedW == 0f) 1f else transformedW
+                cameraTextureCoords[index] = transformedX / safeW
+                cameraTextureCoords[index + 1] = transformedY / safeW
+                index += 2
+            }
+            textureBuffer.clear()
+            textureBuffer.put(cameraTextureCoords).position(0)
         }
 
         fun setFilterParams(nextParams: ShaderFilterParams) {
