@@ -242,8 +242,8 @@ class MainActivity : ComponentActivity() {
         val handler = cameraHandler ?: return
         val detectionGeneration = ++cameraDetectionGeneration
         cameraFrameReader = ImageReader.newInstance(
-            CAMERA_WIDTH,
-            CAMERA_HEIGHT,
+            CAMERA_ANALYSIS_WIDTH,
+            CAMERA_ANALYSIS_HEIGHT,
             ImageFormat.YUV_420_888,
             2,
         ).apply {
@@ -614,6 +614,8 @@ class MainActivity : ComponentActivity() {
         const val TAG = "GsFilterCamera"
         const val CAMERA_WIDTH = 640
         const val CAMERA_HEIGHT = 480
+        const val CAMERA_ANALYSIS_WIDTH = 480
+        const val CAMERA_ANALYSIS_HEIGHT = 360
         const val FILTERED_IMAGES_DIR = "filtered"
         const val FILTERED_IMAGE_PREFIX = "filtered_"
         const val FILTERED_IMAGE_SUFFIX = ".jpg"

@@ -73,16 +73,20 @@ Created: 2026-09-14
 - Reuse the existing ML Kit face detector for camera frames.
 - Update shader makeup features without blocking camera preview.
 - Drop stale frames and close every `Image` safely.
+- Keep eyebrow contour analysis responsive enough for live preview.
 
 ### Checklist
 
 - [x] Add camera-frame face detection.
 - [x] Feed the latest features into the realtime preview.
+- [x] Use a smaller analysis stream while keeping the preview stream unchanged.
 - [x] Run focused checks and review the diff.
 
 ### Validation note
 
-- XML and diff checks pass; Gradle compilation is blocked because this environment has no Java/JAVA_HOME.
+- Camera analysis uses a separate 480x360 YUV stream; the 640x480 preview is unchanged.
+- ML Kit uses FAST + all contours, without landmark mode, to reduce per-frame work while preserving eyebrow contours.
+- XML and diff checks pass; Gradle compilation remains blocked by the environment's loopback connection error.
 
 ## Task: Fix camera shader compile crash
 

@@ -24,7 +24,6 @@ internal class FaceMakeupDetector {
     private val detector: FaceDetector = FaceDetection.getClient(
         FaceDetectorOptions.Builder()
             .setPerformanceMode(FaceDetectorOptions.PERFORMANCE_MODE_FAST)
-            .setLandmarkMode(FaceDetectorOptions.LANDMARK_MODE_ALL)
             .setContourMode(FaceDetectorOptions.CONTOUR_MODE_ALL)
             .build(),
     )
@@ -178,8 +177,8 @@ internal class FaceMakeupDetector {
             return 1f to 1f
         }
 
-        val leftEyeAvailable = getLandmark(FaceLandmark.LEFT_EYE) != null
-        val rightEyeAvailable = getLandmark(FaceLandmark.RIGHT_EYE) != null
+        val leftEyeAvailable = getContour(FaceContour.LEFT_EYE)?.points?.isNotEmpty() == true
+        val rightEyeAvailable = getContour(FaceContour.RIGHT_EYE)?.points?.isNotEmpty() == true
         val visibleLeft = when {
             leftEyeAvailable != rightEyeAvailable -> leftEyeAvailable
             else -> {
