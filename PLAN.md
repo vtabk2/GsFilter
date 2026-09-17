@@ -1,5 +1,32 @@
 # PLAN
 
+## Task: Follow up on filter review findings
+
+Status: TODO
+Created: 2026-09-17
+
+### Requirements
+
+- Keep CPU fallback and GPU preview output aligned for filters that combine Beauty, Warp, and art effects.
+- Preserve the current filter catalog behavior while adding only clearly useful presets.
+- Keep the None filter's Beauty and Adjust preservation behavior intact.
+
+### Checklist
+
+- [ ] Align CPU and GPU edge sampling when Face Slimming or Eye Enlargement is combined with Sketch, Ink, Pencil, or Charcoal.
+- [ ] Align the Teeth Whitening color mask input between CPU and GPU paths.
+- [ ] Add focused CPU/GPU parity regression coverage for the affected combinations.
+- [ ] Add catalog recipe range validation for future filter additions.
+- [ ] Review whether a small set of Beauty presets is useful; add only after visual A/B review.
+- [ ] Consolidate or document the duplicated None-filter preservation logic in FilterUiState and FilterControlsView.
+- [ ] Run unit tests and manual device checks on GPU and CPU fallback paths.
+
+### Notes
+
+- Current catalog audit found 103 unique filters across 15 categories, with 10 LUT filters and 6 art filters.
+- Only the `beauty` preset currently contains Beauty values; do not add more presets without a product or visual need.
+- Gradle verification is currently blocked because Java and `JAVA_HOME` are unavailable in the environment.
+
 ## Task: Preserve Beauty and Adjust when selecting None filter
 
 Status: DONE
