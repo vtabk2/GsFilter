@@ -15,7 +15,7 @@ Phạm vi hiện tại:
 - Compile SDK 36; app mẫu target SDK 36.
 - Gradle wrapper 9.0.0, Android Gradle Plugin 8.13.2, Kotlin 2.2.21, KSP 2.2.21-2.0.4, Java 17.
 - Kotlin + XML views.
-- App mẫu có camera mode native Camera2: preview gốc và preview filter chạy realtime.
+- App mẫu có camera mode native Camera2: preview gốc và preview filter chạy realtime; nhận diện khuôn mặt chạy bất đồng bộ qua luồng phân tích YUV.
 - Preview GPU qua `FilterPreviewView`.
 - Filter preset là data recipe, gồm color/effect/LUT.
 - Adjust controls là bộ cố định.
@@ -25,6 +25,8 @@ Phạm vi hiện tại:
 - Render nhiều bitmap nên đi qua `FilterRenderer.renderBatch()` để xử lý lần lượt và nhận progress %.
 
 Ảnh demo được tải từ `app/src/main/assets`. Nút `Next image` chuyển lần lượt qua các ảnh được hỗ trợ trong thư mục assets.
+
+Camera mode hiện dùng trực tiếp `SurfaceTexture` cho preview GPU và `ImageReader` YUV cho face tracking. Pipeline CameraX chuyển từng frame RGBA thành bitmap để đi qua đường preview/export bitmap vẫn là phần mở rộng riêng, chưa được bật trong app mẫu.
 
 ## Cài đặt thư viện
 

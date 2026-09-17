@@ -434,6 +434,7 @@ Created: 2026-09-14
 ### Notes
 
 - Step 1 is complete: permission request and UI button are wired; realtime frame processing is intentionally deferred.
+- The existing demo camera mode is a separate native Camera2 `SurfaceTexture` preview with asynchronous YUV face tracking; the deferred work is the CameraX RGBA-to-bitmap pipeline.
 - `git diff --check` passed; Gradle compilation was attempted but is unavailable because no JDK is configured.
 
 ## Task: Short-circuit empty render batches
