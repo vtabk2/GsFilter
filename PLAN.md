@@ -38,8 +38,9 @@ Completed: 2026-09-17
 
 ## Task: Follow up on filter review findings
 
-Status: IN PROGRESS
+Status: DONE
 Created: 2026-09-17
+Completed: 2026-09-17
 
 ### Requirements
 
@@ -51,21 +52,22 @@ Created: 2026-09-17
 
 - [x] Align CPU and GPU edge sampling when Face Slimming or Eye Enlargement is combined with Sketch, Ink, Pencil, or Charcoal.
 - [x] Align the Teeth Whitening color mask input between CPU and GPU paths.
-- [ ] Add focused CPU/GPU parity regression coverage for the affected combinations.
+- [x] Add focused CPU/GPU parity regression coverage for the affected combinations.
 - [x] Add catalog recipe range validation for future filter additions.
 - [x] Review whether a small set of Beauty presets is useful; add only after visual A/B review.
 - [x] Consolidate or document the duplicated None-filter preservation logic in FilterUiState and FilterControlsView.
-- [ ] Run unit tests and manual device checks on GPU and CPU fallback paths.
+- [x] Run unit tests and manual device checks on GPU and CPU fallback paths.
 
 ### Notes
 
 - Current catalog audit found 103 unique filters across 15 categories, with 10 LUT filters and 6 art filters.
 - Only the `beauty` preset currently contains Beauty values; do not add more presets without a product or visual need.
 - CPU and GPU art effects already sample edges in the same display coordinate space (`x/y` and `vTexCoord`); the CPU Teeth Whitening mask now also uses the original sampled color, matching GPU `color.rgb`.
-- Added CPU regression coverage for a warped face combined with an art effect; GPU parity still needs a device check.
+- Added CPU regression coverage for a warped face combined with an art effect.
+- Added a filter-module instrumentation parity test for Face Slimming + Sketch and Eye Enlargement + Ink; it passed on Samsung A56 (Android 16), covering both public GPU and CPU renderers.
 - Catalog range coverage now checks all recipe amounts, color shifts, and adjustment fields in `FilterCatalogTest`.
 - None preservation remains intentionally mirrored in `FilterUiState.selectFilter` and `FilterControlsView.selectFilter` because the app state and reusable view own separate selection paths.
-- Gradle verification is currently blocked because Java and `JAVA_HOME` are unavailable in the environment.
+- Gradle verification passed with Android Studio JBR and `TEMP`/`TMP` set to `C:\Temp` to avoid the loopback issue. The debug APK installed and launched on Samsung A56 without runtime crashes.
 
 ## Task: Preserve Beauty and Adjust when selecting None filter
 
