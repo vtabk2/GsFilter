@@ -29,6 +29,7 @@ Completed: 2026-09-17
 
 - The change is local to `FilterControlsView`; category callbacks continue using the existing `onCategorySelected` path.
 - Gradle verification remains blocked because Java and `JAVA_HOME` are unavailable in the environment.
+- Direct filter taps preserve the current rail position; only explicit category or image changes request a scroll.
 
 ## Task: Follow up on filter review findings
 
@@ -1308,6 +1309,8 @@ Created: 2026-09-12
 ### Notes
 
 - This removes repeated list allocations during category/filter state updates.
+- `FilterControlsView` now reuses the built rail list while the catalog and rail mode stay unchanged.
+- Gradle verification remains blocked by the shell loopback connection error.
 
 ## Task: Avoid thumbnail rebind on filter selection
 

@@ -64,6 +64,10 @@ class FilterControlsView @JvmOverloads constructor(
     private var filterIntensityDispatchPosted = false
     private var filterScrollWasDragged = false
     private var filterScrollRequestId = 0
+    private var cachedRailCatalog: FilterPack? = null
+    private var cachedRailCategoryId: String? = null
+    private var cachedRailUsesFull = false
+    private var cachedRailFilters: List<RailFilter>? = null
     private val filterIntensityDispatchRunnable = Runnable {
         dispatchPendingFilterIntensity()
     }
@@ -311,12 +315,15 @@ class FilterControlsView @JvmOverloads constructor(
         super.onDetachedFromWindow()
     }
 
-    private fun renderState(scrollToCategory: Boolean = false) {
+    private fun renderState(
+        scrollToSelected: Boolean = true,
+        scrollToCategory: Boolean = false,
+    ) {
         renderOriginalAction()
         renderCategories(selectedCategory)
         renderFilterIntensity()
         renderBeauty()
-        renderFilterItems(scrollToSelected = true, scrollToCategory = scrollToCategory)
+        renderFilterItems(scrollToSelected = scrollToSelected, scrollToCategory = scrollToCategory)
     }
 
     private fun renderFilterItems(scrollToSelected: Boolean, scrollToCategory: Boolean = false) {
@@ -815,26 +822,44 @@ class FilterControlsView @JvmOverloads constructor(
         }
 
     private fun filtersForRail(): List<RailFilter> {
-        if (!usesFullFilterRail()) {
-            return catalog.filtersForCategory(selectedCategory.id).map { filter ->
+        val usesFullRail = usesFullFilterRail()
+        val categoryId = if (usesFullRail) null else selectedCategory.id
+        cachedRailFilters?.let { cached ->
+            if (
+                cachedRailCatalog === catalog &&
+                cachedRailUsesFull == usesFullRail &&
+                cachedRailCategoryId == categoryId
+            ) {
+                return cached
+            }
+        }
+
+        val filters = if (!usesFullRail) {
+            catalog.filtersForCategory(selectedCategory.id).map { filter ->
                 RailFilter(filter = filter, categoryId = selectedCategory.id)
             }
-        }
-        val seen = HashSet<String>()
-        val result = ArrayList<RailFilter>()
-        visibleCategories().forEach { category ->
-            catalog.filtersForCategory(category.id).forEach { filter ->
-                if (filter.id != catalog.defaultFilter.id && seen.add(filter.id)) {
-                    result += RailFilter(filter = filter, categoryId = category.id)
+        } else {
+            val seen = HashSet<String>()
+            val result = ArrayList<RailFilter>()
+            visibleCategories().forEach { category ->
+                catalog.filtersForCategory(category.id).forEach { filter ->
+                    if (filter.id != catalog.defaultFilter.id && seen.add(filter.id)) {
+                        result += RailFilter(filter = filter, categoryId = category.id)
+                    }
                 }
             }
-        }
-        catalog.options.forEach { filter ->
-            if (filter.id != catalog.defaultFilter.id && seen.add(filter.id)) {
-                result += RailFilter(filter = filter, categoryId = null)
+            catalog.options.forEach { filter ->
+                if (filter.id != catalog.defaultFilter.id && seen.add(filter.id)) {
+                    result += RailFilter(filter = filter, categoryId = null)
+                }
             }
+            result
         }
-        return result
+        cachedRailCatalog = catalog
+        cachedRailCategoryId = categoryId
+        cachedRailUsesFull = usesFullRail
+        cachedRailFilters = filters
+        return filters
     }
 
     private fun visibleCategoryById(id: String): FilterCategory? =
@@ -854,7 +879,7 @@ class FilterControlsView @JvmOverloads constructor(
         }
         selectedFilter = filter
         selectedRecipe = if (filter.id == catalog.defaultFilter.id) selectedRecipe else filter.recipe
-        renderState()
+        renderState(scrollToSelected = false)
         if (categoryChanged) {
             onCategorySelected?.invoke(selectedCategory)
         }
