@@ -278,8 +278,9 @@ Created: 2026-09-14
 
 ## Task: Match Beauty and Adjust secondary text colors
 
-Status: IN PROGRESS
+Status: DONE
 Created: 2026-09-14
+Completed: 2026-09-17
 
 ### Requirements
 
@@ -291,7 +292,7 @@ Created: 2026-09-14
 
 - [x] Add the Beauty text color attribute and apply it to unselected controls.
 - [x] Configure the demo app to reuse its Adjust secondary color.
-- [ ] Run focused checks and review the diff.
+- [x] Run focused checks and review the diff.
 
 ### Notes
 
