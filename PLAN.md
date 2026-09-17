@@ -1121,6 +1121,8 @@ Created: 2026-09-12
 ### Notes
 
 - The check uses the already-built batch params, so it adds no per-image recipe conversion.
+- `FilterBitmapRendererTest` now covers zero-intensity no-op detection and rejects an active effect.
+- Gradle verification remains blocked by the shell loopback connection error.
 
 ## Task: Reuse batch shader params
 
@@ -1400,6 +1402,7 @@ Created: 2026-09-12
 ### Checklist
 
 - [x] Detect default and zero-intensity recipes with neutral adjustments.
+- [x] Reuse the shared no-op predicate for other effective no-op recipes.
 - [x] Reuse the existing bounded source scaling path.
 - [x] Keep source bitmap ownership unchanged.
 - [ ] Run unit tests, compile, and review the diff.
@@ -1407,6 +1410,8 @@ Created: 2026-09-12
 ### Notes
 
 - Non-neutral recipes keep the existing GPU-first path.
+- Thumbnail rendering now reuses `FilterBitmapRenderer.isNoOp`, so non-default recipes that resolve to no-op also bypass GPU and pixel processing.
+- Gradle verification remains blocked by the shell loopback connection error.
 
 ## Task: Add CPU no-op render fast path
 

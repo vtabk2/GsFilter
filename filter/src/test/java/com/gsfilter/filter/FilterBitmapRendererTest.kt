@@ -2,6 +2,7 @@ package com.gsfilter.filter
 
 import com.gsfilter.filter.renderer.FilterBitmapRenderer
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNotEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test
@@ -22,6 +23,21 @@ class FilterBitmapRendererTest {
 
         assertEquals(color, output.single())
         assertTrue(output !== input)
+    }
+
+    @Test
+    fun `zero intensity is no-op while active effects are not`() {
+        val zeroIntensity = ShaderFilterParams.from(
+            recipe = FilterRecipe(effect = FilterEffect.Ink, intensity = 0),
+            adjustments = Adjustments(),
+        )
+        val activeEffect = ShaderFilterParams.from(
+            recipe = FilterRecipe(effect = FilterEffect.Ink),
+            adjustments = Adjustments(brightness = 1),
+        )
+
+        assertTrue(FilterBitmapRenderer.isNoOp(zeroIntensity))
+        assertFalse(FilterBitmapRenderer.isNoOp(activeEffect))
     }
 
     @Test
