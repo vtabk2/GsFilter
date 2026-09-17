@@ -969,12 +969,13 @@ Created: 2026-09-12
 
 ### Checklist
 
-- [ ] Precompute sorted lists once.
+- [x] Precompute sorted lists once.
 - [ ] Run filter unit tests and review the diff.
 
 ### Notes
 
 - Keep the existing `FilterPack` API unchanged.
+- `FilterCatalog.sortedFiltersByCategory` builds the priority-sorted lists lazily and reuses them for later category renders.
 
 ## Task: Avoid redundant offscreen texture binds
 
