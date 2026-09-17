@@ -105,8 +105,9 @@ Created: 2026-09-14
 
 ## Task: Fix abandoned camera surface race
 
-Status: IN PROGRESS
+Status: DONE
 Created: 2026-09-14
+Completed: 2026-09-17
 
 ### Requirements
 
@@ -125,8 +126,9 @@ Created: 2026-09-14
 
 ## Task: Fix camera filter sampler binding
 
-Status: IN PROGRESS
+Status: DONE
 Created: 2026-09-14
+Completed: 2026-09-17
 
 ### Requirements
 
@@ -144,8 +146,9 @@ Created: 2026-09-14
 
 ## Task: Add realtime face tracking for camera
 
-Status: IN PROGRESS
+Status: DONE
 Created: 2026-09-14
+Completed: 2026-09-17
 
 ### Requirements
 
@@ -169,8 +172,9 @@ Created: 2026-09-14
 
 ## Task: Fix camera shader compile crash
 
-Status: IN PROGRESS
+Status: DONE
 Created: 2026-09-14
+Completed: 2026-09-17
 
 ### Requirements
 
@@ -188,8 +192,9 @@ Created: 2026-09-14
 
 ## Task: Add realtime camera preview
 
-Status: IN PROGRESS
+Status: DONE
 Created: 2026-09-14
+Completed: 2026-09-17
 
 ### Requirements
 
@@ -285,8 +290,9 @@ Created: 2026-09-14
 
 ## Task: Fix Beauty reset icon color in dark mode
 
-Status: IN PROGRESS
+Status: DONE
 Created: 2026-09-14
+Completed: 2026-09-17
 
 ### Requirements
 
@@ -300,8 +306,9 @@ Created: 2026-09-14
 
 ## Task: Update README for current filter UI configuration
 
-Status: IN PROGRESS
+Status: DONE
 Created: 2026-09-14
+Completed: 2026-09-17
 
 ### Requirements
 
@@ -316,8 +323,9 @@ Created: 2026-09-14
 
 ## Task: Separate compact seekbar and filter content backgrounds
 
-Status: IN PROGRESS
+Status: DONE
 Created: 2026-09-14
+Completed: 2026-09-17
 
 ### Requirements
 
@@ -333,8 +341,9 @@ Created: 2026-09-14
 
 ## Task: Make the demo filter panel background transparent
 
-Status: IN PROGRESS
+Status: DONE
 Created: 2026-09-14
+Completed: 2026-09-17
 
 ### Requirements
 
@@ -348,8 +357,9 @@ Created: 2026-09-14
 
 ## Task: Add independent filter close-button visibility
 
-Status: IN PROGRESS
+Status: DONE
 Created: 2026-09-14
+Completed: 2026-09-17
 
 ### Requirements
 
@@ -659,8 +669,9 @@ Completed: 2026-09-13
 
 ## Task: Add programmatic FilterControlsView visibility and background configuration
 
-Status: IN PROGRESS
+Status: DONE
 Created: 2026-09-13
+Completed: 2026-09-17
 
 ### Requirements
 
@@ -681,8 +692,9 @@ Created: 2026-09-13
 
 ## Task: Add a switch for the Beauty tab
 
-Status: IN PROGRESS
+Status: DONE
 Created: 2026-09-12
+Completed: 2026-09-17
 
 ### Requirements
 
@@ -705,8 +717,9 @@ Created: 2026-09-12
 
 ## Task: Use partial binds for thumbnail updates
 
-Status: IN PROGRESS
+Status: DONE
 Created: 2026-09-12
+Completed: 2026-09-17
 
 ### Requirements
 
@@ -726,8 +739,9 @@ Created: 2026-09-12
 
 ## Task: Avoid neutral adjustment allocations
 
-Status: IN PROGRESS
+Status: DONE
 Created: 2026-09-12
+Completed: 2026-09-17
 
 ### Requirements
 
@@ -747,8 +761,9 @@ Created: 2026-09-12
 
 ## Task: Skip redundant GPU uniform uploads
 
-Status: IN PROGRESS
+Status: DONE
 Created: 2026-09-12
+Completed: 2026-09-17
 
 ### Requirements
 
@@ -767,8 +782,9 @@ Created: 2026-09-12
 
 ## Task: Reuse row offsets in CPU renders
 
-Status: IN PROGRESS
+Status: DONE
 Created: 2026-09-12
+Completed: 2026-09-17
 
 ### Requirements
 
@@ -787,8 +803,9 @@ Created: 2026-09-12
 
 ## Task: Reuse the existing pixel index in CPU renders
 
-Status: IN PROGRESS
+Status: DONE
 Created: 2026-09-12
+Completed: 2026-09-17
 
 ### Requirements
 
@@ -807,8 +824,9 @@ Created: 2026-09-12
 
 ## Task: Reuse face rotation trigonometry in CPU renders
 
-Status: IN PROGRESS
+Status: DONE
 Created: 2026-09-12
+Completed: 2026-09-17
 
 ### Requirements
 
@@ -827,8 +845,9 @@ Created: 2026-09-12
 
 ## Task: Skip unchanged preview parameter conversion
 
-Status: IN PROGRESS
+Status: DONE
 Created: 2026-09-12
+Completed: 2026-09-17
 
 ### Requirements
 
@@ -847,8 +866,9 @@ Created: 2026-09-12
 
 ## Task: Reuse neutral filter model instances
 
-Status: IN PROGRESS
+Status: DONE
 Created: 2026-09-12
+Completed: 2026-09-17
 
 ### Requirements
 
@@ -867,8 +887,9 @@ Created: 2026-09-12
 
 ## Task: Scroll focused filter category into view
 
-Status: IN PROGRESS
+Status: DONE
 Created: 2026-09-12
+Completed: 2026-09-17
 
 ### Requirements
 
@@ -887,8 +908,9 @@ Created: 2026-09-12
 
 ## Task: Focus selected filter category after image changes
 
-Status: IN PROGRESS
+Status: DONE
 Created: 2026-09-12
+Completed: 2026-09-17
 
 ### Requirements
 
