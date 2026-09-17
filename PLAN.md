@@ -43,18 +43,21 @@ Created: 2026-09-17
 
 ### Checklist
 
-- [ ] Align CPU and GPU edge sampling when Face Slimming or Eye Enlargement is combined with Sketch, Ink, Pencil, or Charcoal.
-- [ ] Align the Teeth Whitening color mask input between CPU and GPU paths.
+- [x] Align CPU and GPU edge sampling when Face Slimming or Eye Enlargement is combined with Sketch, Ink, Pencil, or Charcoal.
+- [x] Align the Teeth Whitening color mask input between CPU and GPU paths.
 - [ ] Add focused CPU/GPU parity regression coverage for the affected combinations.
-- [ ] Add catalog recipe range validation for future filter additions.
-- [ ] Review whether a small set of Beauty presets is useful; add only after visual A/B review.
-- [ ] Consolidate or document the duplicated None-filter preservation logic in FilterUiState and FilterControlsView.
+- [x] Add catalog recipe range validation for future filter additions.
+- [x] Review whether a small set of Beauty presets is useful; add only after visual A/B review.
+- [x] Consolidate or document the duplicated None-filter preservation logic in FilterUiState and FilterControlsView.
 - [ ] Run unit tests and manual device checks on GPU and CPU fallback paths.
 
 ### Notes
 
 - Current catalog audit found 103 unique filters across 15 categories, with 10 LUT filters and 6 art filters.
 - Only the `beauty` preset currently contains Beauty values; do not add more presets without a product or visual need.
+- CPU and GPU art effects already sample edges in the same display coordinate space (`x/y` and `vTexCoord`); the CPU Teeth Whitening mask now also uses the original sampled color, matching GPU `color.rgb`.
+- Catalog range coverage now checks all recipe amounts, color shifts, and adjustment fields in `FilterCatalogTest`.
+- None preservation remains intentionally mirrored in `FilterUiState.selectFilter` and `FilterControlsView.selectFilter` because the app state and reusable view own separate selection paths.
 - Gradle verification is currently blocked because Java and `JAVA_HOME` are unavailable in the environment.
 
 ## Task: Preserve Beauty and Adjust when selecting None filter
@@ -931,8 +934,9 @@ Completed: 2026-09-17
 
 ## Task: Scroll to selected filter when image changes
 
-Status: IN PROGRESS
+Status: DONE
 Created: 2026-09-12
+Completed: 2026-09-17
 
 ### Requirements
 
@@ -941,13 +945,15 @@ Created: 2026-09-12
 
 ### Checklist
 
-- [ ] Treat source/thumbnail changes as scroll-triggering updates.
-- [ ] Scroll after the submitted list has been laid out.
-- [ ] Review the diff and document manual verification.
+- [x] Treat source/thumbnail changes as scroll-triggering updates.
+- [x] Scroll after the submitted list has been laid out.
+- [x] Review the diff and document manual verification.
 
 ### Notes
 
 - The selected filter may remain unchanged while its source bitmap changes.
+- `FilterControlsView` now scrolls to the selected filter when the source bitmap or thumbnail key changes, after the submitted list is laid out; stale scroll requests are ignored.
+- Manual device check passed on Samsung A56 (`R5CYA0JB80`): selected `Peach`, switched to the next image, returned to the first image, and confirmed `Peach` was restored and visible at the leading rail position.
 
 ## Task: Cache sorted filters by category
 

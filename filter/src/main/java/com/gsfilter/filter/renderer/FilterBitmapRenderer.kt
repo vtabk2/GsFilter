@@ -422,7 +422,7 @@ object FilterBitmapRenderer {
                     outerEdge = 1.05f,
                 )
                 val teethAmount = params.teethWhitening * teethRegionMask * faceMask *
-                    teethColorMask(red, green, blue) * 0.65f
+                    teethColorMask(sourceRed, sourceGreen, sourceBlue) * 0.65f
                 val teethLuma = gray(red, green, blue)
                 val teethLift = teethAmount * (1f - teethLuma) * 0.22f
                 red += teethLift

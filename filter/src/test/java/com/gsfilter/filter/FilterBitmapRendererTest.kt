@@ -197,6 +197,45 @@ class FilterBitmapRendererTest {
     }
 
     @Test
+    fun `teeth whitening uses the source color when other beauty effects are active`() {
+        val source = 0xff998573.toInt()
+        val features = MakeupFeatures(
+            leftCheekX = 0f,
+            leftCheekY = 0f,
+            rightCheekX = 0f,
+            rightCheekY = 0f,
+            cheekRadiusX = 0f,
+            cheekRadiusY = 0f,
+            lipCenterX = 0.5f,
+            lipCenterY = 0.5f,
+            lipRadiusX = 0.5f,
+            lipRadiusY = 1f,
+        )
+        val whiteningOnly = FilterBitmapRenderer.renderPixels(
+            pixels = intArrayOf(source),
+            width = 1,
+            height = 1,
+            params = ShaderFilterParams.from(
+                recipe = FilterRecipe(skinWhitening = 100),
+                adjustments = Adjustments(),
+                makeupFeatures = features,
+            ),
+        )
+        val whiteningAndTeeth = FilterBitmapRenderer.renderPixels(
+            pixels = intArrayOf(source),
+            width = 1,
+            height = 1,
+            params = ShaderFilterParams.from(
+                recipe = FilterRecipe(skinWhitening = 100, teethWhitening = 100),
+                adjustments = Adjustments(),
+                makeupFeatures = features,
+            ),
+        )
+
+        assertEquals(whiteningOnly[0], whiteningAndTeeth[0])
+    }
+
+    @Test
     fun `eye makeup stays near the detected upper eyelids`() {
         val skin = 0xffbf8c66.toInt()
         val features = MakeupFeatures(

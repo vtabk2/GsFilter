@@ -166,4 +166,38 @@ class FilterCatalogTest {
         FilterCatalog.filtersForCategory("black_white")
             .forEach { filter -> assertTrue(filter.recipe.isMonochrome) }
     }
+
+    @Test
+    fun `catalog recipes stay within supported ranges`() {
+        FilterCatalog.options.forEach { filter ->
+            val recipe = filter.recipe
+            listOf(
+                recipe.effectStrength,
+                recipe.effectThreshold,
+                recipe.effectTone,
+                recipe.lutStrength,
+                recipe.intensity,
+                recipe.skinSmoothing,
+                recipe.skinWhitening,
+                recipe.blush,
+                recipe.lipstick,
+                recipe.underEye,
+                recipe.teethWhitening,
+                recipe.eyeShadow,
+                recipe.eyeliner,
+                recipe.eyebrow,
+                recipe.faceSlimming,
+                recipe.eyeEnlargement,
+            ).forEach { value -> assertTrue("${filter.id} amount=$value", value in 0..100) }
+            listOf(recipe.redShift, recipe.greenShift, recipe.blueShift)
+                .forEach { value -> assertTrue("${filter.id} shift=$value", value in -100..100) }
+            AdjustControl.entries.forEach { control ->
+                val value = control.valueIn(recipe.adjustments)
+                assertTrue(
+                    "${filter.id} ${control.name}=$value",
+                    value in control.minValue..control.maxValue,
+                )
+            }
+        }
+    }
 }
