@@ -289,9 +289,13 @@ Created: 2026-09-14
 
 ### Checklist
 
-- [ ] Add the Beauty text color attribute and apply it to unselected controls.
-- [ ] Configure the demo app to reuse its Adjust secondary color.
+- [x] Add the Beauty text color attribute and apply it to unselected controls.
+- [x] Configure the demo app to reuse its Adjust secondary color.
 - [ ] Run focused checks and review the diff.
+
+### Notes
+
+- `gsFilterBeautyTextColor` is applied to unselected Beauty labels/icons, and the demo maps it to the same `text_secondary` color used by Adjust.
 
 ## Task: Fix Beauty reset icon color in dark mode
 
