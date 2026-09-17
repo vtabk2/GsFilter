@@ -386,6 +386,52 @@ class FilterBitmapRendererTest {
     }
 
     @Test
+    fun `warped face keeps art effect sampling tied to the warped source`() {
+        val pixels = IntArray(9 * 9) { index ->
+            val x = index % 9
+            val y = index / 9
+            0xff000000.toInt() or ((x * 20) shl 16) or ((y * 20) shl 8)
+        }
+        val features = MakeupFeatures(
+            faceCenterX = 0.5f,
+            faceCenterY = 0.5f,
+            faceRadiusX = 0.45f,
+            faceRadiusY = 0.5f,
+            leftCheekX = 0.28f,
+            leftCheekY = 0.5f,
+            rightCheekX = 0.72f,
+            rightCheekY = 0.5f,
+            cheekRadiusX = 0.22f,
+            cheekRadiusY = 0.3f,
+            lipCenterX = 0f,
+            lipCenterY = 0f,
+            lipRadiusX = 0f,
+            lipRadiusY = 0f,
+        )
+        val artOnly = FilterBitmapRenderer.renderPixels(
+            pixels = pixels,
+            width = 9,
+            height = 9,
+            params = ShaderFilterParams.from(
+                recipe = FilterRecipe(effect = FilterEffect.Sketch),
+                adjustments = Adjustments(),
+            ),
+        )
+        val warpedArt = FilterBitmapRenderer.renderPixels(
+            pixels = pixels,
+            width = 9,
+            height = 9,
+            params = ShaderFilterParams.from(
+                recipe = FilterRecipe(faceSlimming = 100, effect = FilterEffect.Sketch),
+                adjustments = Adjustments(),
+                makeupFeatures = features,
+            ),
+        )
+
+        assertNotEquals(artOnly[4 * 9 + 2], warpedArt[4 * 9 + 2])
+    }
+
+    @Test
     fun `lipstick changes only the detected lip region`() {
         val original = 0xff996633.toInt()
         val output = FilterBitmapRenderer.renderPixels(

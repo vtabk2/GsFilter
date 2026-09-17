@@ -33,7 +33,7 @@ Completed: 2026-09-17
 
 ## Task: Follow up on filter review findings
 
-Status: TODO
+Status: IN PROGRESS
 Created: 2026-09-17
 
 ### Requirements
@@ -57,6 +57,7 @@ Created: 2026-09-17
 - Current catalog audit found 103 unique filters across 15 categories, with 10 LUT filters and 6 art filters.
 - Only the `beauty` preset currently contains Beauty values; do not add more presets without a product or visual need.
 - CPU and GPU art effects already sample edges in the same display coordinate space (`x/y` and `vTexCoord`); the CPU Teeth Whitening mask now also uses the original sampled color, matching GPU `color.rgb`.
+- Added CPU regression coverage for a warped face combined with an art effect; GPU parity still needs a device check.
 - Catalog range coverage now checks all recipe amounts, color shifts, and adjustment fields in `FilterCatalogTest`.
 - None preservation remains intentionally mirrored in `FilterUiState.selectFilter` and `FilterControlsView.selectFilter` because the app state and reusable view own separate selection paths.
 - Gradle verification is currently blocked because Java and `JAVA_HOME` are unavailable in the environment.
