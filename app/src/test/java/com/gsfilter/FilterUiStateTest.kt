@@ -69,4 +69,47 @@ class FilterUiStateTest {
         assertEquals("film", restored.selectedCategory.id)
         assertTrue(restored.selectedCategory.id in restored.selectedFilter.categoryIds)
     }
+
+    @Test
+    fun `selecting none filter preserves beauty and adjustment values`() {
+        val catalog = FilterCatalog.pack
+        val adjustments = Adjustments(brightness = 12, grain = 7)
+        val state = FilterUiState(
+            catalog = catalog,
+            selectedFilter = catalog.options.first { it.id != catalog.defaultFilter.id },
+            skinSmoothing = 11,
+            skinWhitening = 12,
+            blush = 13,
+            lipstick = 14,
+            underEye = 15,
+            teethWhitening = 16,
+            eyeShadow = 17,
+            eyeliner = 18,
+            eyebrow = 19,
+            faceSlimming = 20,
+            eyeEnlargement = 21,
+            adjustments = adjustments,
+        )
+
+        val selected = state.selectFilter(catalog.defaultFilter)
+
+        assertEquals(catalog.defaultFilter, selected.selectedFilter)
+        assertEquals(
+            listOf(11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21),
+            listOf(
+                selected.skinSmoothing,
+                selected.skinWhitening,
+                selected.blush,
+                selected.lipstick,
+                selected.underEye,
+                selected.teethWhitening,
+                selected.eyeShadow,
+                selected.eyeliner,
+                selected.eyebrow,
+                selected.faceSlimming,
+                selected.eyeEnlargement,
+            ),
+        )
+        assertEquals(adjustments, selected.adjustments)
+    }
 }

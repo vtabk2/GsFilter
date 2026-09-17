@@ -56,22 +56,7 @@ class FilterViewModel(application: Application) : AndroidViewModel(application) 
     }
 
     fun selectFilter(filter: FilterOption) {
-        _state.update {
-            it.copy(
-                selectedFilter = filter,
-                skinSmoothing = filter.recipe.skinSmoothing,
-                skinWhitening = filter.recipe.skinWhitening,
-                blush = filter.recipe.blush,
-                lipstick = filter.recipe.lipstick,
-                underEye = filter.recipe.underEye,
-                teethWhitening = filter.recipe.teethWhitening,
-                eyeShadow = filter.recipe.eyeShadow,
-                eyeliner = filter.recipe.eyeliner,
-                eyebrow = filter.recipe.eyebrow,
-                faceSlimming = filter.recipe.faceSlimming,
-                eyeEnlargement = filter.recipe.eyeEnlargement,
-            )
-        }
+        _state.update { it.selectFilter(filter) }
     }
 
     fun selectCategory(category: FilterCategory) {

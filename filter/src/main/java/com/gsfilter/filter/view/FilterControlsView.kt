@@ -760,7 +760,7 @@ class FilterControlsView @JvmOverloads constructor(
 
     private fun selectFilter(filter: FilterOption) {
         selectedFilter = filter
-        selectedRecipe = filter.recipe
+        selectedRecipe = if (filter.id == catalog.defaultFilter.id) selectedRecipe else filter.recipe
         renderState()
         onFilterSelected?.invoke(filter)
     }

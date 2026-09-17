@@ -1,5 +1,27 @@
 # PLAN
 
+## Task: Preserve Beauty and Adjust when selecting None filter
+
+Status: DONE
+Created: 2026-09-16
+Completed: 2026-09-16
+
+### Requirements
+
+- Selecting the None filter removes the filter while preserving Beauty and Adjust values.
+- Keep existing Beauty preset behavior when selecting other filters.
+
+### Checklist
+
+- [x] Preserve Beauty state when selecting the default filter.
+- [x] Keep the controls view from briefly replacing Beauty with default values.
+- [x] Add a regression test for retained Beauty and Adjust values.
+- [x] Review the diff and run `git diff --check`.
+
+### Validation note
+
+- `:app:testDebugUnitTest --tests com.gsfilter.FilterUiStateTest` could not run because Java and `JAVA_HOME` are unavailable in this environment.
+
 ## Task: Fix blank filtered camera preview
 
 Status: DONE
