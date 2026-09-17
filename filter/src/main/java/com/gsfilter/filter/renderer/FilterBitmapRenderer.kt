@@ -890,7 +890,7 @@ object FilterBitmapRenderer {
             params.greenShift == 0f &&
             params.blueShift == 0f &&
             params.brightness == 0f &&
-            params.exposure == 1f &&
+            params.exposure == 0f &&
             params.contrast == 1f &&
             params.highlights == 0f &&
             params.shadows == 0f &&

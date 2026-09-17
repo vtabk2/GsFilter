@@ -1,5 +1,10 @@
 # PLAN
 
+## Validation note
+
+- Gradle requires a short writable temp path in this environment: set `TEMP=C:\Temp` and `TMP=C:\Temp` before running it. With that workaround, the filter unit tests, app unit tests, and Debug assemble complete successfully.
+- The resulting Debug APK was installed on Samsung A56 (`R5CYA0JB80`) and `MainActivity` launched successfully without an `AndroidRuntime` crash in the smoke log.
+
 ## Task: Show the full filter rail when Popular is hidden
 
 Status: DONE
@@ -457,7 +462,7 @@ Completed: 2026-09-14
 
 ### Notes
 
-- `git diff --check` passed; Gradle verification remains unavailable because no JDK is configured.
+- `git diff --check` passed; the `FilterRenderProgress` test import was corrected and the filter test suite now runs successfully with the temp-path workaround.
 
 ## Task: Skip unchanged adjustment control rendering
 
@@ -967,8 +972,9 @@ Completed: 2026-09-17
 
 ## Task: Cache sorted filters by category
 
-Status: IN PROGRESS
+Status: DONE
 Created: 2026-09-12
+Completed: 2026-09-17
 
 ### Requirements
 
@@ -978,7 +984,7 @@ Created: 2026-09-12
 ### Checklist
 
 - [x] Precompute sorted lists once.
-- [ ] Run filter unit tests and review the diff.
+- [x] Run filter unit tests and review the diff.
 
 ### Notes
 
@@ -987,8 +993,9 @@ Created: 2026-09-12
 
 ## Task: Avoid redundant offscreen texture binds
 
-Status: IN PROGRESS
+Status: DONE
 Created: 2026-09-12
+Completed: 2026-09-17
 
 ### Requirements
 
@@ -999,7 +1006,7 @@ Created: 2026-09-12
 
 - [x] Let offscreen upload own texture unit 0 binding.
 - [x] Keep preview's default input binding enabled.
-- [ ] Run unit tests, compile, and review the diff.
+- [x] Run unit tests, compile, and review the diff.
 
 ### Notes
 
@@ -1007,8 +1014,9 @@ Created: 2026-09-12
 
 ## Task: Reuse neutral filter values
 
-Status: IN PROGRESS
+Status: DONE
 Created: 2026-09-12
+Completed: 2026-09-17
 
 ### Requirements
 
@@ -1021,7 +1029,7 @@ Created: 2026-09-12
 - [x] Use them for renderer defaults and thumbnail no-op checks.
 - [x] Use them in the ViewModel's hot default-state checks.
 - [x] Check default object identity before thumbnail equality.
-- [ ] Run unit tests, compile, and review the diff.
+- [x] Run unit tests, compile, and review the diff.
 
 ### Notes
 
@@ -1029,8 +1037,9 @@ Created: 2026-09-12
 
 ## Task: Reduce CPU pixel-loop indexing
 
-Status: IN PROGRESS
+Status: DONE
 Created: 2026-09-12
+Completed: 2026-09-17
 
 ### Requirements
 
@@ -1041,7 +1050,7 @@ Created: 2026-09-12
 
 - [x] Increment the output index within each scanline.
 - [x] Keep all filter calculations unchanged.
-- [ ] Run unit tests, compile, and review the diff.
+- [x] Run unit tests, compile, and review the diff.
 
 ### Notes
 
@@ -1049,8 +1058,9 @@ Created: 2026-09-12
 
 ## Task: Cache unchanged GPU LUT state
 
-Status: IN PROGRESS
+Status: DONE
 Created: 2026-09-12
+Completed: 2026-09-17
 
 ### Requirements
 
@@ -1061,7 +1071,7 @@ Created: 2026-09-12
 
 - [x] Cache LUT texture id and effective strength per GPU session.
 - [x] Restore texture unit 0 before every input texture update.
-- [ ] Run unit tests, compile, and review the diff.
+- [x] Run unit tests, compile, and review the diff.
 
 ### Notes
 
@@ -1069,8 +1079,9 @@ Created: 2026-09-12
 
 ## Task: Cache unchanged GPU uniforms in batch
 
-Status: IN PROGRESS
+Status: DONE
 Created: 2026-09-12
+Completed: 2026-09-17
 
 ### Requirements
 
@@ -1081,7 +1092,7 @@ Created: 2026-09-12
 
 - [x] Cache params identity and render texel geometry per GPU session.
 - [x] Keep input texture upload and draw per image.
-- [ ] Run unit tests, compile, and review the diff.
+- [x] Run unit tests, compile, and review the diff.
 
 ### Notes
 
@@ -1089,8 +1100,9 @@ Created: 2026-09-12
 
 ## Task: Reuse GPU batch control flags
 
-Status: IN PROGRESS
+Status: DONE
 Created: 2026-09-12
+Completed: 2026-09-17
 
 ### Requirements
 
@@ -1101,7 +1113,7 @@ Created: 2026-09-12
 
 - [x] Compute the flags once in `FilterRenderer.renderBatch`.
 - [x] Pass them only through the internal batch path.
-- [ ] Run unit tests, compile, and review the diff.
+- [x] Run unit tests, compile, and review the diff.
 
 ### Notes
 
@@ -1109,8 +1121,9 @@ Created: 2026-09-12
 
 ## Task: Skip GPU for no-op batch renders
 
-Status: IN PROGRESS
+Status: DONE
 Created: 2026-09-12
+Completed: 2026-09-17
 
 ### Requirements
 
@@ -1127,7 +1140,7 @@ Created: 2026-09-12
 - [x] Copy no-op bitmaps without a Java pixel-array round trip.
 - [x] Avoid repeating the no-op check inside active CPU renders.
 - [x] Skip repeated GPU attempts after offscreen initialization failure.
-- [ ] Run unit tests, compile, and review the diff.
+- [x] Run unit tests, compile, and review the diff.
 
 ### Notes
 
@@ -1137,8 +1150,9 @@ Created: 2026-09-12
 
 ## Task: Reuse batch shader params
 
-Status: IN PROGRESS
+Status: DONE
 Created: 2026-09-12
+Completed: 2026-09-17
 
 ### Requirements
 
@@ -1149,7 +1163,7 @@ Created: 2026-09-12
 
 - [x] Reuse one parameter object across batch items.
 - [x] Keep public single-image APIs unchanged.
-- [ ] Run unit tests, compile, and review the diff.
+- [x] Run unit tests, compile, and review the diff.
 
 ### Notes
 
@@ -1157,8 +1171,9 @@ Created: 2026-09-12
 
 ## Task: Group batch renders by effective size
 
-Status: IN PROGRESS
+Status: DONE
 Created: 2026-09-12
+Completed: 2026-09-17
 
 ### Requirements
 
@@ -1171,7 +1186,7 @@ Created: 2026-09-12
 - [x] Pass the grouped render size into each renderer.
 - [x] Keep `onBitmap` indexed by original source position.
 - [x] Preserve incremental progress callbacks.
-- [ ] Run unit tests, compile, and review the diff.
+- [x] Run unit tests, compile, and review the diff.
 
 ### Notes
 
@@ -1179,8 +1194,9 @@ Created: 2026-09-12
 
 ## Task: Avoid redundant makeup feature deep comparison
 
-Status: IN PROGRESS
+Status: DONE
 Created: 2026-09-12
+Completed: 2026-09-17
 
 ### Requirements
 
@@ -1191,7 +1207,7 @@ Created: 2026-09-12
 
 - [x] Check object identity before deep comparison.
 - [x] Preserve deep comparison for distinct but equal objects.
-- [ ] Run unit tests, compile, and review the diff.
+- [x] Run unit tests, compile, and review the diff.
 
 ### Notes
 
@@ -1199,8 +1215,9 @@ Created: 2026-09-12
 
 ## Task: Reuse default thumbnail adjustments
 
-Status: IN PROGRESS
+Status: DONE
 Created: 2026-09-12
+Completed: 2026-09-17
 
 ### Requirements
 
@@ -1211,7 +1228,7 @@ Created: 2026-09-12
 
 - [x] Share the default adjustments instance.
 - [x] Keep explicit adjustments behavior unchanged.
-- [ ] Run unit tests, compile, and review the diff.
+- [x] Run unit tests, compile, and review the diff.
 
 ### Notes
 
@@ -1219,8 +1236,9 @@ Created: 2026-09-12
 
 ## Task: Split preview effect and texel uploads
 
-Status: IN PROGRESS
+Status: DONE
 Created: 2026-09-12
+Completed: 2026-09-17
 
 ### Requirements
 
@@ -1233,7 +1251,7 @@ Created: 2026-09-12
 - [x] Add effect and texel upload flags with defaults enabled.
 - [x] Track effect changes separately in the preview renderer.
 - [x] Mark texel size dirty on surface changes and first frame.
-- [ ] Run unit tests, compile, and review the diff.
+- [x] Run unit tests, compile, and review the diff.
 
 ### Notes
 
@@ -1241,8 +1259,9 @@ Created: 2026-09-12
 
 ## Task: Split preview uniform dirty flags
 
-Status: IN PROGRESS
+Status: DONE
 Created: 2026-09-12
+Completed: 2026-09-17
 
 ### Requirements
 
@@ -1254,7 +1273,7 @@ Created: 2026-09-12
 - [x] Compare makeup parameters separately.
 - [x] Compare adjustment parameters separately.
 - [x] Keep existing dirty flags sticky until the next draw.
-- [ ] Run unit tests, compile, and review the diff.
+- [x] Run unit tests, compile, and review the diff.
 
 ### Notes
 
@@ -1262,8 +1281,9 @@ Created: 2026-09-12
 
 ## Task: Use constant-time category priority lookup
 
-Status: IN PROGRESS
+Status: DONE
 Created: 2026-09-12
+Completed: 2026-09-17
 
 ### Requirements
 
@@ -1274,7 +1294,7 @@ Created: 2026-09-12
 
 - [x] Build lazy rank maps from the existing priority lists.
 - [x] Sort using direct id-to-rank lookup.
-- [ ] Run unit tests, compile, and review the diff.
+- [x] Run unit tests, compile, and review the diff.
 
 ### Notes
 
@@ -1282,8 +1302,9 @@ Created: 2026-09-12
 
 ## Task: Cache filter lookup by id
 
-Status: IN PROGRESS
+Status: DONE
 Created: 2026-09-12
+Completed: 2026-09-17
 
 ### Requirements
 
@@ -1294,7 +1315,7 @@ Created: 2026-09-12
 
 - [x] Build a lazy id index.
 - [x] Keep `defaultFilter` winning on duplicate default ids.
-- [ ] Run unit tests, compile, and review the diff.
+- [x] Run unit tests, compile, and review the diff.
 
 ### Notes
 
@@ -1302,8 +1323,9 @@ Created: 2026-09-12
 
 ## Task: Cache filters by category
 
-Status: IN PROGRESS
+Status: DONE
 Created: 2026-09-12
+Completed: 2026-09-17
 
 ### Requirements
 
@@ -1314,7 +1336,7 @@ Created: 2026-09-12
 
 - [x] Build the category index lazily from the immutable pack.
 - [x] Keep unknown categories returning an empty list.
-- [ ] Run unit tests, compile, and review the diff.
+- [x] Run unit tests, compile, and review the diff.
 
 ### Notes
 
@@ -1324,8 +1346,9 @@ Created: 2026-09-12
 
 ## Task: Avoid thumbnail rebind on filter selection
 
-Status: IN PROGRESS
+Status: DONE
 Created: 2026-09-12
+Completed: 2026-09-17
 
 ### Requirements
 
@@ -1336,7 +1359,7 @@ Created: 2026-09-12
 
 - [x] Add a DiffUtil selection payload.
 - [x] Update only card selection visuals for payload binds.
-- [ ] Run unit tests, compile, and review the diff.
+- [x] Run unit tests, compile, and review the diff.
 
 ### Notes
 
@@ -1344,8 +1367,9 @@ Created: 2026-09-12
 
 ## Task: Avoid unused Beauty masks
 
-Status: IN PROGRESS
+Status: DONE
 Created: 2026-09-12
+Completed: 2026-09-17
 
 ### Requirements
 
@@ -1356,7 +1380,7 @@ Created: 2026-09-12
 
 - [x] Gate CPU face and skin masks by the active controls.
 - [x] Gate GPU face and skin masks by the active controls.
-- [ ] Run unit tests, compile, and review the diff.
+- [x] Run unit tests, compile, and review the diff.
 
 ### Notes
 
@@ -1364,8 +1388,9 @@ Created: 2026-09-12
 
 ## Task: Reuse GPU face mask per pixel
 
-Status: IN PROGRESS
+Status: DONE
 Created: 2026-09-12
+Completed: 2026-09-17
 
 ### Requirements
 
@@ -1376,7 +1401,7 @@ Created: 2026-09-12
 
 - [x] Compute the face mask once in the fragment shader.
 - [x] Reuse it for teeth, eye shadow, eyeliner, and eyebrow branches.
-- [ ] Run unit tests, compile, and review the diff.
+- [x] Run unit tests, compile, and review the diff.
 
 ### Notes
 
@@ -1384,8 +1409,9 @@ Created: 2026-09-12
 
 ## Task: Reuse no-op renderer in export path
 
-Status: IN PROGRESS
+Status: DONE
 Created: 2026-09-12
+Completed: 2026-09-17
 
 ### Requirements
 
@@ -1396,7 +1422,7 @@ Created: 2026-09-12
 
 - [x] Route the default recipe through the CPU no-op fast path.
 - [x] Preserve makeup feature and size arguments.
-- [ ] Run unit tests, compile, and review the diff.
+- [x] Run unit tests, compile, and review the diff.
 
 ### Notes
 
@@ -1404,8 +1430,9 @@ Created: 2026-09-12
 
 ## Task: Bypass GPU for no-op thumbnails
 
-Status: IN PROGRESS
+Status: DONE
 Created: 2026-09-12
+Completed: 2026-09-17
 
 ### Requirements
 
@@ -1418,7 +1445,7 @@ Created: 2026-09-12
 - [x] Reuse the shared no-op predicate for other effective no-op recipes.
 - [x] Reuse the existing bounded source scaling path.
 - [x] Keep source bitmap ownership unchanged.
-- [ ] Run unit tests, compile, and review the diff.
+- [x] Run unit tests, compile, and review the diff.
 
 ### Notes
 
@@ -1428,8 +1455,9 @@ Created: 2026-09-12
 
 ## Task: Add CPU no-op render fast path
 
-Status: IN PROGRESS
+Status: DONE
 Created: 2026-09-12
+Completed: 2026-09-17
 
 ### Requirements
 
@@ -1441,16 +1469,18 @@ Created: 2026-09-12
 - [x] Detect neutral effect, makeup, and adjustment values.
 - [x] Return a copy without entering the pixel loop.
 - [x] Cover the no-op path in the existing renderer test.
-- [ ] Run unit tests, compile, and review the diff.
+- [x] Run unit tests, compile, and review the diff.
 
 ### Notes
 
 - This mainly reduces CPU fallback/default-filter work; GPU rendering remains unchanged.
+- Validation exposed a neutral-exposure predicate typo; the renderer uses exponent `0` as neutral and the no-op check now matches it.
 
 ## Task: Skip zero-intensity effect work
 
-Status: IN PROGRESS
+Status: DONE
 Created: 2026-09-12
+Completed: 2026-09-17
 
 ### Requirements
 
@@ -1461,7 +1491,7 @@ Created: 2026-09-12
 
 - [x] Guard CPU effect processing by effect and intensity.
 - [x] Calculate source grayscale only for effects that use it.
-- [ ] Run unit tests, compile, and review the diff.
+- [x] Run unit tests, compile, and review the diff.
 
 ### Notes
 
@@ -1469,8 +1499,9 @@ Created: 2026-09-12
 
 ## Task: Skip inactive Beauty sub-stages
 
-Status: IN PROGRESS
+Status: DONE
 Created: 2026-09-12
+Completed: 2026-09-17
 
 ### Requirements
 
@@ -1483,7 +1514,7 @@ Created: 2026-09-12
 - [x] Gate CPU whitening calculations.
 - [x] Gate GPU smoothing and whitening calculations.
 - [x] Gate each Beauty feature mask by its active control.
-- [ ] Run unit tests, compile, and review the diff.
+- [x] Run unit tests, compile, and review the diff.
 
 ### Notes
 
@@ -1493,8 +1524,9 @@ Created: 2026-09-12
 
 ## Task: Skip inactive Beauty feature masks
 
-Status: IN PROGRESS
+Status: DONE
 Created: 2026-09-12
+Completed: 2026-09-17
 
 ### Requirements
 
@@ -1506,7 +1538,7 @@ Created: 2026-09-12
 
 - [x] Gate CPU feature masks by detected features and active controls.
 - [x] Gate GPU feature masks by active feature controls.
-- [ ] Run unit tests, compile, and review the diff.
+- [x] Run unit tests, compile, and review the diff.
 
 ### Notes
 
@@ -1515,8 +1547,9 @@ Created: 2026-09-12
 
 ## Task: Skip inactive Art effect branch
 
-Status: IN PROGRESS
+Status: DONE
 Created: 2026-09-12
+Completed: 2026-09-17
 
 ### Requirements
 
@@ -1528,7 +1561,7 @@ Created: 2026-09-12
 
 - [x] Gate the CPU Art effect branch by intensity.
 - [x] Gate the GPU Art effect branch by intensity.
-- [ ] Run unit tests, compile, and review the diff.
+- [x] Run unit tests, compile, and review the diff.
 
 ### Notes
 
@@ -1537,8 +1570,9 @@ Created: 2026-09-12
 
 ## Task: Skip redundant preview uniform uploads
 
-Status: IN PROGRESS
+Status: DONE
 Created: 2026-09-12
+Completed: 2026-09-17
 
 ### Requirements
 
@@ -1550,7 +1584,7 @@ Created: 2026-09-12
 
 - [x] Mark uniform groups dirty when filter state changes.
 - [x] Clear dirty flags after a successful preview bind.
-- [ ] Run unit tests, compile, and review the diff.
+- [x] Run unit tests, compile, and review the diff.
 
 ### Notes
 
@@ -1559,8 +1593,9 @@ Created: 2026-09-12
 
 ## Task: Coalesce preview source updates
 
-Status: IN PROGRESS
+Status: DONE
 Created: 2026-09-12
+Completed: 2026-09-17
 
 ### Requirements
 
@@ -1572,7 +1607,7 @@ Created: 2026-09-12
 
 - [x] Coalesce pending source bitmap events.
 - [x] Preserve null and generation handling.
-- [ ] Run unit tests, compile, and review the diff.
+- [x] Run unit tests, compile, and review the diff.
 
 ### Notes
 
@@ -1581,8 +1616,9 @@ Created: 2026-09-12
 
 ## Task: Skip inactive Art edge sampling
 
-Status: IN PROGRESS
+Status: DONE
 Created: 2026-09-11
+Completed: 2026-09-17
 
 ### Requirements
 
@@ -1594,7 +1630,7 @@ Created: 2026-09-11
 
 - [x] Gate CPU edge sampling by active effect parameters.
 - [x] Gate GPU edge sampling by active effect parameters.
-- [ ] Run unit tests, compile, and review the diff.
+- [x] Run unit tests, compile, and review the diff.
 
 ### Notes
 
@@ -1603,9 +1639,9 @@ Created: 2026-09-11
 
 ## Task: Match Art texel scale to source/output ratio
 
-Status: IN PROGRESS
+Status: DONE
 Created: 2026-09-11
-Completed: 2026-09-11
+Completed: 2026-09-17
 
 ### Requirements
 
@@ -1617,13 +1653,13 @@ Completed: 2026-09-11
 
 - [x] Compute Art texel scale from source and output dimensions.
 - [x] Bump thumbnail cache revision and add focused coverage.
-- [ ] Run unit tests, compile, and review the diff.
+- [x] Run unit tests, compile, and review the diff.
 
 ### Notes
 
 - Current 2× Art source still produces a `0.5` texel scale.
 - Smaller sources and other UI thumbnail sizes now use their real ratio instead of a fixed value.
-- `git diff --check` passed; Gradle validation is pending because the current shell cannot establish its loopback daemon connection.
+- Filter and app unit tests plus Debug assemble passed with `TEMP`/`TMP` set to `C:\Temp`.
 
 ## Task: Preserve art line settings in thumbnails
 

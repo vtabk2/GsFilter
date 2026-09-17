@@ -1,6 +1,6 @@
 package com.gsfilter.filter
 
-import com.gsfilter.filter.renderer.FilterRenderProgress
+import com.gsfilter.filter.renderer.FilterRenderer.FilterRenderProgress
 import org.junit.Assert.assertEquals
 import org.junit.Test
 
