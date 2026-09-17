@@ -1,5 +1,35 @@
 # PLAN
 
+## Task: Show the full filter rail when Popular is hidden
+
+Status: DONE
+Created: 2026-09-17
+Completed: 2026-09-17
+
+### Requirements
+
+- When Popular is not visible, the filter thumbnail rail contains every non-default filter.
+- Scrolling the full rail updates the selected category to the category of the visible filter.
+- Clicking a category only scrolls the rail to its first filter; it does not change the selected filter.
+- Automatic category updates during scrolling preserve the currently selected filter.
+- Do not auto-switch categories when Popular is visible.
+- Do not let programmatic `scrollToPosition()` calls trigger a category change.
+- Reset the temporary scroll state when the view is detached.
+
+### Checklist
+
+- [x] Track user-driven horizontal filter scrolling.
+- [x] Build one full filter rail when Popular is hidden.
+- [x] Update the selected category after user scrolling.
+- [x] Keep explicit category clicks filter-neutral while scrolling to the category group.
+- [x] Ignore programmatic scrolling and reset state on detach.
+- [x] Run `git diff --check` and review the diff.
+
+### Notes
+
+- The change is local to `FilterControlsView`; category callbacks continue using the existing `onCategorySelected` path.
+- Gradle verification remains blocked because Java and `JAVA_HOME` are unavailable in the environment.
+
 ## Task: Follow up on filter review findings
 
 Status: TODO

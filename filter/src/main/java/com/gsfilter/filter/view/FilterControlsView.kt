@@ -62,6 +62,8 @@ class FilterControlsView @JvmOverloads constructor(
     private var adjustSeekRowOriginalIndex = -1
     private var pendingFilterIntensity: Int? = null
     private var filterIntensityDispatchPosted = false
+    private var filterScrollWasDragged = false
+    private var filterScrollRequestId = 0
     private val filterIntensityDispatchRunnable = Runnable {
         dispatchPendingFilterIntensity()
     }
@@ -70,6 +72,7 @@ class FilterControlsView @JvmOverloads constructor(
     var onOriginalClick: (() -> Unit)? = null
     var onControlTabSelected: ((ControlTab) -> Unit)? = null
     var onCategorySelected: ((FilterCategory) -> Unit)? = null
+    var onCategoryAutoSelected: ((FilterCategory) -> Unit)? = null
     var onFilterSelected: ((FilterOption) -> Unit)? = null
     var onFilterIntensityChanged: ((Int) -> Unit)? = null
     var onOriginalFilterPressedChanged: ((Boolean) -> Unit)? = null
@@ -215,7 +218,7 @@ class FilterControlsView @JvmOverloads constructor(
         selectedFilter = catalog.filterById(selectedFilter.id) ?: catalog.defaultFilter
         selectedRecipe = selectedFilter.recipe
         renderCategoryChips()
-        renderState()
+        renderState(scrollToCategory = usesFullFilterRail())
     }
 
     fun setState(
@@ -251,9 +254,10 @@ class FilterControlsView @JvmOverloads constructor(
             this.selectedCategory != nextCategory ||
                 this.selectedFilter != nextFilter ||
                 thumbnailChanged
+        val filterChanged = this.selectedFilter != nextFilter
         val shouldRenderFilterIntensity =
-            this.selectedFilter != nextFilter || this.selectedRecipe != selectedRecipe
-        val selectionChanged = this.selectedCategory != nextCategory || this.selectedFilter != nextFilter
+            filterChanged || this.selectedRecipe != selectedRecipe
+        val selectionChanged = this.selectedCategory != nextCategory || filterChanged
         if (
             !shouldRenderFilters &&
             !shouldRenderFilterIntensity
@@ -276,7 +280,13 @@ class FilterControlsView @JvmOverloads constructor(
                 renderFilterIntensity()
                 renderBeauty()
             }
-            renderFilterItems(scrollToSelected = selectionChanged || thumbnailChanged)
+            renderFilterItems(
+                scrollToSelected = if (usesFullFilterRail()) {
+                    filterChanged || thumbnailChanged
+                } else {
+                    selectionChanged || thumbnailChanged
+                },
+            )
         } else {
             renderFilterIntensity()
             renderBeauty()
@@ -296,22 +306,29 @@ class FilterControlsView @JvmOverloads constructor(
         removeCallbacks(filterIntensityDispatchRunnable)
         pendingFilterIntensity = null
         filterIntensityDispatchPosted = false
+        filterScrollWasDragged = false
+        filterScrollRequestId++
         super.onDetachedFromWindow()
     }
 
-    private fun renderState() {
+    private fun renderState(scrollToCategory: Boolean = false) {
         renderOriginalAction()
         renderCategories(selectedCategory)
         renderFilterIntensity()
         renderBeauty()
-        renderFilterItems(scrollToSelected = true)
+        renderFilterItems(scrollToSelected = true, scrollToCategory = scrollToCategory)
     }
 
-    private fun renderFilterItems(scrollToSelected: Boolean) {
-        val items = catalog.filtersForCategory(selectedCategory.id).map { filter ->
+    private fun renderFilterItems(scrollToSelected: Boolean, scrollToCategory: Boolean = false) {
+        val scrollRequestId = ++filterScrollRequestId
+        val targetCategoryId = selectedCategory.id
+        val targetFilterId = selectedFilter.id
+        val filters = filtersForRail()
+        val items = filters.map { railFilter ->
             FilterItem(
-                filter = filter,
-                isSelected = filter.id == this.selectedFilter.id,
+                filter = railFilter.filter,
+                categoryId = railFilter.categoryId,
+                isSelected = railFilter.filter.id == this.selectedFilter.id,
                 thumbnailBitmap = thumbnailBitmap,
                 thumbnailKey = thumbnailKey,
                 thumbnailGenerationId = thumbnailGenerationId,
@@ -319,15 +336,29 @@ class FilterControlsView @JvmOverloads constructor(
             )
         }
         filterAdapter.submitList(items) {
-            if (!scrollToSelected) {
+            if (!scrollToSelected || scrollRequestId != filterScrollRequestId) {
                 return@submitList
             }
             filterRecyclerView?.post {
-                val selectedIndex = filterAdapter.currentList.indexOfFirst {
-                    it.filter.id == this.selectedFilter.id
+                if (scrollRequestId != filterScrollRequestId) {
+                    return@post
+                }
+                val selectedIndex = if (scrollToCategory) {
+                    filterAdapter.currentList.indexOfFirst { item ->
+                        item.categoryId == targetCategoryId
+                    }
+                } else {
+                    filterAdapter.currentList.indexOfFirst {
+                        it.filter.id == targetFilterId
+                    }
                 }
                 if (selectedIndex >= 0) {
-                    filterRecyclerView?.scrollToPosition(selectedIndex)
+                    val recyclerView = filterRecyclerView ?: return@post
+                    filterScrollWasDragged = false
+                    recyclerView.stopScroll()
+                    (recyclerView.layoutManager as? LinearLayoutManager)
+                        ?.scrollToPositionWithOffset(selectedIndex, 0)
+                        ?: recyclerView.scrollToPosition(selectedIndex)
                 }
             }
         }
@@ -463,6 +494,25 @@ class FilterControlsView @JvmOverloads constructor(
         filterRecyclerView?.adapter = filterAdapter
         filterRecyclerView?.setHasFixedSize(true)
         filterRecyclerView?.itemAnimator = null
+        filterRecyclerView?.addOnScrollListener(object : RecyclerView.OnScrollListener() {
+            override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
+                if (filterScrollWasDragged) {
+                    updateCategoryAfterScroll(recyclerView)
+                }
+            }
+
+            override fun onScrollStateChanged(recyclerView: RecyclerView, newState: Int) {
+                when (newState) {
+                    RecyclerView.SCROLL_STATE_DRAGGING -> filterScrollWasDragged = true
+                    RecyclerView.SCROLL_STATE_IDLE -> {
+                        if (filterScrollWasDragged) {
+                            filterScrollWasDragged = false
+                            updateCategoryAfterScroll(recyclerView)
+                        }
+                    }
+                }
+            }
+        })
         filterIntensityLabel?.setTextColor(style.intensityTextColor)
         filterIntensityValue?.setTextColor(style.intensityTextColor)
         filterIntensitySeekBar?.progressBackgroundTintList = ColorStateList.valueOf(style.intensityTrackColor)
@@ -728,23 +778,10 @@ class FilterControlsView @JvmOverloads constructor(
     }
 
     private fun selectCategory(category: FilterCategory) {
-        val selectedFilterCategory = visibleCategories().firstOrNull { it.id in selectedFilter.categoryIds }
-        val nextCategory =
-            if (
-                selectedCategory.id == category.id &&
-                category.id !in selectedFilter.categoryIds &&
-                selectedFilterCategory != null
-            ) {
-                selectedFilterCategory
-            } else {
-                category
-            }
-        if (selectedCategory.id == nextCategory.id) {
-            return
-        }
-
+        val nextCategory = visibleCategoryById(category.id) ?: return
+        filterScrollWasDragged = false
         selectedCategory = nextCategory
-        renderState()
+        renderState(scrollToCategory = true)
         onCategorySelected?.invoke(selectedCategory)
     }
 
@@ -755,13 +792,72 @@ class FilterControlsView @JvmOverloads constructor(
         return catalog.categories.filterNot { it.id == POPULAR_CATEGORY_ID }.ifEmpty { catalog.categories }
     }
 
+    private fun updateCategoryAfterScroll(recyclerView: RecyclerView) {
+        if (!usesFullFilterRail()) {
+            return
+        }
+        val categories = visibleCategories()
+        val layoutManager = recyclerView.layoutManager as? LinearLayoutManager ?: return
+        val firstVisiblePosition = layoutManager.findFirstVisibleItemPosition()
+        val visibleItem = filterAdapter.currentList.getOrNull(firstVisiblePosition) ?: return
+        val nextCategory = categories.firstOrNull { it.id == visibleItem.categoryId } ?: return
+        if (selectedCategory.id == nextCategory.id) {
+            return
+        }
+        selectedCategory = nextCategory
+        renderCategories(selectedCategory)
+        onCategoryAutoSelected?.invoke(selectedCategory) ?: onCategorySelected?.invoke(selectedCategory)
+    }
+
+    private fun usesFullFilterRail(): Boolean =
+        visibleCategories().none {
+            it.id == POPULAR_CATEGORY_ID && catalog.filtersForCategory(it.id).isNotEmpty()
+        }
+
+    private fun filtersForRail(): List<RailFilter> {
+        if (!usesFullFilterRail()) {
+            return catalog.filtersForCategory(selectedCategory.id).map { filter ->
+                RailFilter(filter = filter, categoryId = selectedCategory.id)
+            }
+        }
+        val seen = HashSet<String>()
+        val result = ArrayList<RailFilter>()
+        visibleCategories().forEach { category ->
+            catalog.filtersForCategory(category.id).forEach { filter ->
+                if (filter.id != catalog.defaultFilter.id && seen.add(filter.id)) {
+                    result += RailFilter(filter = filter, categoryId = category.id)
+                }
+            }
+        }
+        catalog.options.forEach { filter ->
+            if (filter.id != catalog.defaultFilter.id && seen.add(filter.id)) {
+                result += RailFilter(filter = filter, categoryId = null)
+            }
+        }
+        return result
+    }
+
     private fun visibleCategoryById(id: String): FilterCategory? =
         visibleCategories().firstOrNull { it.id == id }
 
     private fun selectFilter(filter: FilterOption) {
+        val categoryChanged = if (usesFullFilterRail()) {
+            val categoryId = filterAdapter.currentList
+                .firstOrNull { it.filter.id == filter.id }
+                ?.categoryId
+            visibleCategories()
+                .firstOrNull { it.id == categoryId }
+                ?.takeIf { it.id != selectedCategory.id }
+                ?.also { selectedCategory = it } != null
+        } else {
+            false
+        }
         selectedFilter = filter
         selectedRecipe = if (filter.id == catalog.defaultFilter.id) selectedRecipe else filter.recipe
         renderState()
+        if (categoryChanged) {
+            onCategorySelected?.invoke(selectedCategory)
+        }
         onFilterSelected?.invoke(filter)
     }
 
@@ -1144,11 +1240,17 @@ class FilterControlsView @JvmOverloads constructor(
 
     private data class FilterItem(
         val filter: FilterOption,
+        val categoryId: String?,
         val isSelected: Boolean,
         val thumbnailBitmap: Bitmap?,
         val thumbnailKey: String?,
         val thumbnailGenerationId: Int,
         val style: FilterControlsStyle,
+    )
+
+    private data class RailFilter(
+        val filter: FilterOption,
+        val categoryId: String?,
     )
 
     private class FilterAdapter(

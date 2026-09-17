@@ -61,18 +61,14 @@ class FilterViewModel(application: Application) : AndroidViewModel(application) 
 
     fun selectCategory(category: FilterCategory) {
         _state.update { state ->
-            val selectedFilterCategory = state.catalog.categoryForFilter(state.selectedFilter)
-            val nextCategory =
-                if (
-                    state.selectedCategory.id == category.id &&
-                    category.id !in state.selectedFilter.categoryIds &&
-                    selectedFilterCategory != null
-                ) {
-                    selectedFilterCategory
-                } else {
-                    category
-                }
+            val nextCategory = state.catalog.categoryById(category.id) ?: return@update state
+            state.copy(selectedCategory = nextCategory)
+        }
+    }
 
+    fun autoSelectCategory(category: FilterCategory) {
+        _state.update { state ->
+            val nextCategory = state.catalog.categoryById(category.id) ?: return@update state
             state.copy(selectedCategory = nextCategory)
         }
     }

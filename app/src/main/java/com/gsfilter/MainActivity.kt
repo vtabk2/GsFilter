@@ -112,6 +112,7 @@ class MainActivity : ComponentActivity() {
         binding.filterControls.onCloseClick = ::saveFilteredImage
         binding.filterControls.onControlTabSelected = ::selectControlTab
         binding.filterControls.onCategorySelected = viewModel::selectCategory
+        binding.filterControls.onCategoryAutoSelected = viewModel::autoSelectCategory
         binding.filterControls.onFilterSelected = viewModel::selectFilter
         binding.filterControls.onFilterIntensityChanged = viewModel::setFilterIntensity
         renderControlTabs()
