@@ -324,10 +324,12 @@ Completed: 2026-09-17
 - Document the separate close-button visibility and content-background attributes.
 - Document the theme-aware filter colors and demo app dark-mode behavior.
 - Describe the camera demo status without claiming realtime processing is complete.
+- Keep the usage example aligned with the current None, Popular, and Beauty/Adjust color attributes.
 
 ### Checklist
 
 - [x] Update README examples and attribute table.
+- [x] Keep the usage example aligned with the current None, Popular, and Beauty/Adjust color attributes.
 - [x] Run focused documentation checks and review the diff.
 
 ## Task: Separate compact seekbar and filter content backgrounds

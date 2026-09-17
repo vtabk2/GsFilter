@@ -212,13 +212,17 @@ Trong app mẫu, `FilterViewModel.renderFilteredBitmap(maxWidth, maxHeight, useG
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     app:gsFilterCloseIcon="@drawable/ic_gs_tick"
+    app:gsFilterNoneIcon="@drawable/ic_gs_filter_none"
     app:gsFilterBackground="@android:color/transparent"
     app:gsFilterContentBackground="@color/your_panel_color"
     app:gsFilterCompactTabs="true"
     app:gsFilterCompactBackground="@android:color/transparent"
     app:gsFilterShowHeader="false"
     app:gsFilterShowCloseButton="false"
+    app:gsFilterShowPopular="true"
     app:gsFilterShowBeauty="false"
+    app:gsFilterBeautyTextColor="@color/your_secondary_color"
+    app:gsAdjustSecondaryTextColor="@color/your_secondary_color"
     app:gsFilterShowTabIndicator="true"
     app:gsFilterTabIndicatorColor="@color/your_selected_color"
     app:gsFilterTabIndicatorWidthMode="text"
@@ -275,6 +279,7 @@ Ghi chú:
 - Khi `gsFilterShowHeader="false"`, hàng compact phía trên nội dung luôn hiển thị; toàn bộ seek row của tab đang chọn (Filter/Beauty/Adjust), gồm reset từng control, seekbar và value, được đưa lên hàng này để thống nhất UI. Chỉ nút `Reset All` và danh sách control giữ ở bên dưới; Filter vẫn giữ category cùng nút None bên dưới. Icon Original compact là nút riêng, chỉ hiện khi Filter/Beauty/Adjust có thay đổi và là `INVISIBLE` khi trạng thái sạch. Reset Filter dùng `onFilterIntensityChanged`, còn icon Original chỉ phát `onOriginalClick` hoặc `onOriginalFilterPressedChanged(true/false)` để host tự xử lý.
 - Khi Popular hiển thị, đổi category sẽ đổi danh sách filter đang hiển thị. Khi Popular không hiển thị, rail thumbnail chứa toàn bộ filter (trừ Original) và tự cập nhật category theo filter đang thấy khi người dùng scroll.
 - Filter chỉ được áp dụng sau khi người dùng bấm vào filter item. Bấm category chỉ scroll rail tới filter đầu tiên của category đó.
+- Bấm trực tiếp filter chỉ cập nhật lựa chọn và giữ vị trí rail hiện tại; rail chỉ tự scroll khi đổi category hoặc đổi ảnh.
 - Khi Popular không hiển thị, category tự cập nhật theo vị trí scroll; filter đang chọn chỉ đổi khi người dùng bấm filter.
 - Tab Adjust được render trong cùng `FilterControlsView`; host nhận callback adjust và gửi `Adjustments` hiện tại lại bằng `setAdjustments()`.
 - Trong tab Adjust, hàng icon control nằm trên seekbar/value hiện tại; khi header ẩn, seekbar row (gồm reset control và value) chuyển lên compact row, còn Reset All vẫn ở dưới danh sách control. Các nút reset dùng trạng thái disabled khi không có gì để reset.
