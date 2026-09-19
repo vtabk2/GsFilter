@@ -3,7 +3,6 @@ package com.gsfilter
 import android.graphics.Bitmap
 import android.graphics.PointF
 import android.graphics.RectF
-import android.media.Image
 import com.google.mlkit.vision.common.InputImage
 import com.google.mlkit.vision.face.Face
 import com.google.mlkit.vision.face.FaceContour
@@ -16,11 +15,9 @@ import com.gsfilter.filter.NormalizedPoint
 import kotlin.math.abs
 import kotlin.math.atan2
 import kotlin.math.hypot
-import java.util.concurrent.atomic.AtomicBoolean
 
 internal class FaceMakeupDetector {
 
-    private val isProcessingCameraFrame = AtomicBoolean(false)
     private val detector: FaceDetector = FaceDetection.getClient(
         FaceDetectorOptions.Builder()
             .setPerformanceMode(FaceDetectorOptions.PERFORMANCE_MODE_FAST)
@@ -34,22 +31,6 @@ internal class FaceMakeupDetector {
                 onResult(faces.firstOrNull()?.toMakeupFeatures(bitmap.width, bitmap.height))
             }
             .addOnFailureListener { onResult(null) }
-    }
-
-    fun detect(image: Image, rotationDegrees: Int, onResult: (MakeupFeatures?) -> Unit) {
-        if (!isProcessingCameraFrame.compareAndSet(false, true)) {
-            image.close()
-            return
-        }
-        detector.process(InputImage.fromMediaImage(image, rotationDegrees))
-            .addOnSuccessListener { faces ->
-                onResult(faces.firstOrNull()?.toMakeupFeatures(image.width, image.height, rotationDegrees))
-            }
-            .addOnFailureListener { onResult(null) }
-            .addOnCompleteListener {
-                isProcessingCameraFrame.set(false)
-                image.close()
-            }
     }
 
     fun close() {

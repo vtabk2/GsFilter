@@ -5682,3 +5682,63 @@ Completed: 2026-09-11
 - Sequential offscreen renders at the same size reuse EGL setup and shader program compilation.
 - Sessions are replaced on size changes and invalidated after runtime GL failures.
 - `:filter:testDebugUnitTest`, `:filter:compileDebugKotlin`, and `:app:compileDebugKotlin` passed.
+
+## Task: Optimize realtime camera makeup tracking
+
+Status: IN PROGRESS
+Created: 2026-09-19
+
+### Requirements
+
+- Reduce visible lag while preserving the current correct landmark orientation.
+- Keep only the newest pending camera frame while detection is busy.
+- Keep the existing camera output and coordinate transform while reducing analysis latency.
+- Replace Camera2/ImageReader/TextureView with CameraX Preview + ImageAnalysis.
+- Replace ML Kit face contours with MediaPipe Face Landmarker live tracking.
+
+### Plan
+
+- [x] Replace the camera transport with CameraX.
+- [x] Replace camera landmark detection with MediaPipe Face Landmarker.
+- [x] Keep the existing orientation mapping and both previews.
+- [x] Add the Face Landmarker model asset.
+- [ ] Run Gradle checks; device validation remains manual.
+- [ ] Run Gradle compile/tests; device validation remains manual.
+
+### Notes
+
+- CameraX analysis will use `STRATEGY_KEEP_ONLY_LATEST` and RGBA frames so preview and analysis share one lifecycle-bound camera.
+- Camera2 classes are no longer referenced by the app camera flow; `camera-camera2` is only the CameraX backend artifact.
+- The old external-camera GL surface path is no longer exposed by `FilterPreviewView`; camera frames now enter through the CameraX bitmap path.
+- Gradle verification is blocked by the environment's `Unable to establish loopback connection` error.
+
+## Task: Fix CameraX image lifetime and preview aspect ratio
+
+Status: IN PROGRESS
+Created: 2026-09-19
+
+### Requirements
+
+- Close each `ImageProxy` exactly once after its RGBA pixels are copied.
+- Keep the CameraX preview and filtered frame on the same aspect ratio/crop.
+- Preserve the MediaPipe Face Mesh coordinate orientation.
+
+### Plan
+
+- Make frame ownership explicit and isolate conversion from later callbacks.
+- Configure matching 4:3 viewports for CameraX preview and analysis.
+- Run diff checks; Gradle/device validation remains subject to the environment.
+
+### Progress
+
+- [x] Snapshot rotation/timestamp before closing the `ImageProxy`.
+- [x] Stop the analyzer before unbinding CameraX and tolerate a proxy already closed during teardown.
+- [x] Use `PreviewView.FILL_CENTER` to match the filtered 4:3 frame crop.
+- [x] Let the old analyzer drain instead of interrupting its `ImageProxy` owner.
+- [x] Align both previews to the same fill/crop policy after device screenshot verification.
+- [x] Align front-camera mirroring between `PreviewView` and the analyzed bitmap.
+
+### Notes
+
+- Both camera previews now use `FILL_CENTER` with the same 4:3 source, so the filtered result crops instead of letterboxing.
+- `PreviewView` keeps CameraX's default front-camera mirror; the extra `scaleX = -1` was removed while the analysis bitmap remains mirrored once.

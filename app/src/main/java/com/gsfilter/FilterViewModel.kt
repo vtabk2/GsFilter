@@ -2,7 +2,6 @@ package com.gsfilter
 
 import android.app.Application
 import android.graphics.Bitmap
-import android.media.Image
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.gsfilter.filter.AdjustControl
@@ -49,10 +48,6 @@ class FilterViewModel(application: Application) : AndroidViewModel(application) 
         viewModelScope.launch {
             loadAsset(assetPath)
         }
-    }
-
-    fun detectCameraFrame(image: Image, rotationDegrees: Int, onResult: (MakeupFeatures?) -> Unit) {
-        faceMakeupDetector.detect(image, rotationDegrees, onResult)
     }
 
     fun selectFilter(filter: FilterOption) {

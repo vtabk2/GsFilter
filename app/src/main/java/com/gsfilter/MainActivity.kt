@@ -1,28 +1,22 @@
 package com.gsfilter
 
 import android.Manifest
-import android.annotation.SuppressLint
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
-import android.graphics.ImageFormat
-import android.graphics.SurfaceTexture
-import android.hardware.camera2.CameraAccessException
-import android.hardware.camera2.CameraCaptureSession
-import android.hardware.camera2.CameraCharacteristics
-import android.hardware.camera2.CameraDevice
-import android.hardware.camera2.CameraManager
-import android.hardware.camera2.CaptureRequest
-import android.os.Handler
-import android.os.HandlerThread
+import android.graphics.Matrix
 import android.os.Bundle
 import android.util.Log
-import android.media.ImageReader
-import android.view.Surface
-import android.view.TextureView
+import android.util.Size
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.ComponentActivity
 import androidx.activity.viewModels
+import androidx.camera.core.CameraSelector
+import androidx.camera.core.ImageAnalysis
+import androidx.camera.core.ImageProxy
+import androidx.camera.core.Preview
+import androidx.camera.lifecycle.ProcessCameraProvider
+import androidx.camera.view.PreviewView
 import androidx.core.content.ContextCompat
 import androidx.core.view.isVisible
 import androidx.lifecycle.Lifecycle
@@ -37,6 +31,8 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.io.File
 import java.io.IOException
+import java.util.concurrent.ExecutorService
+import java.util.concurrent.Executors
 
 class MainActivity : ComponentActivity() {
 
@@ -46,18 +42,13 @@ class MainActivity : ComponentActivity() {
     private var renderedBitmap: Bitmap? = null
     private var isSaving = false
     private var isCameraMode = false
-    private var cameraFacing = CameraCharacteristics.LENS_FACING_BACK
+    private var cameraFacing = CameraSelector.LENS_FACING_BACK
     private var hasFrontCamera = false
-    private var cameraDevice: CameraDevice? = null
-    private var cameraSession: CameraCaptureSession? = null
-    private var cameraOpening = false
-    private var cameraThread: HandlerThread? = null
-    private var cameraHandler: Handler? = null
-    private var cameraRawSurface: Surface? = null
-    private var cameraFilteredSurface: Surface? = null
-    private var cameraFrameReader: ImageReader? = null
+    private var cameraProvider: ProcessCameraProvider? = null
+    private var cameraAnalysis: ImageAnalysis? = null
+    private var cameraExecutor: ExecutorService? = null
+    private var faceMeshDetector: FaceMeshDetector? = null
     private var cameraMakeupFeatures: MakeupFeatures? = null
-    private var cameraRotationDegrees = 0
     private var cameraDetectionGeneration = 0L
     private val cameraPermissionLauncher = registerForActivityResult(
         ActivityResultContracts.RequestPermission(),
@@ -83,7 +74,6 @@ class MainActivity : ComponentActivity() {
             if (isCameraMode) stopCameraMode() else requestCameraPermission()
         }
         binding.switchCameraButton.setOnClickListener { switchCamera() }
-        binding.cameraPreview.surfaceTextureListener = cameraSurfaceTextureListener
         collectState()
     }
 
@@ -105,6 +95,7 @@ class MainActivity : ComponentActivity() {
 
     override fun onDestroy() {
         stopCameraMode()
+        faceMeshDetector?.close()
         super.onDestroy()
     }
 
@@ -220,7 +211,6 @@ class MainActivity : ComponentActivity() {
         }
         isCameraMode = false
         stopCameraResources()
-        binding.filterPreview.setCameraSource(false)
         binding.cameraPreview.isVisible = false
         binding.imageOriginal.isVisible = true
         binding.nextImageButton.isVisible = true
@@ -239,48 +229,46 @@ class MainActivity : ComponentActivity() {
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
             return
         }
-        startCameraThread()
-        val handler = cameraHandler ?: return
         val detectionGeneration = ++cameraDetectionGeneration
-        cameraFrameReader = ImageReader.newInstance(
-            CAMERA_ANALYSIS_WIDTH,
-            CAMERA_ANALYSIS_HEIGHT,
-            ImageFormat.YUV_420_888,
-            2,
-        ).apply {
-            setOnImageAvailableListener({ reader ->
-                val image = try {
-                    reader.acquireLatestImage()
-                } catch (_: IllegalStateException) {
-                    null
-                } ?: return@setOnImageAvailableListener
-                if (!isCameraMode || detectionGeneration != cameraDetectionGeneration) {
-                    image.close()
-                    return@setOnImageAvailableListener
-                }
-                viewModel.detectCameraFrame(image, cameraRotationDegrees) detector@{ features ->
-                    if (!isCameraMode || detectionGeneration != cameraDetectionGeneration) {
-                        return@detector
+        cameraExecutor = Executors.newSingleThreadExecutor()
+        faceMeshDetector?.close()
+        try {
+            faceMeshDetector = FaceMeshDetector(this, object : FaceMeshDetector.Listener {
+                override fun onResult(timestampMs: Long, features: MakeupFeatures?) {
+                    runOnUiThread {
+                        if (!isCameraMode || detectionGeneration != cameraDetectionGeneration) {
+                            return@runOnUiThread
+                        }
+                        cameraMakeupFeatures = features
+                        val state = viewModel.state.value
+                        binding.filterPreview.setFilterState(
+                            recipe = state.selectedRecipe,
+                            adjustments = state.adjustments,
+                            makeupFeatures = features,
+                        )
                     }
-                    cameraMakeupFeatures = features
-                    val state = viewModel.state.value
-                    binding.filterPreview.setFilterState(
-                        recipe = state.selectedRecipe,
-                        adjustments = state.adjustments,
-                        makeupFeatures = features,
-                    )
                 }
-            }, handler)
+
+                override fun onError(error: RuntimeException) {
+                    Log.e(TAG, "Face Mesh failed", error)
+                }
+            })
+        } catch (error: RuntimeException) {
+            showCameraError(error)
+            return
         }
-        binding.filterPreview.setCameraSource(true) { surface ->
-            cameraFilteredSurface = surface
-            if (surface == null) {
-                showCameraError(null)
-            } else {
-                openCameraIfReady()
+        val providerFuture = ProcessCameraProvider.getInstance(this)
+        providerFuture.addListener({
+            if (!isCameraMode || detectionGeneration != cameraDetectionGeneration) {
+                return@addListener
             }
-        }
-        openCameraIfReady()
+            try {
+                cameraProvider = providerFuture.get()
+                bindCamera(cameraProvider!!, detectionGeneration)
+            } catch (error: RuntimeException) {
+                showCameraError(error)
+            }
+        }, ContextCompat.getMainExecutor(this))
     }
 
     private fun switchCamera() {
@@ -288,21 +276,11 @@ class MainActivity : ComponentActivity() {
             return
         }
         val nextFacing = if (
-            cameraFacing == CameraCharacteristics.LENS_FACING_BACK
+            cameraFacing == CameraSelector.LENS_FACING_BACK
         ) {
-            CameraCharacteristics.LENS_FACING_FRONT
+            CameraSelector.LENS_FACING_FRONT
         } else {
-            CameraCharacteristics.LENS_FACING_BACK
-        }
-        val manager = getSystemService(CameraManager::class.java)
-        val cameraExists = try {
-            findCameraId(manager, nextFacing) != null
-        } catch (error: CameraAccessException) {
-            showCameraError(error)
-            return
-        }
-        if (!cameraExists) {
-            return
+            CameraSelector.LENS_FACING_BACK
         }
         cameraFacing = nextFacing
         updateCameraSwitchButton()
@@ -311,18 +289,14 @@ class MainActivity : ComponentActivity() {
     }
 
     private fun updateCameraAvailability() {
-        val manager = getSystemService(CameraManager::class.java)
-        hasFrontCamera = try {
-            findCameraId(manager, CameraCharacteristics.LENS_FACING_FRONT) != null
-        } catch (_: CameraAccessException) {
-            false
-        }
+        val provider = cameraProvider
+        hasFrontCamera = provider?.hasCamera(CameraSelector.DEFAULT_FRONT_CAMERA) == true
     }
 
     private fun updateCameraSwitchButton() {
         binding.switchCameraButton.isVisible = isCameraMode && hasFrontCamera
         binding.switchCameraButton.contentDescription = getString(
-            if (cameraFacing == CameraCharacteristics.LENS_FACING_BACK) {
+            if (cameraFacing == CameraSelector.LENS_FACING_BACK) {
                 R.string.use_front_camera
             } else {
                 R.string.use_back_camera
@@ -333,187 +307,109 @@ class MainActivity : ComponentActivity() {
     private fun stopCameraResources() {
         cameraDetectionGeneration++
         cameraMakeupFeatures = null
-        cameraFrameReader?.close()
-        cameraFrameReader = null
-        cameraSession?.close()
-        cameraSession = null
-        cameraDevice?.close()
-        cameraDevice = null
-        cameraOpening = false
-        cameraRawSurface?.release()
-        cameraRawSurface = null
-        cameraFilteredSurface = null
-        cameraThread?.quitSafely()
-        cameraThread = null
-        cameraHandler = null
+        cameraAnalysis?.clearAnalyzer()
+        cameraProvider?.unbindAll()
+        cameraAnalysis = null
+        cameraProvider = null
+        faceMeshDetector?.close()
+        faceMeshDetector = null
+        cameraExecutor?.shutdown()
+        cameraExecutor = null
+        binding.filterPreview.clearCameraFrame()
     }
 
-    private fun startCameraThread() {
-        if (cameraThread != null) {
-            return
+    private fun bindCamera(provider: ProcessCameraProvider, generation: Long) {
+        val selector = CameraSelector.Builder().requireLensFacing(cameraFacing).build()
+        binding.cameraPreview.implementationMode = PreviewView.ImplementationMode.COMPATIBLE
+        binding.cameraPreview.scaleType = PreviewView.ScaleType.FILL_CENTER
+        binding.cameraPreview.scaleX = 1f
+        val preview = Preview.Builder()
+            .setTargetResolution(Size(CAMERA_WIDTH, CAMERA_HEIGHT))
+            .build()
+            .also { it.setSurfaceProvider(binding.cameraPreview.surfaceProvider) }
+        val analysis = ImageAnalysis.Builder()
+            .setTargetResolution(Size(CAMERA_ANALYSIS_WIDTH, CAMERA_ANALYSIS_HEIGHT))
+            .setOutputImageFormat(ImageAnalysis.OUTPUT_IMAGE_FORMAT_RGBA_8888)
+            .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
+            .build()
+        val executor = cameraExecutor ?: return
+        analysis.setAnalyzer(executor) { image ->
+            analyzeCameraFrame(image, generation)
         }
-        cameraThread = HandlerThread("GsFilterCamera").also { it.start() }
-        cameraHandler = Handler(cameraThread!!.looper)
-    }
-
-    @SuppressLint("MissingPermission")
-    private fun openCameraIfReady() {
-        if (
-            !isCameraMode ||
-            cameraDevice != null ||
-            cameraOpening ||
-            cameraFilteredSurface == null ||
-            !binding.cameraPreview.isAvailable
-        ) {
-            return
-        }
-        val handler = cameraHandler ?: return
-        val texture = binding.cameraPreview.surfaceTexture ?: return
-        val manager = getSystemService(CameraManager::class.java)
-        val cameraId = try {
-            findCameraId(manager, cameraFacing)
-                ?: if (cameraFacing == CameraCharacteristics.LENS_FACING_BACK) {
-                    manager.cameraIdList.firstOrNull()
-                } else {
-                    null
-                }
-        } catch (error: CameraAccessException) {
-            showCameraError(error)
-            return
-        }
-        if (cameraId == null) {
-            showCameraError(null)
-            return
-        }
-
-        val characteristics = manager.getCameraCharacteristics(cameraId)
-        val sensorOrientation = characteristics.get(CameraCharacteristics.SENSOR_ORIENTATION) ?: 0
-        val displayRotation = when (windowManager.defaultDisplay.rotation) {
-            Surface.ROTATION_90 -> 90
-            Surface.ROTATION_180 -> 180
-            Surface.ROTATION_270 -> 270
-            else -> 0
-        }
-        cameraRotationDegrees = if (cameraFacing == CameraCharacteristics.LENS_FACING_FRONT) {
-            (sensorOrientation + displayRotation) % 360
-        } else {
-            (sensorOrientation - displayRotation + 360) % 360
-        }
-        texture.setDefaultBufferSize(CAMERA_WIDTH, CAMERA_HEIGHT)
-        cameraRawSurface?.release()
-        cameraRawSurface = Surface(texture)
-        cameraOpening = true
         try {
-            manager.openCamera(cameraId, cameraStateCallback, handler)
-        } catch (error: CameraAccessException) {
-            cameraOpening = false
-            showCameraError(error)
-        } catch (error: SecurityException) {
-            cameraOpening = false
+            provider.unbindAll()
+            provider.bindToLifecycle(this, selector, preview, analysis)
+            cameraAnalysis = analysis
+            hasFrontCamera = provider.hasCamera(CameraSelector.DEFAULT_FRONT_CAMERA)
+            updateCameraSwitchButton()
+        } catch (error: RuntimeException) {
             showCameraError(error)
         }
     }
 
-    private fun findCameraId(manager: CameraManager, lensFacing: Int): String? =
-        manager.cameraIdList.firstOrNull { id ->
-            manager.getCameraCharacteristics(id).get(CameraCharacteristics.LENS_FACING) ==
-                lensFacing
-        }
-
-    private val cameraSurfaceTextureListener = object : TextureView.SurfaceTextureListener {
-        override fun onSurfaceTextureAvailable(surface: SurfaceTexture, width: Int, height: Int) {
-            if (isCameraMode) {
-                openCameraIfReady()
+    private fun analyzeCameraFrame(image: ImageProxy, generation: Long) {
+        try {
+            if (!isCameraMode || generation != cameraDetectionGeneration) {
+                return
             }
-        }
-
-        override fun onSurfaceTextureSizeChanged(surface: SurfaceTexture, width: Int, height: Int) = Unit
-
-        override fun onSurfaceTextureDestroyed(surface: SurfaceTexture): Boolean {
-            if (isCameraMode) {
-                stopCameraResources()
+            val rotationDegrees = image.imageInfo.rotationDegrees
+            val timestampNanos = image.imageInfo.timestamp
+            val isFrontCamera = cameraFacing == CameraSelector.LENS_FACING_FRONT
+            val rawBitmap = image.toRgbaBitmap()
+            val displayBitmap = rotateCameraBitmap(
+                rawBitmap,
+                rotationDegrees,
+                isFrontCamera,
+            )
+            if (displayBitmap !== rawBitmap) {
+                rawBitmap.recycle()
             }
-            return true
-        }
-
-        override fun onSurfaceTextureUpdated(surface: SurfaceTexture) = Unit
-    }
-
-    private val cameraStateCallback = object : CameraDevice.StateCallback() {
-        override fun onOpened(device: CameraDevice) {
+            faceMeshDetector?.detect(displayBitmap, timestampNanos)
             runOnUiThread {
-                cameraOpening = false
-                if (
-                    !isCameraMode ||
-                    !binding.cameraPreview.isAvailable ||
-                    cameraRawSurface == null ||
-                    cameraFilteredSurface == null
-                ) {
-                    device.close()
+                if (!isCameraMode || generation != cameraDetectionGeneration) {
+                    displayBitmap.recycle()
                     return@runOnUiThread
                 }
-                cameraDevice = device
-                createCameraSession(device)
+                binding.filterPreview.setCameraFrame(displayBitmap)
             }
-        }
-
-        override fun onDisconnected(device: CameraDevice) {
-            runOnUiThread {
-                device.close()
-                if (cameraDevice === device) {
-                    cameraDevice = null
-                }
+        } catch (error: RuntimeException) {
+            if (!error.message.orEmpty().contains("already closed", ignoreCase = true)) {
+                Log.e(TAG, "Camera analysis failed", error)
             }
-        }
-
-        override fun onError(device: CameraDevice, error: Int) {
-            runOnUiThread {
-                device.close()
-                if (cameraDevice === device) {
-                    cameraDevice = null
-                }
-                showCameraError(null)
-            }
+        } finally {
+            image.closeSafely()
         }
     }
 
-    private fun createCameraSession(device: CameraDevice) {
-        val rawSurface = cameraRawSurface ?: return
-        val filteredSurface = cameraFilteredSurface ?: return
-        val frameReaderSurface = cameraFrameReader?.surface
-        try {
-            device.createCaptureSession(
-                listOfNotNull(rawSurface, filteredSurface, frameReaderSurface),
-                object : CameraCaptureSession.StateCallback() {
-                    override fun onConfigured(session: CameraCaptureSession) {
-                        runOnUiThread {
-                            if (!isCameraMode || cameraDevice !== device) {
-                                session.close()
-                                return@runOnUiThread
-                            }
-                            cameraSession = session
-                            val request = device.createCaptureRequest(CameraDevice.TEMPLATE_PREVIEW).apply {
-                                addTarget(rawSurface)
-                                addTarget(filteredSurface)
-                                frameReaderSurface?.let { addTarget(it) }
-                                set(
-                                    CaptureRequest.CONTROL_AF_MODE,
-                                    CaptureRequest.CONTROL_AF_MODE_CONTINUOUS_PICTURE,
-                                )
-                            }
-                            session.setRepeatingRequest(request.build(), null, cameraHandler)
-                        }
-                    }
+    private fun rotateCameraBitmap(source: Bitmap, rotationDegrees: Int, mirror: Boolean): Bitmap {
+        if (rotationDegrees == 0 && !mirror) {
+            return source
+        }
+        val matrix = Matrix().apply {
+            postRotate(rotationDegrees.toFloat())
+            if (mirror) {
+                postScale(-1f, 1f)
+            }
+        }
+        return Bitmap.createBitmap(source, 0, 0, source.width, source.height, matrix, true)
+    }
 
-                    override fun onConfigureFailed(session: CameraCaptureSession) {
-                        session.close()
-                        runOnUiThread { showCameraError(null) }
-                    }
-                },
-                cameraHandler,
-            )
-        } catch (error: CameraAccessException) {
-            showCameraError(error)
+    private fun ImageProxy.toRgbaBitmap(): Bitmap {
+        val bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888)
+        val buffer = planes.first().buffer
+        buffer.rewind()
+        bitmap.copyPixelsFromBuffer(buffer)
+        return bitmap
+    }
+
+    private fun ImageProxy.closeSafely() {
+        try {
+            close()
+        } catch (error: IllegalStateException) {
+            if (!error.message.orEmpty().contains("already closed", ignoreCase = true)) {
+                throw error
+            }
+            Log.w(TAG, "CameraX delivered an already-closed frame")
         }
     }
 

@@ -36,6 +36,10 @@ dependencies {
     implementation("androidx.core:core-ktx:1.13.0")
     implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.9.4")
     implementation("androidx.lifecycle:lifecycle-viewmodel-ktx:2.9.4")
+    implementation("androidx.camera:camera-core:1.6.2")
+    implementation("androidx.camera:camera-camera2:1.6.2")
+    implementation("androidx.camera:camera-lifecycle:1.6.2")
+    implementation("androidx.camera:camera-view:1.6.2")
 
     implementation("com.github.bumptech.glide:glide:5.0.7")
     ksp("com.github.bumptech.glide:ksp:5.0.7")
@@ -44,6 +48,7 @@ dependencies {
     implementation("io.coil-kt.coil3:coil-svg:3.4.0")
     implementation("com.caverock:androidsvg-aar:1.4")
     implementation("com.google.mlkit:face-detection:16.1.7")
+    implementation("com.google.mediapipe:tasks-vision:1.0.0")
 
     testImplementation("junit:junit:4.13.2")
 }
