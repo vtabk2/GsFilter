@@ -8,7 +8,7 @@ import com.gsfilter.filter.ShaderFilterParams
 import java.lang.ref.WeakReference
 import java.util.concurrent.CancellationException
 
-object FilterThumbnailRenderer {
+internal object FilterThumbnailRenderer {
 
     // ponytail: one-slot cache bounds memory; expand only with profiling.
     private val artSourceCacheLock = Any()

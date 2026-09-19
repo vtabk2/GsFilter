@@ -23,7 +23,7 @@ import java.util.concurrent.CancellationException
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.locks.ReentrantLock
 
-object FilterGpuBitmapRenderer {
+internal object FilterGpuBitmapRenderer {
 
     private val vertexBuffer = GlFilterProgram.floatBufferOf(GlFilterProgram.VERTICES)
     private val textureBuffer = GlFilterProgram.floatBufferOf(GlFilterProgram.TEXTURE_COORDS)

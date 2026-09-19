@@ -2,7 +2,7 @@ package com.gsfilter.filter
 
 import kotlin.math.roundToInt
 
-data class ShaderFilterParams(
+internal data class ShaderFilterParams(
     val effect: FilterEffect,
     val effectStrength: Float,
     val effectThreshold: Float,

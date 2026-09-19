@@ -10,12 +10,11 @@ import com.gsfilter.filter.Adjustments
 import com.gsfilter.filter.FilterCategory
 import com.gsfilter.filter.FilterOption
 import com.gsfilter.filter.FilterRecipe
+import com.gsfilter.filter.FilterRenderOptions
 import com.gsfilter.filter.FilterSourceKey
+import com.gsfilter.filter.GsFilter
 import com.gsfilter.filter.MakeupFeatures
-import com.gsfilter.filter.renderer.FilterBitmapRenderer
-import com.gsfilter.filter.renderer.FilterGpuBitmapRenderer
 import com.gsfilter.utils.LoadUtils
-import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -174,46 +173,17 @@ class FilterViewModel(application: Application) : AndroidViewModel(application) 
         val source = state.sourceBitmap ?: return null
         val recipe = state.selectedRecipe
         return withContext(Dispatchers.Default) {
-            if (recipe == FilterRecipe.DEFAULT && state.adjustments == Adjustments.DEFAULT) {
-                return@withContext FilterBitmapRenderer.getBitmap(
-                    source = source,
-                    recipe = recipe,
-                    adjustments = state.adjustments,
-                    makeupFeatures = state.makeupFeatures,
+            GsFilter.render(
+                source = source,
+                recipe = recipe,
+                adjustments = state.adjustments,
+                options = FilterRenderOptions(
                     maxWidth = maxWidth,
                     maxHeight = maxHeight,
-                )
-            }
-
-            fun renderCpu() =
-                FilterBitmapRenderer.getBitmap(
-                    source = source,
-                    recipe = recipe,
-                    adjustments = state.adjustments,
+                    useGpu = useGpu,
                     makeupFeatures = state.makeupFeatures,
-                    maxWidth = maxWidth,
-                    maxHeight = maxHeight,
-                )
-
-            if (!useGpu) {
-                return@withContext renderCpu()
-            }
-
-            try {
-                FilterGpuBitmapRenderer.getBitmap(
-                    source = source,
-                    recipe = recipe,
-                    adjustments = state.adjustments,
-                    makeupFeatures = state.makeupFeatures,
-                    maxWidth = maxWidth,
-                    maxHeight = maxHeight,
-                )
-            } catch (error: RuntimeException) {
-                if (error is CancellationException) {
-                    throw error
-                }
-                renderCpu()
-            }
+                ),
+            )
         }
     }
 

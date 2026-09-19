@@ -18,7 +18,7 @@ import kotlin.math.roundToInt
 import kotlin.math.sin
 import kotlin.math.sqrt
 
-object FilterBitmapRenderer {
+internal object FilterBitmapRenderer {
 
     fun getBitmap(
         source: Bitmap,
