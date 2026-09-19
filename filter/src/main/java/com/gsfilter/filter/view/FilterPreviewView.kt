@@ -12,12 +12,15 @@ import android.view.Surface
 import com.gsfilter.filter.Adjustments
 import com.gsfilter.filter.FilterLut
 import com.gsfilter.filter.FilterRecipe
-import com.gsfilter.filter.MakeupFeatures
+import com.gsfilter.filter.FilterAnalysis
+import com.gsfilter.filter.ForegroundMask
 import com.gsfilter.filter.ShaderFilterParams
 import com.gsfilter.filter.gl.GlFilterProgram
 import com.gsfilter.filter.gl.GlLutTexture
 import javax.microedition.khronos.egl.EGLConfig
 import javax.microedition.khronos.opengles.GL10
+import java.nio.ByteBuffer
+import java.nio.ByteOrder
 
 class FilterPreviewView @JvmOverloads constructor(
     context: Context,
@@ -33,7 +36,7 @@ class FilterPreviewView @JvmOverloads constructor(
     private var lastFilterParams: ShaderFilterParams? = null
     private var lastRecipe: FilterRecipe? = null
     private var lastAdjustments: Adjustments? = null
-    private var lastMakeupFeatures: MakeupFeatures? = null
+    private var lastAnalysis: FilterAnalysis? = null
     private var pendingFilterParams: ShaderFilterParams? = null
     private var pendingFilterGeneration = 0L
     private var nextFilterGeneration = 0L
@@ -91,19 +94,19 @@ class FilterPreviewView @JvmOverloads constructor(
     fun setFilterState(
         recipe: FilterRecipe,
         adjustments: Adjustments,
-        makeupFeatures: MakeupFeatures? = null,
+        analysis: FilterAnalysis? = null,
     ) {
         if (
             recipe == lastRecipe &&
             adjustments == lastAdjustments &&
-            (makeupFeatures === lastMakeupFeatures || makeupFeatures == lastMakeupFeatures)
+            (analysis == lastAnalysis || analysis == lastAnalysis)
         ) {
             return
         }
-        val params = ShaderFilterParams.from(recipe, adjustments, makeupFeatures)
+        val params = ShaderFilterParams.from(recipe, adjustments, analysis)
         lastRecipe = recipe
         lastAdjustments = adjustments
-        lastMakeupFeatures = makeupFeatures
+        lastAnalysis = analysis
         if (params == lastFilterParams) {
             return
         }
@@ -161,6 +164,10 @@ class FilterPreviewView @JvmOverloads constructor(
         private var textureConfig: Bitmap.Config? = null
         private var lutTextureId = 0
         private var lutTexture = FilterLut.None
+        private var foregroundMaskTextureId = 0
+        private var foregroundMaskWidth = 0
+        private var foregroundMaskHeight = 0
+        private var lastForegroundMask: ForegroundMask? = null
         private var sourceBitmap: Bitmap? = null
         private var pendingBitmap: Bitmap? = null
         private var imageWidth = 0
@@ -189,11 +196,16 @@ class FilterPreviewView @JvmOverloads constructor(
             GLES20.glUseProgram(program)
             GLES20.glUniform1i(currentHandles.texture, 0)
             GLES20.glUniform1i(currentHandles.lutTexture, 1)
+            GLES20.glUniform1i(currentHandles.foregroundMask, 2)
             GlFilterProgram.bindAttributes(currentHandles, vertexBuffer, textureBuffer)
             textureId = 0
             textureConfig = null
             lutTextureId = 0
             lutTexture = FilterLut.None
+            foregroundMaskTextureId = 0
+            foregroundMaskWidth = 0
+            foregroundMaskHeight = 0
+            lastForegroundMask = null
             imageWidth = 0
             imageHeight = 0
             makeupUniformsNeedUpload = true
@@ -236,6 +248,7 @@ class FilterPreviewView @JvmOverloads constructor(
                 return
             }
             val currentHandles = handles ?: return
+            val foregroundMaskTextureId = uploadForegroundMask(params.foregroundMask)
             GlFilterProgram.bindUniforms(
                 handles = currentHandles,
                 textureId = inputTextureId,
@@ -252,6 +265,7 @@ class FilterPreviewView @JvmOverloads constructor(
                 } else {
                     GLES20.GL_TEXTURE_2D
                 },
+                foregroundMaskTextureId = foregroundMaskTextureId,
             )
             makeupUniformsNeedUpload = false
             adjustmentUniformsNeedUpload = false
@@ -416,7 +430,9 @@ class FilterPreviewView @JvmOverloads constructor(
                 previous.faceSlimming != next.faceSlimming ||
                 previous.eyeEnlargement != next.eyeEnlargement ||
                 (previous.makeupFeatures !== next.makeupFeatures &&
-                    previous.makeupFeatures != next.makeupFeatures)
+                    previous.makeupFeatures != next.makeupFeatures) ||
+                (previous.foregroundMask !== next.foregroundMask &&
+                    previous.foregroundMask != next.foregroundMask)
 
         private fun adjustmentParamsChanged(
             previous: ShaderFilterParams,
@@ -502,6 +518,62 @@ class FilterPreviewView @JvmOverloads constructor(
             imageHeight = bitmap.height
             textureConfig = bitmap.config
             updateVertexBuffer()
+        }
+
+        private fun uploadForegroundMask(mask: ForegroundMask?): Int {
+            if (mask == null) {
+                lastForegroundMask = null
+                return 0
+            }
+            if (lastForegroundMask === mask && foregroundMaskTextureId != 0) {
+                return foregroundMaskTextureId
+            }
+            if (foregroundMaskTextureId == 0) {
+                val textures = IntArray(1)
+                GLES20.glGenTextures(1, textures, 0)
+                foregroundMaskTextureId = textures[0]
+                GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, foregroundMaskTextureId)
+                GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MIN_FILTER, GLES20.GL_LINEAR)
+                GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MAG_FILTER, GLES20.GL_LINEAR)
+                GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_WRAP_S, GLES20.GL_CLAMP_TO_EDGE)
+                GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_WRAP_T, GLES20.GL_CLAMP_TO_EDGE)
+            }
+            val values = ByteBuffer.allocateDirect(mask.confidence.size).order(ByteOrder.nativeOrder())
+            mask.confidence.forEach { confidence ->
+                values.put((confidence.coerceIn(0f, 1f) * 255f).toInt().toByte())
+            }
+            values.position(0)
+            GLES20.glActiveTexture(GLES20.GL_TEXTURE2)
+            GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, foregroundMaskTextureId)
+            if (foregroundMaskWidth == mask.width && foregroundMaskHeight == mask.height) {
+                GLES20.glTexSubImage2D(
+                    GLES20.GL_TEXTURE_2D,
+                    0,
+                    0,
+                    0,
+                    mask.width,
+                    mask.height,
+                    GLES20.GL_LUMINANCE,
+                    GLES20.GL_UNSIGNED_BYTE,
+                    values,
+                )
+            } else {
+                GLES20.glTexImage2D(
+                    GLES20.GL_TEXTURE_2D,
+                    0,
+                    GLES20.GL_LUMINANCE,
+                    mask.width,
+                    mask.height,
+                    0,
+                    GLES20.GL_LUMINANCE,
+                    GLES20.GL_UNSIGNED_BYTE,
+                    values,
+                )
+                foregroundMaskWidth = mask.width
+                foregroundMaskHeight = mask.height
+            }
+            lastForegroundMask = mask
+            return foregroundMaskTextureId
         }
 
         private fun updateVertexBuffer() {

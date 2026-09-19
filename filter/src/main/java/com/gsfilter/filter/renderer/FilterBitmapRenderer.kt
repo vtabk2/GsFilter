@@ -340,7 +340,7 @@ internal object FilterBitmapRenderer {
                 1f
             }
             beautyMask = if (needsBeautyMask) {
-                skinMask(sourceRed, sourceGreen, sourceBlue) * faceMask
+                skinMask(sourceRed, sourceGreen, sourceBlue) * faceMask * (params.foregroundMask?.sample(sourceX, sourceY) ?: 1f)
             } else {
                 0f
             }

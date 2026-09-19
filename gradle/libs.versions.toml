@@ -11,6 +11,7 @@ glide = "5.0.7"
 coil = "3.4.0"
 androidsvg = "1.4"
 mlkitFace = "16.1.7"
+mlkitSegmentation = "16.0.0-beta6"
 gscore = "1.1.0"
 junit = "4.13.2"
 json = "20240303"
@@ -33,6 +34,7 @@ coil = { module = "io.coil-kt.coil3:coil", version.ref = "coil" }
 coil-svg = { module = "io.coil-kt.coil3:coil-svg", version.ref = "coil" }
 androidsvg = { module = "com.caverock:androidsvg-aar", version.ref = "androidsvg" }
 mlkit-face = { module = "com.google.mlkit:face-detection", version.ref = "mlkitFace" }
+mlkit-segmentation = { module = "com.google.mlkit:segmentation-selfie", version.ref = "mlkitSegmentation" }
 gscore = { module = "com.github.vtabk2:GsCore", version.ref = "gscore" }
 junit = { module = "junit:junit", version.ref = "junit" }
 json = { module = "org.json:json", version.ref = "json" }

@@ -17,7 +17,7 @@ internal object FilterRenderer {
         adjustments: Adjustments = Adjustments.DEFAULT,
         options: FilterRenderOptions = FilterRenderOptions(),
     ): Bitmap {
-        val params = ShaderFilterParams.from(recipe, adjustments, options.makeupFeatures)
+        val params = ShaderFilterParams.from(recipe, adjustments, options.analysis)
         return getBitmapWithParams(
             source = source,
             params = params,
@@ -45,7 +45,7 @@ internal object FilterRenderer {
         if (sources.isEmpty()) {
             return
         }
-        val params = ShaderFilterParams.from(recipe, adjustments, options.makeupFeatures)
+        val params = ShaderFilterParams.from(recipe, adjustments, options.analysis)
         val isNoOp = FilterBitmapRenderer.isNoOp(params)
         val makeupControlsEnabled = if (isNoOp) false else GlFilterProgram.hasMakeupControls(params)
         val adjustmentValuesEnabled = if (isNoOp) false else GlFilterProgram.hasAdjustmentValues(params)

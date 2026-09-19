@@ -80,6 +80,8 @@ internal object GlFilterProgram {
             texture = GLES20.glGetUniformLocation(program, U_TEXTURE),
             lutTexture = GLES20.glGetUniformLocation(program, U_LUT_TEXTURE),
             lutStrength = GLES20.glGetUniformLocation(program, U_LUT_STRENGTH),
+            foregroundMask = GLES20.glGetUniformLocation(program, U_FOREGROUND_MASK),
+            foregroundMaskEnabled = GLES20.glGetUniformLocation(program, U_FOREGROUND_MASK_ENABLED),
             skinSmoothing = GLES20.glGetUniformLocation(program, U_SKIN_SMOOTHING),
             skinWhitening = GLES20.glGetUniformLocation(program, U_SKIN_WHITENING),
             blush = GLES20.glGetUniformLocation(program, U_BLUSH),
@@ -169,6 +171,7 @@ internal object GlFilterProgram {
         bindInputTexture: Boolean = true,
         bindTextureSampler: Boolean = true,
         inputTextureTarget: Int = GLES20.GL_TEXTURE_2D,
+        foregroundMaskTextureId: Int = 0,
     ) {
         if (bindInputTexture) {
             GLES20.glActiveTexture(GLES20.GL_TEXTURE0)
@@ -177,6 +180,12 @@ internal object GlFilterProgram {
         if (bindTextureSampler) {
             GLES20.glUniform1i(handles.texture, 0)
             GLES20.glUniform1i(handles.lutTexture, 1)
+            GLES20.glUniform1i(handles.foregroundMask, 2)
+        }
+        GLES20.glUniform1f(handles.foregroundMaskEnabled, if (foregroundMaskTextureId != 0) 1f else 0f)
+        if (foregroundMaskTextureId != 0) {
+            GLES20.glActiveTexture(GLES20.GL_TEXTURE2)
+            GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, foregroundMaskTextureId)
         }
         if (uploadLutUniforms) {
             val lutStrength = if (lutTextureId != 0) params.lutStrength else 0f
@@ -422,6 +431,8 @@ internal object GlFilterProgram {
         val texture: Int,
         val lutTexture: Int,
         val lutStrength: Int,
+        val foregroundMask: Int,
+        val foregroundMaskEnabled: Int,
         val skinSmoothing: Int,
         val skinWhitening: Int,
         val blush: Int,
@@ -496,6 +507,8 @@ internal object GlFilterProgram {
     private const val U_TEXTURE = "uTexture"
     private const val U_LUT_TEXTURE = "uLutTexture"
     private const val U_LUT_STRENGTH = "uLutStrength"
+    private const val U_FOREGROUND_MASK = "uForegroundMask"
+    private const val U_FOREGROUND_MASK_ENABLED = "uForegroundMaskEnabled"
     private const val U_SKIN_SMOOTHING = "uSkinSmoothing"
     private const val U_SKIN_WHITENING = "uSkinWhitening"
     private const val U_BLUSH = "uBlush"
@@ -570,6 +583,8 @@ internal object GlFilterProgram {
         uniform sampler2D uTexture;
         uniform sampler2D uLutTexture;
         uniform float uLutStrength;
+        uniform sampler2D uForegroundMask;
+        uniform float uForegroundMaskEnabled;
         uniform float uSkinSmoothing;
         uniform float uSkinWhitening;
         uniform float uBlush;
@@ -962,7 +977,9 @@ internal object GlFilterProgram {
                     faceMask = faceAreaMask(vTexCoord);
                 }
                 if (needsBeautyMask) {
-                    beautyMask = skinMask(color.rgb) * faceMask;
+                    float foregroundMask = uForegroundMaskEnabled > 0.0 ?
+                        texture2D(uForegroundMask, sourceCoord).r : 1.0;
+                    beautyMask = skinMask(color.rgb) * faceMask * foregroundMask;
                 }
                 if (uSkinSmoothing > 0.0) {
                     vec3 localContrast = abs(color.rgb - blur);

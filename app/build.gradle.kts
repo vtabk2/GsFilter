@@ -43,7 +43,6 @@ dependencies {
     implementation(libs.coil)
     implementation(libs.coil.svg)
     implementation(libs.androidsvg)
-    implementation(libs.mlkit.face)
 
     testImplementation(libs.junit)
 }

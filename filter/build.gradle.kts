@@ -25,6 +25,8 @@ android {
 dependencies {
     implementation(libs.androidx.recyclerview)
     implementation(libs.glide)
+    implementation(libs.mlkit.face)
+    implementation(libs.mlkit.segmentation)
 
     api(libs.gscore)
 

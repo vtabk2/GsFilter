@@ -12,8 +12,9 @@ import com.gsfilter.filter.FilterOption
 import com.gsfilter.filter.FilterRecipe
 import com.gsfilter.filter.FilterRenderOptions
 import com.gsfilter.filter.FilterSourceKey
+import com.gsfilter.filter.FilterAnalysis
 import com.gsfilter.filter.GsFilter
-import com.gsfilter.filter.MakeupFeatures
+import com.gsfilter.filter.GsFilterAnalyzer
 import com.gsfilter.utils.LoadUtils
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -28,7 +29,7 @@ class FilterViewModel(application: Application) : AndroidViewModel(application) 
 
     private val _state = MutableStateFlow(FilterUiState())
     val state: StateFlow<FilterUiState> = _state.asStateFlow()
-    private val faceMakeupDetector = FaceMakeupDetector()
+    private val filterAnalyzer = GsFilterAnalyzer()
     private var imageAssets: List<String> = emptyList()
     private var imageAssetIndex = 0
     private var currentAssetPath: String? = null
@@ -50,8 +51,17 @@ class FilterViewModel(application: Application) : AndroidViewModel(application) 
         }
     }
 
-    fun detectCameraFrame(image: Image, rotationDegrees: Int, onResult: (MakeupFeatures?) -> Unit) {
-        faceMakeupDetector.detect(image, rotationDegrees, onResult)
+    fun detectCameraFrame(image: Image, rotationDegrees: Int, onResult: (FilterAnalysis?) -> Unit) {
+        try {
+            filterAnalyzer.analyze(image, rotationDegrees) { analysis ->
+                image.use { image ->
+                    onResult(analysis)
+                }
+            }
+        } catch (error: RuntimeException) {
+            image.close()
+            throw error
+        }
     }
 
     fun selectFilter(filter: FilterOption) {
@@ -181,7 +191,7 @@ class FilterViewModel(application: Application) : AndroidViewModel(application) 
                     maxWidth = maxWidth,
                     maxHeight = maxHeight,
                     useGpu = useGpu,
-                    makeupFeatures = state.makeupFeatures,
+                    analysis = state.analysis,
                 ),
             )
         }
@@ -216,7 +226,7 @@ class FilterViewModel(application: Application) : AndroidViewModel(application) 
             it.copy(
                 isLoading = true,
                 error = null,
-                makeupFeatures = null,
+                analysis = null,
                 imageAssetCount = imageAssets.size,
             )
         }
@@ -229,15 +239,15 @@ class FilterViewModel(application: Application) : AndroidViewModel(application) 
                     filterThumbnailKey = FilterSourceKey.asset(assetPath),
                     isLoading = false,
                     error = null,
-                    makeupFeatures = null,
+                    analysis = null,
                     imageAssetCount = imageAssets.size,
                 )
             }
             currentAssetPath = assetPath
-            faceMakeupDetector.detect(bitmap) { makeupFeatures ->
+            filterAnalyzer.analyze(bitmap) { analysis ->
                 _state.update { state ->
                     if (state.sourceBitmap === bitmap) {
-                        state.copy(makeupFeatures = makeupFeatures)
+                        state.copy(analysis = analysis)
                     } else {
                         state
                     }
@@ -249,7 +259,7 @@ class FilterViewModel(application: Application) : AndroidViewModel(application) 
     }
 
     override fun onCleared() {
-        faceMakeupDetector.close()
+        filterAnalyzer.close()
         super.onCleared()
     }
 

@@ -29,7 +29,7 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import com.gsfilter.databinding.ActivityMainBinding
-import com.gsfilter.filter.MakeupFeatures
+import com.gsfilter.filter.FilterAnalysis
 import com.gsfilter.filter.view.FilterControlsView
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
@@ -56,7 +56,7 @@ class MainActivity : ComponentActivity() {
     private var cameraRawSurface: Surface? = null
     private var cameraFilteredSurface: Surface? = null
     private var cameraFrameReader: ImageReader? = null
-    private var cameraMakeupFeatures: MakeupFeatures? = null
+    private var cameraAnalysis: FilterAnalysis? = null
     private var cameraRotationDegrees = 0
     private var cameraDetectionGeneration = 0L
     private val cameraPermissionLauncher = registerForActivityResult(
@@ -174,7 +174,7 @@ class MainActivity : ComponentActivity() {
         binding.filterPreview.setFilterState(
             recipe = selectedRecipe,
             adjustments = state.adjustments,
-            makeupFeatures = if (isCameraMode) cameraMakeupFeatures else state.makeupFeatures,
+            analysis = if (isCameraMode) cameraAnalysis else state.analysis,
         )
         binding.filterControls.setState(
             selectedCategory = state.selectedCategory,
@@ -199,6 +199,7 @@ class MainActivity : ComponentActivity() {
             return
         }
         isCameraMode = true
+        cameraAnalysis = null
         updateCameraAvailability()
         binding.imageOriginal.isVisible = false
         binding.cameraPreview.isVisible = true
@@ -209,7 +210,7 @@ class MainActivity : ComponentActivity() {
         binding.filterPreview.setFilterState(
             recipe = state.selectedRecipe,
             adjustments = state.adjustments,
-            makeupFeatures = null,
+            analysis = null,
         )
         startCameraResources()
     }
@@ -231,7 +232,7 @@ class MainActivity : ComponentActivity() {
         binding.filterPreview.setFilterState(
             recipe = state.selectedRecipe,
             adjustments = state.adjustments,
-            makeupFeatures = state.makeupFeatures,
+            analysis = state.analysis,
         )
     }
 
@@ -258,17 +259,19 @@ class MainActivity : ComponentActivity() {
                     image.close()
                     return@setOnImageAvailableListener
                 }
-                viewModel.detectCameraFrame(image, cameraRotationDegrees) detector@{ features ->
-                    if (!isCameraMode || detectionGeneration != cameraDetectionGeneration) {
-                        return@detector
+                viewModel.detectCameraFrame(image, cameraRotationDegrees) { analysis ->
+                    runOnUiThread {
+                        if (!isCameraMode || detectionGeneration != cameraDetectionGeneration) {
+                            return@runOnUiThread
+                        }
+                        cameraAnalysis = analysis
+                        val state = viewModel.state.value
+                        binding.filterPreview.setFilterState(
+                            recipe = state.selectedRecipe,
+                            adjustments = state.adjustments,
+                            analysis = analysis,
+                        )
                     }
-                    cameraMakeupFeatures = features
-                    val state = viewModel.state.value
-                    binding.filterPreview.setFilterState(
-                        recipe = state.selectedRecipe,
-                        adjustments = state.adjustments,
-                        makeupFeatures = features,
-                    )
                 }
             }, handler)
         }
@@ -332,7 +335,7 @@ class MainActivity : ComponentActivity() {
 
     private fun stopCameraResources() {
         cameraDetectionGeneration++
-        cameraMakeupFeatures = null
+        cameraAnalysis = null
         cameraFrameReader?.close()
         cameraFrameReader = null
         cameraSession?.close()

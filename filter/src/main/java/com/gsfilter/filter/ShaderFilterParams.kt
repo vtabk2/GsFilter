@@ -22,6 +22,7 @@ internal data class ShaderFilterParams(
     val faceSlimming: Float,
     val eyeEnlargement: Float,
     val makeupFeatures: MakeupFeatures?,
+    val foregroundMask: ForegroundMask?,
     val isMonochrome: Float,
     val redShift: Float,
     val greenShift: Float,
@@ -45,7 +46,7 @@ internal data class ShaderFilterParams(
         fun from(
             recipe: FilterRecipe,
             adjustments: Adjustments,
-            makeupFeatures: MakeupFeatures? = null,
+            analysis: FilterAnalysis? = null,
         ): ShaderFilterParams {
             val linearIntensity = amount(recipe.intensity, PERCENT_MAX)
             val intensity = intensityAmount(linearIntensity)
@@ -82,7 +83,8 @@ internal data class ShaderFilterParams(
                     eyebrow = amount(recipe.eyebrow, PERCENT_MAX) * intensity,
                     faceSlimming = amount(recipe.faceSlimming, PERCENT_MAX) * intensity,
                     eyeEnlargement = amount(recipe.eyeEnlargement, PERCENT_MAX) * intensity,
-                    makeupFeatures = makeupFeatures,
+                    makeupFeatures = analysis?.makeupFeatures,
+                    foregroundMask = analysis?.foregroundMask,
                     isMonochrome = if (recipe.isMonochrome) intensity else 0f,
                     redShift = recipe.redShift.scaledBy(intensity) / COLOR_CHANNEL_MAX,
                     greenShift = recipe.greenShift.scaledBy(intensity) / COLOR_CHANNEL_MAX,
@@ -104,6 +106,16 @@ internal data class ShaderFilterParams(
                 )
             }
         }
+
+        fun from(
+            recipe: FilterRecipe,
+            adjustments: Adjustments,
+            makeupFeatures: MakeupFeatures?,
+        ): ShaderFilterParams = from(
+            recipe = recipe,
+            adjustments = adjustments,
+            analysis = FilterAnalysis(makeupFeatures = makeupFeatures),
+        )
 
         private fun combineAdjustments(preset: Adjustments, user: Adjustments): Adjustments = when {
             preset == Adjustments.DEFAULT -> user

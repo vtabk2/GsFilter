@@ -7,7 +7,7 @@ import com.gsfilter.filter.FilterCatalog
 import com.gsfilter.filter.FilterOption
 import com.gsfilter.filter.FilterPack
 import com.gsfilter.filter.FilterRecipe
-import com.gsfilter.filter.MakeupFeatures
+import com.gsfilter.filter.FilterAnalysis
 
 data class FilterUiState(
     val sourceBitmap: Bitmap? = null,
@@ -28,7 +28,7 @@ data class FilterUiState(
     val eyebrow: Int = FilterCatalog.default.recipe.eyebrow,
     val faceSlimming: Int = FilterCatalog.default.recipe.faceSlimming,
     val eyeEnlargement: Int = FilterCatalog.default.recipe.eyeEnlargement,
-    val makeupFeatures: MakeupFeatures? = null,
+    val analysis: FilterAnalysis? = null,
     val adjustments: Adjustments = Adjustments.DEFAULT,
     val isLoading: Boolean = false,
     val error: FilterError? = null,

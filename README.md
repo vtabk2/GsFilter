@@ -129,19 +129,36 @@ dependencies {
 `filter-camera` cung cấp `FilterCameraAnalyzer` để nối `ImageAnalysis` với pipeline filter:
 
 ```kotlin
+val filterAnalyzer = GsFilterAnalyzer()
 imageAnalysis.setAnalyzer(
     cameraExecutor,
-    FilterCameraAnalyzer { image ->
-        try {
-            // Gửi ImageProxy vào bộ phân tích/render của ứng dụng.
-        } finally {
-            image.close()
-        }
+    FilterCameraAnalyzer(filterAnalyzer) { analysis ->
+        // analysis gồm face features và foreground mask.
     },
 )
 ```
 
-Nếu xử lý bất đồng bộ, chỉ gọi `image.close()` sau khi xử lý hoàn tất.
+`FilterCameraAnalyzer` tự đóng `ImageProxy` sau khi `GsFilterAnalyzer` hoàn tất. Nếu cần
+pipeline CameraX riêng, dùng constructor nhận `(ImageProxy) -> Unit` và tự đóng proxy.
+
+`GsFilterAnalyzer` cũng nhận bitmap tĩnh, nên host không cần tự tích hợp face detection
+hoặc segmentation:
+
+```kotlin
+val analyzer = GsFilterAnalyzer()
+analyzer.analyze(sourceBitmap) { analysis ->
+    val result = GsFilter.render(
+        source = sourceBitmap,
+        recipe = selectedFilter.recipe,
+        adjustments = adjustments,
+        options = FilterRenderOptions(analysis = analysis),
+    )
+}
+```
+
+Mask hiện là selfie/person foreground confidence của ML Kit, sau đó được kết hợp với
+skin-color mask hiện có để giới hạn smoothing; đây chưa phải semantic skin segmentation
+riêng cho từng vùng da.
 
 ## Cách dùng preview
 
@@ -161,11 +178,12 @@ binding.filterPreview.setSourceBitmap(sourceBitmap)
 binding.filterPreview.setFilterState(
     selectedFilter.recipe,
     adjustments,
-    makeupFeatures = null, // truyền MakeupFeatures nếu host có face detection
+    analysis = null, // hoặc kết quả từ GsFilterAnalyzer
 )
 ```
 
-`makeupFeatures` là tùy chọn; truyền `null` nếu host không dùng face detection. `setFilterState()` bỏ qua params trùng nhau và gom các thay đổi adjust nhanh vào frame kế tiếp.
+`analysis` là tùy chọn; truyền `null` nếu host không dùng face features/segmentation.
+`setFilterState()` bỏ qua params trùng nhau và gom các thay đổi adjust nhanh vào frame kế tiếp.
 
 ## Render bitmap không cần view
 

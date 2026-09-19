@@ -11,6 +11,7 @@ import android.opengl.GLUtils
 import com.gsfilter.filter.Adjustments
 import com.gsfilter.filter.FilterLut
 import com.gsfilter.filter.FilterRecipe
+import com.gsfilter.filter.ForegroundMask
 import com.gsfilter.filter.MakeupFeatures
 import com.gsfilter.filter.ShaderFilterParams
 import com.gsfilter.filter.gl.GlFilterProgram
@@ -134,6 +135,7 @@ internal object FilterGpuBitmapRenderer {
         return try {
             session.egl.makeCurrent()
             uploadTexture(renderSource, session)
+            val foregroundMaskTextureId = uploadForegroundMask(params.foregroundMask, session)
             val lutTextureId = if (params.lutStrength > 0f) session.lutTextureFor(params.lut) else 0
             val lutStrength = if (lutTextureId != 0) params.lutStrength else 0f
             val uploadLutUniforms =
@@ -155,6 +157,7 @@ internal object FilterGpuBitmapRenderer {
                 uploadLutUniforms = uploadLutUniforms,
                 bindInputTexture = false,
                 bindTextureSampler = false,
+                foregroundMaskTextureId = foregroundMaskTextureId,
             )
             session.lastParams = params
             session.makeupUniformsEnabled = makeupControlsEnabled
@@ -246,6 +249,58 @@ internal object FilterGpuBitmapRenderer {
         return textureId
     }
 
+    private fun uploadForegroundMask(mask: ForegroundMask?, session: RenderSession): Int {
+        if (mask == null) {
+            session.lastForegroundMask = null
+            return 0
+        }
+        if (session.lastForegroundMask === mask && session.foregroundMaskTextureId != 0) {
+            return session.foregroundMaskTextureId
+        }
+        if (session.foregroundMaskTextureId == 0) {
+            session.foregroundMaskTextureId = createTexture()
+        }
+        val values = ByteBuffer.allocateDirect(mask.confidence.size).order(ByteOrder.nativeOrder())
+        mask.confidence.forEach { confidence ->
+            values.put((confidence.coerceIn(0f, 1f) * 255f).toInt().toByte())
+        }
+        values.position(0)
+        GLES20.glActiveTexture(GLES20.GL_TEXTURE2)
+        GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, session.foregroundMaskTextureId)
+        if (
+            session.foregroundMaskWidth == mask.width &&
+            session.foregroundMaskHeight == mask.height
+        ) {
+            GLES20.glTexSubImage2D(
+                GLES20.GL_TEXTURE_2D,
+                0,
+                0,
+                0,
+                mask.width,
+                mask.height,
+                GLES20.GL_LUMINANCE,
+                GLES20.GL_UNSIGNED_BYTE,
+                values,
+            )
+        } else {
+            GLES20.glTexImage2D(
+                GLES20.GL_TEXTURE_2D,
+                0,
+                GLES20.GL_LUMINANCE,
+                mask.width,
+                mask.height,
+                0,
+                GLES20.GL_LUMINANCE,
+                GLES20.GL_UNSIGNED_BYTE,
+                values,
+            )
+            session.foregroundMaskWidth = mask.width
+            session.foregroundMaskHeight = mask.height
+        }
+        session.lastForegroundMask = mask
+        return session.foregroundMaskTextureId
+    }
+
     private fun readBitmap(width: Int, height: Int): Bitmap {
         val pixelCount = width * height
         readbackBuffers.ensure(pixelCount)
@@ -319,6 +374,10 @@ internal object FilterGpuBitmapRenderer {
         var inputBitmapGenerationId = 0
         var lutTextureId = 0
         var lut: FilterLut? = null
+        var foregroundMaskTextureId = 0
+        var foregroundMaskWidth = 0
+        var foregroundMaskHeight = 0
+        var lastForegroundMask: ForegroundMask? = null
         var lastParams: ShaderFilterParams? = null
         var lastRenderWidth = 0
         var lastRenderHeight = 0
@@ -340,6 +399,7 @@ internal object FilterGpuBitmapRenderer {
                 GLES20.glUseProgram(program)
                 GLES20.glUniform1i(handles.texture, 0)
                 GLES20.glUniform1i(handles.lutTexture, 1)
+                GLES20.glUniform1i(handles.foregroundMask, 2)
                 GLES20.glViewport(0, 0, width, height)
                 GlFilterProgram.bindAttributes(handles, vertexBuffer, textureBuffer)
                 initialized = true
@@ -378,6 +438,10 @@ internal object FilterGpuBitmapRenderer {
                 if (inputTextureId != 0) {
                     GLES20.glDeleteTextures(1, intArrayOf(inputTextureId), 0)
                     inputTextureId = 0
+                }
+                if (foregroundMaskTextureId != 0) {
+                    GLES20.glDeleteTextures(1, intArrayOf(foregroundMaskTextureId), 0)
+                    foregroundMaskTextureId = 0
                 }
             } catch (_: RuntimeException) {
                 // The EGL context may already be lost; release still must run.

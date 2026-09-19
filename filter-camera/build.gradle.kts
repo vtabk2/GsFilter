@@ -24,7 +24,4 @@ android {
 dependencies {
     api(project(":filter"))
     api(libs.camera.core)
-    implementation(libs.camera.camera2)
-    implementation(libs.camera.lifecycle)
-    implementation(libs.camera.view)
 }
