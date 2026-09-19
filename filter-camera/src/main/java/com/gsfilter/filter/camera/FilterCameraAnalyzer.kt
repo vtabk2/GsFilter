@@ -1,6 +1,5 @@
 package com.gsfilter.filter.camera
 
-import androidx.camera.core.ExperimentalGetImage
 import androidx.camera.core.ImageAnalysis
 import androidx.camera.core.ImageProxy
 import com.gsfilter.filter.FilterAnalysis
@@ -14,7 +13,6 @@ class FilterCameraAnalyzer(
     private val onFrame: (ImageProxy) -> Unit,
 ) : ImageAnalysis.Analyzer {
 
-    @ExperimentalGetImage
     constructor(
         analyzer: GsFilterAnalyzer,
         onResult: (FilterAnalysis?) -> Unit,

@@ -10,6 +10,7 @@ import com.gsfilter.filter.NormalizedPoint
 import com.gsfilter.filter.ShaderFilterParams
 import kotlin.math.abs
 import kotlin.math.cos
+import kotlin.math.exp
 import kotlin.math.floor
 import kotlin.math.max
 import kotlin.math.min
@@ -262,6 +263,8 @@ internal object FilterBitmapRenderer {
         }
         val sourceX = warpCoordinate[0]
         val sourceY = warpCoordinate[1]
+        val sampleTexelX = texelX * EDGE_AWARE_RADIUS
+        val sampleTexelY = texelY * EDGE_AWARE_RADIUS
         val color = if (hasWarp) {
             sampleBilinear(pixels, sourceX, sourceY, width, height)
         } else {
@@ -278,36 +281,122 @@ internal object FilterBitmapRenderer {
         val right: Int
         val up: Int
         val down: Int
+        val topLeft: Int
+        val topRight: Int
+        val bottomLeft: Int
+        val bottomRight: Int
         if (needsNeighborhood) {
             if (hasWarp) {
-                left = sampleBilinear(pixels, sourceX - texelX, sourceY, width, height)
-                right = sampleBilinear(pixels, sourceX + texelX, sourceY, width, height)
-                up = sampleBilinear(pixels, sourceX, sourceY - texelY, width, height)
-                down = sampleBilinear(pixels, sourceX, sourceY + texelY, width, height)
+                left = sampleBilinear(pixels, sourceX - sampleTexelX, sourceY, width, height)
+                right = sampleBilinear(pixels, sourceX + sampleTexelX, sourceY, width, height)
+                up = sampleBilinear(pixels, sourceX, sourceY - sampleTexelY, width, height)
+                down = sampleBilinear(pixels, sourceX, sourceY + sampleTexelY, width, height)
+                topLeft = sampleBilinear(pixels, sourceX - sampleTexelX, sourceY - sampleTexelY, width, height)
+                topRight = sampleBilinear(pixels, sourceX + sampleTexelX, sourceY - sampleTexelY, width, height)
+                bottomLeft = sampleBilinear(pixels, sourceX - sampleTexelX, sourceY + sampleTexelY, width, height)
+                bottomRight = sampleBilinear(pixels, sourceX + sampleTexelX, sourceY + sampleTexelY, width, height)
             } else {
-                left = pixels[rowStart + (x - 1).coerceAtLeast(0)]
-                right = pixels[rowStart + (x + 1).coerceAtMost(width - 1)]
+                val leftX = (x - EDGE_AWARE_RADIUS.toInt()).coerceAtLeast(0)
+                val rightX = (x + EDGE_AWARE_RADIUS.toInt()).coerceAtMost(width - 1)
+                left = pixels[rowStart + leftX]
+                right = pixels[rowStart + rightX]
                 up = pixels[topRowStart + x]
                 down = pixels[bottomRowStart + x]
+                topLeft = pixels[topRowStart + leftX]
+                topRight = pixels[topRowStart + rightX]
+                bottomLeft = pixels[bottomRowStart + leftX]
+                bottomRight = pixels[bottomRowStart + rightX]
             }
         } else {
             left = color
             right = color
             up = color
             down = color
+            topLeft = color
+            topRight = color
+            bottomLeft = color
+            bottomRight = color
         }
 
-        val blurredRed: Float
-        val blurredGreen: Float
-        val blurredBlue: Float
+        val smoothedRed: Float
+        val smoothedGreen: Float
+        val smoothedBlue: Float
         if (needsNeighborhood) {
-            blurredRed = average(red(left), red(right), red(up), red(down))
-            blurredGreen = average(green(left), green(right), green(up), green(down))
-            blurredBlue = average(blue(left), blue(right), blue(up), blue(down))
+            val leftWeight = edgeAwareWeight(color, left)
+            val rightWeight = edgeAwareWeight(color, right)
+            val upWeight = edgeAwareWeight(color, up)
+            val downWeight = edgeAwareWeight(color, down)
+            val topLeftWeight = edgeAwareWeight(color, topLeft) * DIAGONAL_SPATIAL_WEIGHT
+            val topRightWeight = edgeAwareWeight(color, topRight) * DIAGONAL_SPATIAL_WEIGHT
+            val bottomLeftWeight = edgeAwareWeight(color, bottomLeft) * DIAGONAL_SPATIAL_WEIGHT
+            val bottomRightWeight = edgeAwareWeight(color, bottomRight) * DIAGONAL_SPATIAL_WEIGHT
+            val totalWeight =
+                leftWeight + rightWeight + upWeight + downWeight +
+                    topLeftWeight + topRightWeight + bottomLeftWeight + bottomRightWeight
+            smoothedRed = weightedAverage(
+                red(left),
+                red(right),
+                red(up),
+                red(down),
+                red(topLeft),
+                red(topRight),
+                red(bottomLeft),
+                red(bottomRight),
+                leftWeight,
+                rightWeight,
+                upWeight,
+                downWeight,
+                topLeftWeight,
+                topRightWeight,
+                bottomLeftWeight,
+                bottomRightWeight,
+                totalWeight,
+                sourceRed,
+            )
+            smoothedGreen = weightedAverage(
+                green(left),
+                green(right),
+                green(up),
+                green(down),
+                green(topLeft),
+                green(topRight),
+                green(bottomLeft),
+                green(bottomRight),
+                leftWeight,
+                rightWeight,
+                upWeight,
+                downWeight,
+                topLeftWeight,
+                topRightWeight,
+                bottomLeftWeight,
+                bottomRightWeight,
+                totalWeight,
+                sourceGreen,
+            )
+            smoothedBlue = weightedAverage(
+                blue(left),
+                blue(right),
+                blue(up),
+                blue(down),
+                blue(topLeft),
+                blue(topRight),
+                blue(bottomLeft),
+                blue(bottomRight),
+                leftWeight,
+                rightWeight,
+                upWeight,
+                downWeight,
+                topLeftWeight,
+                topRightWeight,
+                bottomLeftWeight,
+                bottomRightWeight,
+                totalWeight,
+                sourceBlue,
+            )
         } else {
-            blurredRed = sourceRed
-            blurredGreen = sourceGreen
-            blurredBlue = sourceBlue
+            smoothedRed = sourceRed
+            smoothedGreen = sourceGreen
+            smoothedBlue = sourceBlue
         }
         val edge = if (needsEdge) {
             edgeAt(pixels, x, width, rowStart, topRowStart, bottomRowStart)
@@ -346,9 +435,9 @@ internal object FilterBitmapRenderer {
             }
             val beautySmoothAmount = if (params.skinSmoothing != 0f) {
                 val localContrast = maxOf(
-                    abs(sourceRed - blurredRed),
-                    abs(sourceGreen - blurredGreen),
-                    abs(sourceBlue - blurredBlue),
+                    abs(sourceRed - smoothedRed),
+                    abs(sourceGreen - smoothedGreen),
+                    abs(sourceBlue - smoothedBlue),
                 )
                 val edgeGuard = 1f - smoothstep(0.06f, 0.20f, localContrast)
                 params.skinSmoothing * beautyMask * edgeGuard *
@@ -356,9 +445,9 @@ internal object FilterBitmapRenderer {
             } else {
                 0f
             }
-            red = mix(red, blurredRed, beautySmoothAmount)
-            green = mix(green, blurredGreen, beautySmoothAmount)
-            blue = mix(blue, blurredBlue, beautySmoothAmount)
+            red = mix(red, smoothedRed, beautySmoothAmount)
+            green = mix(green, smoothedGreen, beautySmoothAmount)
+            blue = mix(blue, smoothedBlue, beautySmoothAmount)
             if (params.skinWhitening != 0f) {
                 val beautyWhiteAmount = params.skinWhitening * beautyMask
                 val skinLuma = gray(red, green, blue)
@@ -564,9 +653,9 @@ internal object FilterBitmapRenderer {
         }
 
         if (sharpAmount != 0f) {
-            red += (red - blurredRed) * sharpAmount
-            green += (green - blurredGreen) * sharpAmount
-            blue += (blue - blurredBlue) * sharpAmount
+            red += (red - smoothedRed) * sharpAmount
+            green += (green - smoothedGreen) * sharpAmount
+            blue += (blue - smoothedBlue) * sharpAmount
         }
 
         if (params.redShift != 0f || params.greenShift != 0f || params.blueShift != 0f) {
@@ -936,7 +1025,50 @@ internal object FilterBitmapRenderer {
 
     private fun blue(color: Int): Float = (color and CHANNEL_MASK) / CHANNEL_MAX
 
-    private fun average(a: Float, b: Float, c: Float, d: Float): Float = (a + b + c + d) * 0.25f
+    private fun weightedAverage(
+        a: Float,
+        b: Float,
+        c: Float,
+        d: Float,
+        e: Float,
+        f: Float,
+        g: Float,
+        h: Float,
+        weightA: Float,
+        weightB: Float,
+        weightC: Float,
+        weightD: Float,
+        weightE: Float,
+        weightF: Float,
+        weightG: Float,
+        weightH: Float,
+        totalWeight: Float,
+        fallback: Float,
+    ): Float {
+        if (totalWeight <= MIN_EDGE_AWARE_WEIGHT) {
+            return fallback
+        }
+        return (
+            (a * weightA) +
+                (b * weightB) +
+                (c * weightC) +
+                (d * weightD) +
+                (e * weightE) +
+                (f * weightF) +
+                (g * weightG) +
+                (h * weightH)
+            ) / totalWeight
+    }
+
+    private fun edgeAwareWeight(center: Int, sample: Int): Float {
+        val colorDifference = maxOf(
+            abs(red(center) - red(sample)),
+            abs(green(center) - green(sample)),
+            abs(blue(center) - blue(sample)),
+        )
+        val normalizedDifference = colorDifference / EDGE_AWARE_SIGMA
+        return exp((-0.5f * normalizedDifference * normalizedDifference).toDouble()).toFloat()
+    }
 
     private fun gray(red: Float, green: Float, blue: Float): Float = (red * 0.299f) + (green * 0.587f) + (blue * 0.114f)
 
@@ -1152,4 +1284,8 @@ internal object FilterBitmapRenderer {
 
     private const val CHANNEL_MASK = 255
     private const val CHANNEL_MAX = 255f
+    private const val EDGE_AWARE_SIGMA = 0.14f
+    private const val EDGE_AWARE_RADIUS = 2f
+    private const val DIAGONAL_SPATIAL_WEIGHT = 0.7071f
+    private const val MIN_EDGE_AWARE_WEIGHT = 0.0001f
 }

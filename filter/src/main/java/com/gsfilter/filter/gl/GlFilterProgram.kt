@@ -938,16 +938,50 @@ internal object GlFilterProgram {
             return mix(texture2D(uLutTexture, lowCoord).rgb, texture2D(uLutTexture, highCoord).rgb, mixAmount);
         }
 
+        float edgeAwareWeight(vec3 center, vec3 sample) {
+            float colorDifference = max(
+                max(abs(center.r - sample.r), abs(center.g - sample.g)),
+                abs(center.b - sample.b)
+            );
+            float normalizedDifference = colorDifference / 0.14;
+            return exp(-0.5 * normalizedDifference * normalizedDifference);
+        }
+
         void main() {
             vec2 sourceCoord = warpCoordinate(vTexCoord);
             vec4 color = texture2D(uTexture, sourceCoord);
-            vec3 blur = color.rgb;
+            vec3 smoothed = color.rgb;
             if (uSkinSmoothing != 0.0 || uSharpness != 0.0 || uClarity != 0.0) {
-                vec3 left = texture2D(uTexture, sourceCoord - vec2(uTexelSize.x, 0.0)).rgb;
-                vec3 right = texture2D(uTexture, sourceCoord + vec2(uTexelSize.x, 0.0)).rgb;
-                vec3 up = texture2D(uTexture, sourceCoord - vec2(0.0, uTexelSize.y)).rgb;
-                vec3 down = texture2D(uTexture, sourceCoord + vec2(0.0, uTexelSize.y)).rgb;
-                blur = (left + right + up + down) * 0.25;
+                vec2 sampleRadius = uTexelSize * 2.0;
+                vec3 left = texture2D(uTexture, sourceCoord - vec2(sampleRadius.x, 0.0)).rgb;
+                vec3 right = texture2D(uTexture, sourceCoord + vec2(sampleRadius.x, 0.0)).rgb;
+                vec3 up = texture2D(uTexture, sourceCoord - vec2(0.0, sampleRadius.y)).rgb;
+                vec3 down = texture2D(uTexture, sourceCoord + vec2(0.0, sampleRadius.y)).rgb;
+                vec3 topLeft = texture2D(uTexture, sourceCoord - sampleRadius).rgb;
+                vec3 topRight = texture2D(uTexture, sourceCoord + vec2(sampleRadius.x, -sampleRadius.y)).rgb;
+                vec3 bottomLeft = texture2D(uTexture, sourceCoord + vec2(-sampleRadius.x, sampleRadius.y)).rgb;
+                vec3 bottomRight = texture2D(uTexture, sourceCoord + sampleRadius).rgb;
+                float leftWeight = edgeAwareWeight(color.rgb, left);
+                float rightWeight = edgeAwareWeight(color.rgb, right);
+                float upWeight = edgeAwareWeight(color.rgb, up);
+                float downWeight = edgeAwareWeight(color.rgb, down);
+                float topLeftWeight = edgeAwareWeight(color.rgb, topLeft) * 0.7071;
+                float topRightWeight = edgeAwareWeight(color.rgb, topRight) * 0.7071;
+                float bottomLeftWeight = edgeAwareWeight(color.rgb, bottomLeft) * 0.7071;
+                float bottomRightWeight = edgeAwareWeight(color.rgb, bottomRight) * 0.7071;
+                float totalWeight =
+                    leftWeight + rightWeight + upWeight + downWeight +
+                    topLeftWeight + topRightWeight + bottomLeftWeight + bottomRightWeight;
+                smoothed = (
+                    (left * leftWeight) +
+                    (right * rightWeight) +
+                    (up * upWeight) +
+                    (down * downWeight) +
+                    (topLeft * topLeftWeight) +
+                    (topRight * topRightWeight) +
+                    (bottomLeft * bottomLeftWeight) +
+                    (bottomRight * bottomRightWeight)
+                ) / max(totalWeight, 0.0001);
             }
             bool featureBeautyEnabled = uBlush > 0.0 ||
                 uLipstick > 0.0 ||
@@ -982,7 +1016,7 @@ internal object GlFilterProgram {
                     beautyMask = skinMask(color.rgb) * faceMask * foregroundMask;
                 }
                 if (uSkinSmoothing > 0.0) {
-                    vec3 localContrast = abs(color.rgb - blur);
+                    vec3 localContrast = abs(color.rgb - smoothed);
                     float edgeGuard = 1.0 - smoothstep(
                         0.06,
                         0.20,
@@ -991,11 +1025,11 @@ internal object GlFilterProgram {
                     float beautyEdge = edgeAt(sourceCoord);
                     float smoothAmount = uSkinSmoothing * beautyMask * edgeGuard *
                         (1.0 - smoothstep(0.18, 0.55, beautyEdge));
-                    rgb = mix(color.rgb, blur, smoothAmount);
+                    rgb = mix(color.rgb, smoothed, smoothAmount);
                 }
             }
             if (uSharpness != 0.0 || uClarity != 0.0) {
-                rgb = rgb + (rgb - blur) * ((uSharpness * 0.65) + (uClarity * 0.35));
+                rgb = rgb + (rgb - smoothed) * ((uSharpness * 0.65) + (uClarity * 0.35));
             }
             if (beautyEnabled) {
             if (uSkinWhitening > 0.0) {
