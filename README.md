@@ -7,6 +7,7 @@ Phiên bản thư viện hiện tại: `1.0.4` trên JitPack.
 Dự án gồm:
 
 - `:filter`: module tái sử dụng cho model filter, preview OpenGL, control Filter/Beauty/Adjust, CPU/GPU bitmap render, batch render progress, và thumbnail qua Glide.
+- `:filter-camera`: module tùy chọn cho CameraX; chỉ thêm khi ứng dụng cần camera realtime.
 - `:app`: app mẫu dùng MVVM, ảnh từ `assets`, và module `:filter`.
 
 Phạm vi hiện tại:
@@ -22,11 +23,11 @@ Phạm vi hiện tại:
 - Beauty controls nằm ở tab riêng, gồm Smoothing, Whitening, Blush, Lipstick, Under-eye, Teeth Whitening, Eye Shadow, Eyeliner, Eyebrow, Face Slimming và Eye Enlargement; tất cả dùng range `0..100`.
 - Thumbnail rail của filter được load bằng Glide với cache key ổn định.
 - LUT nội bộ dùng texture 33x33x33 sinh từ `FilterLut`, không cần ship file LUT ngoài.
-- Render nhiều bitmap nên đi qua `FilterRenderer.renderBatch()` để xử lý lần lượt và nhận progress %.
+- Render nhiều bitmap nên đi qua `GsFilter.renderBatch()` để xử lý lần lượt và nhận progress %.
 
 Ảnh demo được tải từ `app/src/main/assets`. Nút `Next image` chuyển lần lượt qua các ảnh được hỗ trợ trong thư mục assets.
 
-Camera mode hiện dùng trực tiếp `SurfaceTexture` cho preview GPU và `ImageReader` YUV cho face tracking. Pipeline CameraX chuyển từng frame RGBA thành bitmap để đi qua đường preview/export bitmap vẫn là phần mở rộng riêng, chưa được bật trong app mẫu.
+App mẫu hiện vẫn dùng trực tiếp `SurfaceTexture` và `ImageReader` native. Ứng dụng cần CameraX có thể thêm `:filter-camera`; ứng dụng chỉ xử lý ảnh tĩnh không cần kéo theo module này.
 
 ## Cài đặt thư viện
 
@@ -119,10 +120,28 @@ App mẫu dùng module local:
 ```kotlin
 dependencies {
     implementation(project(":filter"))
+    implementation(project(":filter-camera")) // chỉ cần nếu dùng CameraX
     implementation("com.github.bumptech.glide:glide:5.0.7")
     ksp("com.github.bumptech.glide:ksp:5.0.7")
 }
 ```
+
+`filter-camera` cung cấp `FilterCameraAnalyzer` để nối `ImageAnalysis` với pipeline filter:
+
+```kotlin
+imageAnalysis.setAnalyzer(
+    cameraExecutor,
+    FilterCameraAnalyzer { image ->
+        try {
+            // Gửi ImageProxy vào bộ phân tích/render của ứng dụng.
+        } finally {
+            image.close()
+        }
+    },
+)
+```
+
+Nếu xử lý bất đồng bộ, chỉ gọi `image.close()` sau khi xử lý hoàn tất.
 
 ## Cách dùng preview
 
@@ -153,12 +172,11 @@ binding.filterPreview.setFilterState(
 Nếu host không dùng `FilterPreviewView`, có thể render bitmap kết quả trực tiếp bằng API public trong module `:filter`:
 
 ```kotlin
-val resultBitmap = FilterRenderer.getBitmap(
+val resultBitmap = GsFilter.render(
     source = sourceBitmap,
     recipe = selectedFilter.recipe,
     adjustments = adjustments,
-    maxWidth = 2048,
-    maxHeight = 2048,
+    options = FilterRenderOptions(maxWidth = 2048, maxHeight = 2048),
 )
 ```
 
@@ -168,12 +186,11 @@ API này thử GPU offscreen trước và tự fallback CPU khi EGL không khả
 
 ```kotlin
 val resultBitmap = withContext(Dispatchers.Default) {
-    FilterRenderer.getBitmap(
+    GsFilter.render(
         source = sourceBitmap,
         recipe = selectedFilter.recipe,
         adjustments = adjustments,
-        maxWidth = 2048,
-        maxHeight = 2048,
+        options = FilterRenderOptions(maxWidth = 2048, maxHeight = 2048),
     )
 }
 ```
@@ -182,12 +199,11 @@ Khi cần render nhiều ảnh, dùng `renderBatch()` để module xử lý từ
 
 ```kotlin
 withContext(Dispatchers.Default) {
-    FilterRenderer.renderBatch(
+    GsFilter.renderBatch(
         sources = bitmaps,
         recipe = selectedFilter.recipe,
         adjustments = adjustments,
-        maxWidth = 2048,
-        maxHeight = 2048,
+        options = FilterRenderOptions(maxWidth = 2048, maxHeight = 2048),
         onProgress = { progress ->
             updateProgress(progress.percent)
         },

@@ -27,3 +27,4 @@ rootProject.name = "GsFilter"
 
 include(":app")
 include(":filter")
+include(":filter-camera")
