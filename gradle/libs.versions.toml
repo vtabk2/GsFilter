@@ -1,0 +1,44 @@
+[versions]
+androidGradlePlugin = "8.13.2"
+kotlin = "2.2.21"
+ksp = "2.2.21-2.0.4"
+activity = "1.10.0"
+androidxCore = "1.13.0"
+lifecycle = "2.9.4"
+recyclerview = "1.4.0"
+camera = "1.6.2"
+glide = "5.0.7"
+coil = "3.4.0"
+androidsvg = "1.4"
+mlkitFace = "16.1.7"
+gscore = "1.1.0"
+junit = "4.13.2"
+json = "20240303"
+androidxTestRunner = "1.4.0"
+
+[libraries]
+androidx-activity = { module = "androidx.activity:activity-ktx", version.ref = "activity" }
+androidx-core = { module = "androidx.core:core-ktx", version.ref = "androidxCore" }
+androidx-lifecycle-runtime = { module = "androidx.lifecycle:lifecycle-runtime-ktx", version.ref = "lifecycle" }
+androidx-lifecycle-viewmodel = { module = "androidx.lifecycle:lifecycle-viewmodel-ktx", version.ref = "lifecycle" }
+androidx-recyclerview = { module = "androidx.recyclerview:recyclerview", version.ref = "recyclerview" }
+androidx-test-runner = { module = "androidx.test:runner", version.ref = "androidxTestRunner" }
+camera-core = { module = "androidx.camera:camera-core", version.ref = "camera" }
+camera-camera2 = { module = "androidx.camera:camera-camera2", version.ref = "camera" }
+camera-lifecycle = { module = "androidx.camera:camera-lifecycle", version.ref = "camera" }
+camera-view = { module = "androidx.camera:camera-view", version.ref = "camera" }
+glide = { module = "com.github.bumptech.glide:glide", version.ref = "glide" }
+glide-ksp = { module = "com.github.bumptech.glide:ksp", version.ref = "glide" }
+coil = { module = "io.coil-kt.coil3:coil", version.ref = "coil" }
+coil-svg = { module = "io.coil-kt.coil3:coil-svg", version.ref = "coil" }
+androidsvg = { module = "com.caverock:androidsvg-aar", version.ref = "androidsvg" }
+mlkit-face = { module = "com.google.mlkit:face-detection", version.ref = "mlkitFace" }
+gscore = { module = "com.github.vtabk2:GsCore", version.ref = "gscore" }
+junit = { module = "junit:junit", version.ref = "junit" }
+json = { module = "org.json:json", version.ref = "json" }
+
+[plugins]
+android-application = { id = "com.android.application", version.ref = "androidGradlePlugin" }
+android-library = { id = "com.android.library", version.ref = "androidGradlePlugin" }
+kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
+ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }

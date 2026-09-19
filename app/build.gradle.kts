@@ -1,7 +1,7 @@
 plugins {
-    id("com.android.application")
-    id("org.jetbrains.kotlin.android")
-    id("com.google.devtools.ksp")
+    alias(libs.plugins.android.application)
+    alias(libs.plugins.kotlin.android)
+    alias(libs.plugins.ksp)
 }
 
 android {
@@ -32,18 +32,18 @@ android {
 
 dependencies {
     implementation(project(":filter"))
-    implementation("androidx.activity:activity-ktx:1.10.0")
-    implementation("androidx.core:core-ktx:1.13.0")
-    implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.9.4")
-    implementation("androidx.lifecycle:lifecycle-viewmodel-ktx:2.9.4")
+    implementation(libs.androidx.activity)
+    implementation(libs.androidx.core)
+    implementation(libs.androidx.lifecycle.runtime)
+    implementation(libs.androidx.lifecycle.viewmodel)
 
-    implementation("com.github.bumptech.glide:glide:5.0.7")
-    ksp("com.github.bumptech.glide:ksp:5.0.7")
+    implementation(libs.glide)
+    ksp(libs.glide.ksp)
 
-    implementation("io.coil-kt.coil3:coil:3.4.0")
-    implementation("io.coil-kt.coil3:coil-svg:3.4.0")
-    implementation("com.caverock:androidsvg-aar:1.4")
-    implementation("com.google.mlkit:face-detection:16.1.7")
+    implementation(libs.coil)
+    implementation(libs.coil.svg)
+    implementation(libs.androidsvg)
+    implementation(libs.mlkit.face)
 
-    testImplementation("junit:junit:4.13.2")
+    testImplementation(libs.junit)
 }

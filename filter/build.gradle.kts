@@ -1,6 +1,6 @@
 plugins {
-    id("com.android.library")
-    id("org.jetbrains.kotlin.android")
+    alias(libs.plugins.android.library)
+    alias(libs.plugins.kotlin.android)
 }
 
 android {
@@ -23,12 +23,12 @@ android {
 }
 
 dependencies {
-    implementation("androidx.recyclerview:recyclerview:1.4.0")
-    implementation("com.github.bumptech.glide:glide:5.0.7")
+    implementation(libs.androidx.recyclerview)
+    implementation(libs.glide)
 
-    api("com.github.vtabk2:GsCore:1.1.0")
+    api(libs.gscore)
 
-    testImplementation("junit:junit:4.13.2")
-    testImplementation("org.json:json:20240303")
-    androidTestImplementation("androidx.test:runner:1.4.0")
+    testImplementation(libs.junit)
+    testImplementation(libs.json)
+    androidTestImplementation(libs.androidx.test.runner)
 }
