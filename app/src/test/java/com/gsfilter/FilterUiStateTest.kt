@@ -15,7 +15,18 @@ class FilterUiStateTest {
             listOf("original") + AppFilterCatalog.filterIds,
             AppFilterCatalog.pack.options.map { it.id },
         )
-        assertEquals(listOf("art"), AppFilterCatalog.pack.categories.map { it.id })
+        assertEquals(
+            listOf("sketch", "painting_art"),
+            AppFilterCatalog.pack.categories.map { it.id },
+        )
+        assertEquals(
+            AppFilterCatalog.sketchFilterIds.toSet(),
+            AppFilterCatalog.pack.filtersForCategory("sketch").map { it.id }.toSet(),
+        )
+        assertEquals(
+            AppFilterCatalog.paintingArtFilterIds.toSet(),
+            AppFilterCatalog.pack.filtersForCategory("painting_art").map { it.id }.toSet(),
+        )
     }
 
     @Test

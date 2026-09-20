@@ -52,6 +52,22 @@ Completed: 2026-09-20
 - `FilterUiState` and `FilterControlsView` use the same restricted pack.
 - `:app:testDebugUnitTest --tests com.gsfilter.FilterUiStateTest` and `:app:compileDebugKotlin` passed.
 
+## Task: Split the demo Art pack into Sketch and Painting categories
+
+Status: DONE
+Created: 2026-09-20
+Completed: 2026-09-20
+
+- [x] Define app-owned Sketch and Painting / Art categories.
+- [x] Assign the 20 sample filters to the two categories.
+- [x] Update app catalog tests and compile the app.
+
+### Result
+
+- The demo UI now exposes `Sketch` and `Painting / Art` category chips.
+- The app-owned pack keeps the same 20 filters and assigns 12 to Sketch and 8 to Painting / Art.
+- `:app:testDebugUnitTest --tests com.gsfilter.FilterUiStateTest` and `:app:compileDebugKotlin` passed.
+
 ## Validation note
 
 - Gradle requires a short writable temp path in this environment: set `TEMP=C:\Temp` and `TMP=C:\Temp` before running it. With that workaround, the filter unit tests, app unit tests, and Debug assemble complete successfully.
