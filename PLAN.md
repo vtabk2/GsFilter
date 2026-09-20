@@ -5,6 +5,35 @@
 - Gradle requires a short writable temp path in this environment: set `TEMP=C:\Temp` and `TMP=C:\Temp` before running it. With that workaround, the filter unit tests, app unit tests, and Debug assemble complete successfully.
 - The resulting Debug APK was installed on Samsung A56 (`R5CYA0JB80`) and `MainActivity` launched successfully without an `AndroidRuntime` crash in the smoke log.
 
+## Task: Align filter package boundaries with the target architecture
+
+Status: DONE
+Created: 2026-09-20
+
+### Requirements
+
+- Separate public filter API types into `filter/api`.
+- Group face/foreground analysis models and analyzer under `filter/vision`.
+- Group filter effect models and LUT definitions under `filter/effects`.
+- Group catalog and preset models under `filter/presets`.
+- Keep GPU/CPU rendering behavior and existing public operations unchanged.
+- Do not add placeholder vision/effect abstractions without a real implementation need.
+
+### Checklist
+
+- [x] Move API, vision, effects, and preset types to focused packages.
+- [x] Update module, app, camera, and test imports.
+- [x] Keep renderer internals in the renderer boundary.
+- [x] Run static checks and `git diff --check`.
+- [ ] Run focused unit tests and compilation when Java/JAVA_HOME is available.
+
+### Notes
+
+- This is a package-boundary migration; no rendering formulas or catalog recipes should change.
+- `SkinSegmenter`, `FaceLandmarker`, and `MaskProcessor` remain future extraction points because the current analyzer is one coherent ML Kit boundary and splitting it now would add pass-through code.
+- `BeautyOptions` remains a follow-up API extraction: `FilterRecipe` still exposes its flattened constructor fields to avoid a breaking API or duplicate beauty state in this migration.
+- Gradle verification is currently blocked because Java/JAVA_HOME is unavailable in the environment.
+
 ## Task: Show the full filter rail when Popular is hidden
 
 Status: DONE

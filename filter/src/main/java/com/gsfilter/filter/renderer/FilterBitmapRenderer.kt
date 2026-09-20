@@ -2,12 +2,11 @@ package com.gsfilter.filter.renderer
 
 import android.graphics.Bitmap
 import androidx.core.graphics.scale
-import com.gsfilter.filter.Adjustments
-import com.gsfilter.filter.FilterEffect
-import com.gsfilter.filter.FilterRecipe
-import com.gsfilter.filter.MakeupFeatures
-import com.gsfilter.filter.NormalizedPoint
-import com.gsfilter.filter.ShaderFilterParams
+import com.gsfilter.filter.api.Adjustments
+import com.gsfilter.filter.api.FilterRecipe
+import com.gsfilter.filter.effects.FilterEffect
+import com.gsfilter.filter.vision.MakeupFeatures
+import com.gsfilter.filter.vision.NormalizedPoint
 import kotlin.math.abs
 import kotlin.math.cos
 import kotlin.math.exp

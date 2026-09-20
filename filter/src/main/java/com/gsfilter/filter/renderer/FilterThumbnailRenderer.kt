@@ -1,10 +1,9 @@
 package com.gsfilter.filter.renderer
 
 import android.graphics.Bitmap
-import com.gsfilter.filter.Adjustments
-import com.gsfilter.filter.FilterEffect
-import com.gsfilter.filter.FilterRecipe
-import com.gsfilter.filter.ShaderFilterParams
+import com.gsfilter.filter.api.Adjustments
+import com.gsfilter.filter.api.FilterRecipe
+import com.gsfilter.filter.effects.FilterEffect
 import java.lang.ref.WeakReference
 import java.util.concurrent.CancellationException
 

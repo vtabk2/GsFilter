@@ -1,7 +1,7 @@
 package com.gsfilter.filter.gl
 
 import android.opengl.GLES20
-import com.gsfilter.filter.ShaderFilterParams
+import com.gsfilter.filter.renderer.ShaderFilterParams
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
 import java.nio.FloatBuffer

@@ -1,4 +1,4 @@
-package com.gsfilter.filter
+package com.gsfilter.filter.vision
 
 data class NormalizedPoint(
     val x: Float,

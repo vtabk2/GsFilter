@@ -1,4 +1,10 @@
-package com.gsfilter.filter
+package com.gsfilter.filter.presets
+
+import com.gsfilter.filter.api.Adjustments
+import com.gsfilter.filter.R
+import com.gsfilter.filter.api.FilterRecipe
+import com.gsfilter.filter.effects.FilterEffect
+import com.gsfilter.filter.effects.FilterLut
 
 object FilterCatalog {
 

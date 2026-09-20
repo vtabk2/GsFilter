@@ -3,7 +3,7 @@ package com.gsfilter.filter.gl
 import android.graphics.Bitmap
 import android.opengl.GLES20
 import android.opengl.GLUtils
-import com.gsfilter.filter.FilterLut
+import com.gsfilter.filter.effects.FilterLut
 
 internal object GlLutTexture {
 

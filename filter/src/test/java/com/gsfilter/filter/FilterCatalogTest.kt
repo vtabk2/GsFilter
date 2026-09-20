@@ -1,4 +1,9 @@
 package com.gsfilter.filter
+
+import com.gsfilter.filter.api.Adjustments
+import com.gsfilter.filter.effects.FilterEffect
+import com.gsfilter.filter.effects.FilterLut
+import com.gsfilter.filter.presets.FilterCatalog
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNull

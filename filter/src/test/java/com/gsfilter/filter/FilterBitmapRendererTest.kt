@@ -1,6 +1,12 @@
 package com.gsfilter.filter
 
+import com.gsfilter.filter.api.Adjustments
+import com.gsfilter.filter.api.FilterRecipe
+import com.gsfilter.filter.effects.FilterEffect
 import com.gsfilter.filter.renderer.FilterBitmapRenderer
+import com.gsfilter.filter.renderer.ShaderFilterParams
+import com.gsfilter.filter.vision.MakeupFeatures
+import com.gsfilter.filter.vision.NormalizedPoint
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNotEquals

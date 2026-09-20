@@ -1,4 +1,4 @@
-package com.gsfilter.filter
+package com.gsfilter.filter.api
 
 data class FilterRenderProgress(
     val completedCount: Int,

@@ -1,8 +1,8 @@
 package com.gsfilter.filter.glide
 
 import android.graphics.Bitmap
-import com.gsfilter.filter.Adjustments
-import com.gsfilter.filter.FilterOption
+import com.gsfilter.filter.api.Adjustments
+import com.gsfilter.filter.presets.FilterOption
 
 class FilterThumbnailModel(
     val sourceKey: String,

@@ -29,7 +29,7 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import com.gsfilter.databinding.ActivityMainBinding
-import com.gsfilter.filter.FilterAnalysis
+import com.gsfilter.filter.vision.FilterAnalysis
 import com.gsfilter.filter.view.FilterControlsView
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers

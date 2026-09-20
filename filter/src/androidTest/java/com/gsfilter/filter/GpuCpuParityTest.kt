@@ -1,8 +1,12 @@
 package com.gsfilter.filter
 
 import android.graphics.Bitmap
+import com.gsfilter.filter.api.Adjustments
+import com.gsfilter.filter.api.FilterRecipe
+import com.gsfilter.filter.effects.FilterEffect
 import com.gsfilter.filter.renderer.FilterBitmapRenderer
 import com.gsfilter.filter.renderer.FilterGpuBitmapRenderer
+import com.gsfilter.filter.vision.MakeupFeatures
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test

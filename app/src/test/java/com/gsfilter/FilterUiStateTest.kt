@@ -1,8 +1,8 @@
 package com.gsfilter
 
-import com.gsfilter.filter.Adjustments
-import com.gsfilter.filter.FilterCatalog
-import com.gsfilter.filter.FilterRecipe
+import com.gsfilter.filter.api.Adjustments
+import com.gsfilter.filter.api.FilterRecipe
+import com.gsfilter.filter.presets.FilterCatalog
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test

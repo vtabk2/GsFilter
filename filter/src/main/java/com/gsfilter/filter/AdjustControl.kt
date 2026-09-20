@@ -1,5 +1,7 @@
 package com.gsfilter.filter
 
+import com.gsfilter.filter.api.Adjustments
+
 enum class AdjustControl(
     val labelRes: Int,
     val iconRes: Int,

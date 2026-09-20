@@ -1,13 +1,13 @@
 package com.gsfilter
 
 import android.graphics.Bitmap
-import com.gsfilter.filter.Adjustments
-import com.gsfilter.filter.FilterCategory
-import com.gsfilter.filter.FilterCatalog
-import com.gsfilter.filter.FilterOption
-import com.gsfilter.filter.FilterPack
-import com.gsfilter.filter.FilterRecipe
-import com.gsfilter.filter.FilterAnalysis
+import com.gsfilter.filter.api.Adjustments
+import com.gsfilter.filter.api.FilterRecipe
+import com.gsfilter.filter.presets.FilterCategory
+import com.gsfilter.filter.presets.FilterCatalog
+import com.gsfilter.filter.presets.FilterOption
+import com.gsfilter.filter.presets.FilterPack
+import com.gsfilter.filter.vision.FilterAnalysis
 
 data class FilterUiState(
     val sourceBitmap: Bitmap? = null,

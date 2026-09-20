@@ -13,7 +13,7 @@ import android.widget.SeekBar
 import android.widget.TextView
 import com.core.gscore.view.RippleImageView
 import com.gsfilter.filter.AdjustControl
-import com.gsfilter.filter.Adjustments
+import com.gsfilter.filter.api.Adjustments
 import com.gsfilter.filter.R
 
 internal class AdjustControlsView @JvmOverloads constructor(

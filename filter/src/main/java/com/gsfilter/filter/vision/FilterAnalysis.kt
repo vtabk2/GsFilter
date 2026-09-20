@@ -1,4 +1,4 @@
-package com.gsfilter.filter
+package com.gsfilter.filter.vision
 
 data class FilterAnalysis(
     val makeupFeatures: MakeupFeatures? = null,

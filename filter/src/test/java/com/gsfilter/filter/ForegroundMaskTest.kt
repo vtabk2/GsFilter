@@ -1,5 +1,7 @@
 package com.gsfilter.filter
 
+import com.gsfilter.filter.vision.ForegroundMask
+
 import org.junit.Assert.assertEquals
 import org.junit.Test
 

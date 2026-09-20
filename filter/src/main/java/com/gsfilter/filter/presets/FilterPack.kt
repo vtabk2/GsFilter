@@ -1,4 +1,4 @@
-package com.gsfilter.filter
+package com.gsfilter.filter.presets
 
 data class FilterPack(
     val categories: List<FilterCategory>,

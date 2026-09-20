@@ -1,4 +1,4 @@
-package com.gsfilter.filter
+package com.gsfilter.filter.effects
 
 enum class FilterLut(val jsonName: String) {
     None("none"),

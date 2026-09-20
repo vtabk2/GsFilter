@@ -2,8 +2,8 @@ package com.gsfilter.filter.camera
 
 import androidx.camera.core.ImageAnalysis
 import androidx.camera.core.ImageProxy
-import com.gsfilter.filter.FilterAnalysis
-import com.gsfilter.filter.GsFilterAnalyzer
+import com.gsfilter.filter.vision.FilterAnalysis
+import com.gsfilter.filter.vision.GsFilterAnalyzer
 
 /**
  * CameraX adapter for a filter pipeline. The listener owns the [ImageProxy]

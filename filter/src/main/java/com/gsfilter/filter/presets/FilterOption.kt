@@ -1,4 +1,6 @@
-package com.gsfilter.filter
+package com.gsfilter.filter.presets
+
+import com.gsfilter.filter.api.FilterRecipe
 
 import androidx.annotation.StringRes
 

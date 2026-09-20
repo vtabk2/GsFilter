@@ -1,4 +1,6 @@
-package com.gsfilter.filter
+package com.gsfilter.filter.api
+
+import com.gsfilter.filter.vision.FilterAnalysis
 
 data class FilterRenderOptions(
     val maxWidth: Int? = null,

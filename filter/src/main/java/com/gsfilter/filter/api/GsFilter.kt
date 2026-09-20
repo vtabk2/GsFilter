@@ -1,4 +1,4 @@
-package com.gsfilter.filter
+package com.gsfilter.filter.api
 
 import android.graphics.Bitmap
 import com.gsfilter.filter.renderer.FilterRenderer
