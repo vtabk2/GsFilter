@@ -290,6 +290,7 @@ internal object FilterThumbnailRenderer {
                 adjustments = recipe.adjustments.copy(grain = recipe.adjustments.grain.scale(50)),
             )
             FilterEffect.ColorPencil -> recipe
+            FilterEffect.Graphite, FilterEffect.BlackWhiteSketch, FilterEffect.SketchColorPencil -> recipe
             FilterEffect.Charcoal -> recipe.copy(
                 adjustments = recipe.adjustments.copy(grain = recipe.adjustments.grain.scale(50)),
             )

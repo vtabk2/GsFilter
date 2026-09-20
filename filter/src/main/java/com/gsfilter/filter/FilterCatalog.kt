@@ -1895,7 +1895,7 @@ object FilterCatalog {
             categoryIds = setOf(ART),
             nameRes = R.string.gs_filter_graphite,
             recipe = FilterRecipe(
-                effect = FilterEffect.Pencil,
+                effect = FilterEffect.Graphite,
                 effectStrength = 84,
                 effectThreshold = 50,
                 effectTone = 68,
@@ -1911,7 +1911,7 @@ object FilterCatalog {
             categoryIds = setOf(ART),
             nameRes = R.string.gs_filter_black_white_sketch,
             recipe = FilterRecipe(
-                effect = FilterEffect.Sketch,
+                effect = FilterEffect.BlackWhiteSketch,
                 effectStrength = 90,
                 effectThreshold = 50,
                 effectTone = 38,
@@ -2126,7 +2126,7 @@ object FilterCatalog {
             categoryIds = setOf(ART),
             nameRes = R.string.gs_filter_color_pencil,
             recipe = FilterRecipe(
-                effect = FilterEffect.ColorPencil,
+                effect = FilterEffect.SketchColorPencil,
                 effectStrength = 78,
                 effectThreshold = 46,
                 effectTone = 75,

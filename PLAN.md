@@ -5796,3 +5796,27 @@ Created: 2026-09-20
 - Graphite receives luminance-gated material grain; B&W Sketch has reduced global grain; Color Pencil retains more source color while staying desaturated.
 - Verification passed: `:filter:testDebugUnitTest`, `:app:testDebugUnitTest --tests com.gsfilter.FilterUiStateTest`, and `:app:compileDebugKotlin`.
 - Physical/emulator visual acceptance remains pending because no `adb` device is available; shader compile/link and thumbnail comparison must be checked there.
+
+### Follow-up: P2 material separation
+
+- [x] Make Graphite use stronger midtone/shadow material shading without darkening Pencil.
+- [x] Make B&W Sketch cleaner and lower-texture than Charcoal.
+- [x] Preserve more recognizable source color in Color Pencil without restoring full saturation.
+- [x] Run filter/app verification and record remaining visual limits.
+
+### Follow-up result
+
+- Graphite, B&W Sketch, and Sketch Color Pencil now have dedicated effect IDs and shader/CPU branches; the shared Pencil, Sketch, and Color Pencil branches remain unchanged for Painting / Art.
+- Graphite adds stronger midtone/shadow shading and material grain; B&W Sketch uses restrained texture; Sketch Color Pencil keeps roughly 32–43% source color retention with a light pencil grain.
+- Catalog tests and Kotlin compilation reached the modified filter code. Full Gradle test execution is currently blocked at `bundleLibCompileToJarDebug` because Android Studio's Gradle process holds `filter/build/.../classes.jar`; no source compilation error was reported.
+- Physical/emulator visual acceptance remains pending because no `adb` device is available; shader compile/link and thumbnail comparison still need device verification.
+
+### Follow-up: Fix GLES shader compilation
+
+- [x] Fix the scalar/vector `mix` call in the Color Pencil shader branch.
+- [x] Re-run filter compilation and record device validation status.
+
+### Follow-up result
+
+- Fixed `mix(1.0, color.rgb, ...)` to use a `vec3` base and made the subsequent subtraction explicitly vector-typed.
+- `:filter:compileDebugKotlin` passed. The shader must still be exercised on the device because GLSL compilation happens at runtime.

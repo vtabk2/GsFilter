@@ -669,20 +669,7 @@ internal object FilterBitmapRenderer {
                 FilterEffect.Sketch -> {
                     val line = lineFromEdge(edge, params, 0.12f)
                     val sourceGray = gray(sourceRed, sourceGreen, sourceBlue)
-                    val neighborhoodGray = average(
-                        gray(red(left), green(left), blue(left)),
-                        gray(red(right), green(right), blue(right)),
-                        gray(red(up), green(up), blue(up)),
-                        gray(red(down), green(down), blue(down)),
-                    )
-                    val shaded = mix(sourceGray, neighborhoodGray, 0.72f)
-                    val sketch = clamp(
-                        mix(1f, shaded, 0.42f + (params.effectTone * 0.34f)) -
-                                (line * 0.86f) +
-                                ((random(textureX * 900f, textureY * 1200f) - 0.5f) * 0.08f),
-                        0f,
-                        1f,
-                    )
+                    val sketch = clamp(mix(1f, sourceGray, params.effectTone) - (line * 0.80f), 0f, 1f)
                     red = sketch
                     green = sketch
                     blue = sketch
@@ -738,19 +725,69 @@ internal object FilterBitmapRenderer {
 
                 FilterEffect.ColorPencil -> {
                     val line = lineFromEdge(edge, params, 0.11f)
+                    val paperMix = 0.35f + (params.effectTone * 0.50f)
+                    red = clamp(mix(1f, sourceRed, paperMix) - (line * 0.58f), 0f, 1f)
+                    green = clamp(mix(1f, sourceGreen, paperMix) - (line * 0.58f), 0f, 1f)
+                    blue = clamp(mix(1f, sourceBlue, paperMix) - (line * 0.58f), 0f, 1f)
+                }
+
+                FilterEffect.Graphite -> {
+                    val sourceGray = gray(sourceRed, sourceGreen, sourceBlue)
+                    val line = lineFromEdge(edge, params, 0.08f) * 0.75f
+                    val blurredInverted = 1f - average(
+                        gray(red(left), green(left), blue(left)),
+                        gray(red(right), green(right), blue(right)),
+                        gray(red(up), green(up), blue(up)),
+                        gray(red(down), green(down), blue(down)),
+                    )
+                    val pencilShade = dodge(sourceGray, blurredInverted)
+                    val paper = mix(1f, pencilShade, 0.50f + (params.effectTone * 0.35f))
+                    val shadow = smoothstep(0.18f, 0.86f, 1f - sourceGray)
+                    val grain = (random(textureX * 1215f, textureY * 1620f) - 0.5f) * 0.24f * shadow
+                    val graphite = clamp(paper - (line * 0.78f) + grain, 0f, 1f)
+                    red = graphite
+                    green = graphite
+                    blue = graphite
+                }
+
+                FilterEffect.BlackWhiteSketch -> {
+                    val sourceGray = gray(sourceRed, sourceGreen, sourceBlue)
+                    val line = lineFromEdge(edge, params, 0.13f)
+                    val shaded = average(
+                        gray(red(left), green(left), blue(left)),
+                        gray(red(right), green(right), blue(right)),
+                        gray(red(up), green(up), blue(up)),
+                        gray(red(down), green(down), blue(down)),
+                    )
+                    val paper = mix(1f, mix(sourceGray, shaded, 0.72f), 0.42f + (params.effectTone * 0.34f))
+                    val sketch = clamp(
+                        paper - (line * 0.86f) + ((random(textureX * 900f, textureY * 1200f) - 0.5f) * 0.03f),
+                        0f,
+                        1f,
+                    )
+                    red = sketch
+                    green = sketch
+                    blue = sketch
+                }
+
+                FilterEffect.SketchColorPencil -> {
+                    val line = lineFromEdge(edge, params, 0.11f)
                     val shade = average(
                         gray(red(left), green(left), blue(left)),
                         gray(red(right), green(right), blue(right)),
                         gray(red(up), green(up), blue(up)),
                         gray(red(down), green(down), blue(down)),
                     )
-                    val paperMix = 0.28f + (params.effectTone * 0.12f)
-                    val paperRed = mix(1f, sourceRed, paperMix) * (0.75f + (shade * 0.25f))
-                    val paperGreen = mix(1f, sourceGreen, paperMix) * (0.75f + (shade * 0.25f))
-                    val paperBlue = mix(1f, sourceBlue, paperMix) * (0.75f + (shade * 0.25f))
-                    red = clamp(paperRed - (line * 0.42f), 0f, 1f)
-                    green = clamp(paperGreen - (line * 0.42f), 0f, 1f)
-                    blue = clamp(paperBlue - (line * 0.42f), 0f, 1f)
+                    val pencilShade = dodge(gray(sourceRed, sourceGreen, sourceBlue), 1f - shade)
+                    val paper = mix(1f, pencilShade, 0.35f + (params.effectTone * 0.25f))
+                    val grain = (random(textureX * 900f, textureY * 1200f) - 0.5f) * 0.08f
+                    val colorRetention = 0.32f + (params.effectTone * 0.14f)
+                    val paperRed = mix(paper + grain, sourceRed, colorRetention)
+                    val paperGreen = mix(paper + grain, sourceGreen, colorRetention)
+                    val paperBlue = mix(paper + grain, sourceBlue, colorRetention)
+                    red = clamp(paperRed - (line * 0.52f), 0f, 1f)
+                    green = clamp(paperGreen - (line * 0.52f), 0f, 1f)
+                    blue = clamp(paperBlue - (line * 0.52f), 0f, 1f)
                 }
 
                 FilterEffect.Charcoal -> {
