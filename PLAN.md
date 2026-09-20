@@ -1,5 +1,57 @@
 # PLAN
 
+## Task: Add the docs Art filter set and restricted pack
+
+Status: DONE
+Created: 2026-09-20
+Completed: 2026-09-20
+
+### Requirements
+
+- Add the 14 missing Art presets from the product specification.
+- Keep existing filter catalog behavior backward compatible.
+- Expose a pack containing only Original plus the exact 20 Art filters required by the specification.
+- Add focused catalog tests.
+
+### Checklist
+
+- [x] Add display strings and data-driven Art recipes.
+- [x] Expose the docs-only filter pack.
+- [x] Update catalog tests for the exact required list.
+- [x] Run focused tests and review the diff.
+
+### Result
+
+- Added 14 missing Art presets using the existing effect chains and recipe parameters.
+- `FilterCatalog.docsArtPack` contains only `Original` plus the 20 specification filters.
+- `:filter:testDebugUnitTest --tests com.gsfilter.filter.FilterCatalogTest` passed.
+
+### Follow-up: Make restricted filter selection app-defined
+
+Status: DONE
+Created: 2026-09-20
+Completed: 2026-09-20
+
+- [x] Replace the library-owned docs list with a dynamic `packFor` API.
+- [x] Update tests and README usage.
+- [x] Run the focused catalog test.
+
+## Task: Wire the 20-filter sample pack into the demo app
+
+Status: DONE
+Created: 2026-09-20
+Completed: 2026-09-20
+
+- [x] Define the sample allowlist in the app.
+- [x] Use the same restricted pack for app state and controls.
+- [x] Run app unit tests and compile the app module.
+
+### Result
+
+- `AppFilterCatalog` owns the 20-id sample allowlist.
+- `FilterUiState` and `FilterControlsView` use the same restricted pack.
+- `:app:testDebugUnitTest --tests com.gsfilter.FilterUiStateTest` and `:app:compileDebugKotlin` passed.
+
 ## Validation note
 
 - Gradle requires a short writable temp path in this environment: set `TEMP=C:\Temp` and `TMP=C:\Temp` before running it. With that workaround, the filter unit tests, app unit tests, and Debug assemble complete successfully.

@@ -1860,6 +1860,259 @@ object FilterCatalog {
             ),
         ),
         FilterOption(
+            id = "soft_pencil",
+            categoryIds = setOf(ART),
+            nameRes = R.string.gs_filter_soft_pencil,
+            recipe = FilterRecipe(
+                effect = FilterEffect.Pencil,
+                effectStrength = 62,
+                effectThreshold = 58,
+                effectTone = 36,
+                adjustments = Adjustments(
+                    fade = 14,
+                    grain = 4,
+                ),
+            ),
+        ),
+        FilterOption(
+            id = "hard_pencil",
+            categoryIds = setOf(ART),
+            nameRes = R.string.gs_filter_hard_pencil,
+            recipe = FilterRecipe(
+                effect = FilterEffect.Pencil,
+                effectStrength = 96,
+                effectThreshold = 38,
+                effectTone = 56,
+                adjustments = Adjustments(
+                    contrast = 10,
+                    grain = 10,
+                ),
+            ),
+        ),
+        FilterOption(
+            id = "graphite",
+            categoryIds = setOf(ART),
+            nameRes = R.string.gs_filter_graphite,
+            recipe = FilterRecipe(
+                effect = FilterEffect.Pencil,
+                effectStrength = 84,
+                effectThreshold = 52,
+                effectTone = 70,
+                isMonochrome = true,
+                adjustments = Adjustments(
+                    contrast = 6,
+                    fade = 4,
+                    grain = 14,
+                ),
+            ),
+        ),
+        FilterOption(
+            id = "black_white_sketch",
+            categoryIds = setOf(ART),
+            nameRes = R.string.gs_filter_black_white_sketch,
+            recipe = FilterRecipe(
+                effect = FilterEffect.Sketch,
+                effectStrength = 88,
+                effectThreshold = 50,
+                effectTone = 20,
+                isMonochrome = true,
+                adjustments = Adjustments(
+                    contrast = 8,
+                    grain = 6,
+                ),
+            ),
+        ),
+        FilterOption(
+            id = "cross_hatch",
+            categoryIds = setOf(ART),
+            nameRes = R.string.gs_filter_cross_hatch,
+            recipe = FilterRecipe(
+                effect = FilterEffect.Ink,
+                effectStrength = 70,
+                effectThreshold = 42,
+                effectTone = 50,
+                isMonochrome = true,
+                adjustments = Adjustments(
+                    contrast = 12,
+                    grain = 12,
+                ),
+            ),
+        ),
+        FilterOption(
+            id = "blueprint",
+            categoryIds = setOf(ART),
+            nameRes = R.string.gs_filter_blueprint,
+            recipe = FilterRecipe(
+                effect = FilterEffect.Ink,
+                effectStrength = 66,
+                effectThreshold = 48,
+                effectTone = 55,
+                redShift = -18,
+                greenShift = 4,
+                blueShift = 22,
+                adjustments = Adjustments(
+                    contrast = 14,
+                    saturation = -18,
+                ),
+            ),
+        ),
+        FilterOption(
+            id = "chalk",
+            categoryIds = setOf(ART),
+            nameRes = R.string.gs_filter_chalk,
+            recipe = FilterRecipe(
+                effect = FilterEffect.Charcoal,
+                effectStrength = 76,
+                effectThreshold = 50,
+                effectTone = 60,
+                isMonochrome = true,
+                adjustments = Adjustments(
+                    contrast = -10,
+                    fade = 22,
+                    grain = 20,
+                ),
+            ),
+        ),
+        FilterOption(
+            id = "oil_painting",
+            categoryIds = setOf(ART),
+            nameRes = R.string.gs_filter_oil_painting,
+            recipe = FilterRecipe(
+                effect = FilterEffect.ColorPencil,
+                effectStrength = 72,
+                effectThreshold = 64,
+                effectTone = 88,
+                adjustments = Adjustments(
+                    contrast = 8,
+                    saturation = 18,
+                    vibrance = 20,
+                    sharpness = 6,
+                ),
+            ),
+        ),
+        FilterOption(
+            id = "watercolor",
+            categoryIds = setOf(ART),
+            nameRes = R.string.gs_filter_watercolor,
+            recipe = FilterRecipe(
+                effect = FilterEffect.Sketch,
+                effectStrength = 42,
+                effectThreshold = 66,
+                effectTone = 24,
+                adjustments = Adjustments(
+                    contrast = -16,
+                    saturation = 8,
+                    vibrance = 12,
+                    fade = 18,
+                    grain = 2,
+                ),
+            ),
+        ),
+        FilterOption(
+            id = "canvas_painting",
+            categoryIds = setOf(ART),
+            nameRes = R.string.gs_filter_canvas_painting,
+            recipe = FilterRecipe(
+                effect = FilterEffect.ColorPencil,
+                effectStrength = 60,
+                effectThreshold = 58,
+                effectTone = 82,
+                adjustments = Adjustments(
+                    saturation = 10,
+                    fade = 6,
+                    grain = 10,
+                ),
+            ),
+        ),
+        FilterOption(
+            id = "pastel",
+            categoryIds = setOf(ART),
+            nameRes = R.string.gs_filter_pastel,
+            recipe = FilterRecipe(
+                effect = FilterEffect.ColorPencil,
+                effectStrength = 44,
+                effectThreshold = 72,
+                effectTone = 92,
+                adjustments = Adjustments(
+                    contrast = -14,
+                    saturation = 14,
+                    vibrance = 16,
+                    fade = 24,
+                ),
+            ),
+        ),
+        FilterOption(
+            id = "comic",
+            categoryIds = setOf(ART),
+            nameRes = R.string.gs_filter_comic,
+            recipe = FilterRecipe(
+                effect = FilterEffect.Ink,
+                effectStrength = 82,
+                effectThreshold = 54,
+                effectTone = 25,
+                adjustments = Adjustments(
+                    contrast = 18,
+                    saturation = 16,
+                    vibrance = 10,
+                    grain = 2,
+                ),
+            ),
+        ),
+        FilterOption(
+            id = "pop_art",
+            categoryIds = setOf(ART),
+            nameRes = R.string.gs_filter_pop_art,
+            recipe = FilterRecipe(
+                effect = FilterEffect.ColorPencil,
+                effectStrength = 86,
+                effectThreshold = 42,
+                effectTone = 96,
+                adjustments = Adjustments(
+                    contrast = 26,
+                    saturation = 30,
+                    vibrance = 24,
+                ),
+            ),
+        ),
+        FilterOption(
+            id = "vintage_painting",
+            categoryIds = setOf(ART),
+            nameRes = R.string.gs_filter_vintage_painting,
+            recipe = FilterRecipe(
+                effect = FilterEffect.ColorPencil,
+                effectStrength = 58,
+                effectThreshold = 60,
+                effectTone = 70,
+                redShift = 10,
+                greenShift = 4,
+                blueShift = -8,
+                adjustments = Adjustments(
+                    saturation = -8,
+                    fade = 12,
+                    vignette = 8,
+                    grain = 10,
+                ),
+            ),
+        ),
+        FilterOption(
+            id = "impression_style",
+            categoryIds = setOf(ART),
+            nameRes = R.string.gs_filter_impression_style,
+            recipe = FilterRecipe(
+                effect = FilterEffect.ColorPencil,
+                effectStrength = 50,
+                effectThreshold = 70,
+                effectTone = 86,
+                adjustments = Adjustments(
+                    contrast = -4,
+                    saturation = 12,
+                    vibrance = 10,
+                    fade = 10,
+                    grain = 12,
+                ),
+            ),
+        ),
+        FilterOption(
             id = "soft_sketch",
             categoryIds = setOf(ART),
             nameRes = R.string.gs_filter_soft_sketch,
@@ -1943,6 +2196,28 @@ object FilterCatalog {
         defaultFilter = default,
     )
 
+    fun packFor(filterIds: Collection<String>): FilterPack {
+        require(filterIds.isNotEmpty()) { "Filter pack requires at least one filter id." }
+        require(filterIds.size == filterIds.toSet().size) { "Filter pack ids must be unique." }
+        require(ORIGINAL !in filterIds) { "Filter pack ids must exclude the default filter." }
+
+        val selectedFilters = filterIds.map { id ->
+            options.firstOrNull { it.id == id }
+                ?: error("Unknown filter id: $id")
+        }
+        val selectedCategories = categories.filter { category ->
+            selectedFilters.any { category.id in it.categoryIds }
+        }
+        require(selectedCategories.isNotEmpty()) { "Filter pack requires a valid category." }
+
+        return FilterPack(
+            categories = selectedCategories,
+            options = listOf(default) + selectedFilters,
+            defaultCategory = selectedCategories.first(),
+            defaultFilter = default,
+        )
+    }
+
     fun filtersForCategory(categoryId: String): List<FilterOption> {
         return sortedFiltersByCategory[categoryId].orEmpty()
     }
@@ -2022,7 +2297,28 @@ object FilterCatalog {
         COOL to listOf("cool", "cyan_clean", "arctic", "blue_mist", "mist", "steel"),
         AESTHETIC to listOf("lut_editorial_matte", "beige", "minimal", "dreamy", "latte", "pink"),
         CREATIVE to listOf("neon", "cyberpunk", "purple", "dream", "fantasy"),
-        ART to listOf("pencil", "soft_sketch", "color_pencil", "fine_line", "ink", "charcoal"),
+        ART to listOf(
+            "pencil",
+            "soft_pencil",
+            "hard_pencil",
+            "graphite",
+            "charcoal",
+            "ink",
+            "black_white_sketch",
+            "color_pencil",
+            "cross_hatch",
+            "fine_line",
+            "blueprint",
+            "chalk",
+            "oil_painting",
+            "watercolor",
+            "canvas_painting",
+            "pastel",
+            "comic",
+            "pop_art",
+            "vintage_painting",
+            "impression_style",
+        ),
     )
 
     private val categoryFilterRanks: Map<String, Map<String, Int>> by lazy {

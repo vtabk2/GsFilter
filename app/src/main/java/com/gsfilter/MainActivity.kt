@@ -109,6 +109,7 @@ class MainActivity : ComponentActivity() {
     }
 
     private fun bindFilterControls() {
+        binding.filterControls.setCatalog(AppFilterCatalog.pack)
         binding.filterControls.onCloseClick = ::saveFilteredImage
         binding.filterControls.onControlTabSelected = ::selectControlTab
         binding.filterControls.onCategorySelected = viewModel::selectCategory

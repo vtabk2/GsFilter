@@ -373,7 +373,16 @@ Built-in `FilterCatalog` có 103 preset, không tính action `Original`. Một p
 | Cool      | Cool, Arctic, Mist, Blue Mist, Steel, Cyan Clean                                                                                                                                                                                    |
 | Aesthetic | Beige, Latte, Pink, Dreamy, Minimal, Editorial Matte                                                                                                                                                                                |
 | Creative  | Neon, Cyberpunk, Purple, Dream, Fantasy                                                                                                                                                                                             |
-| Art       | Pencil, Soft Sketch, Color Pencil, Fine Line, Ink, Charcoal                                                                                                                                                                         |
+| Art       | Pencil, Soft Pencil, Hard Pencil, Graphite, Charcoal, Ink, Black & White Sketch, Color Pencil, Cross Hatch, Fine Line, Blueprint, Chalk, Oil Painting, Watercolor, Canvas Painting, Pastel, Comic, Pop Art, Vintage Painting, Impression Style |
+
+Để host app chỉ hiển thị danh sách preset Art theo product config, app tự giữ allowlist rồi truyền pack giới hạn vào view:
+
+```kotlin
+val enabledFilterIds = productConfig.artFilterIds
+binding.filterControls.setCatalog(FilterCatalog.packFor(enabledFilterIds))
+```
+
+`packFor()` luôn giữ `Original`, lọc đúng các id app truyền vào và bỏ các category trống; catalog mặc định đầy đủ vẫn giữ nguyên cho các app hiện tại.
 
 ## Khóa cache thumbnail ổn định
 

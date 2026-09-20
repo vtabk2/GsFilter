@@ -57,7 +57,7 @@ class FilterCatalogTest {
             "film" to listOf("portra", "fuji", "kodak", "gold"),
             "cinematic" to listOf("lut_teal_cinema", "teal_orange", "cinema", "blockbuster"),
             "black_white" to listOf("mono", "soft_mono", "pearl_mono", "noir"),
-            "art" to listOf("pencil", "soft_sketch", "color_pencil", "fine_line"),
+            "art" to listOf("pencil", "soft_pencil", "hard_pencil", "graphite"),
         ).forEach { (categoryId, expectedIds) ->
             assertEquals(
                 expectedIds,
@@ -149,9 +149,21 @@ class FilterCatalogTest {
         val artFilterIds = FilterCatalog.filtersForCategory("art").map { it.id }.toSet()
 
         assertEquals(
-            setOf("pencil", "soft_sketch", "color_pencil", "fine_line", "ink", "charcoal"),
+            requiredArtFilterIds.toSet() + "soft_sketch",
             artFilterIds,
         )
+    }
+
+    @Test
+    fun `filter pack exposes only the requested filters`() {
+        val pack = FilterCatalog.packFor(requiredArtFilterIds)
+
+        assertEquals(
+            listOf("original") + requiredArtFilterIds,
+            pack.options.map { it.id },
+        )
+        assertEquals(listOf("art"), pack.categories.map { it.id })
+        assertEquals("art", pack.defaultCategory.id)
     }
 
     @Test
@@ -200,4 +212,27 @@ class FilterCatalogTest {
             }
         }
     }
+
+    private val requiredArtFilterIds = listOf(
+        "pencil",
+        "soft_pencil",
+        "hard_pencil",
+        "graphite",
+        "charcoal",
+        "ink",
+        "black_white_sketch",
+        "color_pencil",
+        "cross_hatch",
+        "fine_line",
+        "blueprint",
+        "chalk",
+        "oil_painting",
+        "watercolor",
+        "canvas_painting",
+        "pastel",
+        "comic",
+        "pop_art",
+        "vintage_painting",
+        "impression_style",
+    )
 }

@@ -10,6 +10,15 @@ import org.junit.Test
 class FilterUiStateTest {
 
     @Test
+    fun `demo app catalog contains only the configured art filters`() {
+        assertEquals(
+            listOf("original") + AppFilterCatalog.filterIds,
+            AppFilterCatalog.pack.options.map { it.id },
+        )
+        assertEquals(listOf("art"), AppFilterCatalog.pack.categories.map { it.id })
+    }
+
+    @Test
     fun `restores saved filter recipe and adjustments`() {
         val catalog = FilterCatalog.pack
         val filter = catalog.options.first {
