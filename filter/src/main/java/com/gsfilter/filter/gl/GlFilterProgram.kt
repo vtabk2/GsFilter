@@ -1155,17 +1155,18 @@ internal object GlFilterProgram {
                 } else if (uEffect > 10.5) {
                     float line = lineFromEdge(edge, 0.13);
                     float shaded = blurredLuma(sourceCoord, 1.5 + (uEffectTone * 1.2));
-                    float paper = mix(1.0, shaded, 0.42 + (uEffectTone * 0.34));
-                    float sketch = clamp(paper - (line * 0.86) + (sketchGrain(sourceCoord, 0.65) * 0.03), 0.0, 1.0);
+                    float sourceShading = mix(sourceGray, shaded, 0.55);
+                    float paper = mix(0.98, sourceShading, 0.35 + (uEffectTone * 0.22));
+                    float sketch = clamp(paper - (line * 0.52) + (sketchGrain(sourceCoord, 0.65) * 0.01), 0.0, 1.0);
                     rgb = vec3(sketch);
                 } else if (uEffect > 9.5) {
-                    float line = lineFromEdge(edge, 0.08) * 0.75;
-                    float blurredInverted = 1.0 - blurredLuma(sourceCoord, 2.0);
-                    float pencilShade = dodge(sourceGray, blurredInverted);
-                    float paper = mix(1.0, pencilShade, 0.50 + (uEffectTone * 0.35));
+                    float line = lineFromEdge(edge, 0.08) * 0.42;
+                    float blurredGray = blurredLuma(sourceCoord, 2.0);
+                    float graphiteShade = mix(sourceGray, blurredGray, 0.40);
+                    float paper = mix(0.96, graphiteShade, 0.66 + (uEffectTone * 0.16));
                     float shadow = smoothstep(0.18, 0.86, 1.0 - sourceGray);
-                    float grain = sketchGrain(sourceCoord * 1.35, 1.1) * 0.24 * shadow;
-                    rgb = vec3(clamp(paper - (line * 0.78) + grain, 0.0, 1.0));
+                    float grain = sketchGrain(sourceCoord * 1.35, 1.1) * 0.10 * shadow;
+                    rgb = vec3(clamp(paper - (line * 0.58) + grain, 0.0, 1.0));
                 } else if (uEffect > 8.5) {
                     float expandedEdge = max(edge, edgeAt(sourceCoord + uTexelSize * vec2(1.0, 0.0)));
                     expandedEdge = max(expandedEdge, edgeAt(sourceCoord + uTexelSize * vec2(-1.0, 0.0)));
@@ -1226,20 +1227,20 @@ internal object GlFilterProgram {
                     rgb = clamp(paper - vec3(line * 0.58), 0.0, 1.0);
                 } else if (uEffect > 2.5) {
                     float softness = mix(0.045, 0.145, uEffectThreshold);
-                    float lineOpacity = mix(0.58, 0.78, uEffectThreshold);
-                    float line = lineFromEdge(edge, softness) * lineOpacity;
-                    float blurRadius = 0.9 + (uEffectThreshold * 2.3);
-                    float blurredInverted = 1.0 - blurredLuma(sourceCoord, blurRadius);
-                    float pencilShade = dodge(sourceGray, blurredInverted);
+                    float lineOpacity = mix(0.28, 0.48, uEffectThreshold);
                     float hardPencil = 1.0 - smoothstep(0.24, 0.42, uEffectThreshold);
+                    float line = lineFromEdge(edge, softness) * (lineOpacity + (hardPencil * 0.10));
+                    float blurRadius = 0.9 + (uEffectThreshold * 2.3);
+                    float blurredGray = blurredLuma(sourceCoord, blurRadius);
+                    float pencilShade = mix(sourceGray, blurredGray, 0.60);
                     float softPencil = smoothstep(0.54, 0.72, uEffectThreshold);
-                    float shadeAmount = (0.34 + (uEffectTone * 0.42)) * (1.0 - (hardPencil * 0.42));
+                    float shadeAmount = (0.48 + (uEffectTone * 0.42)) * (1.0 - (hardPencil * 0.30));
                     shadeAmount += softPencil * 0.10;
                     float paper = mix(1.0, pencilShade, shadeAmount);
                     float graphiteMaterial = smoothstep(0.60, 0.76, uEffectTone);
                     float graphiteShadow = smoothstep(0.20, 0.82, 1.0 - sourceGray);
                     float graphiteGrain = sketchGrain(sourceCoord * 1.35, 1.1) * 0.18 * graphiteMaterial * graphiteShadow;
-                    float pencil = paper - (line * (0.76 + (uEffectStrength * 0.10))) + graphiteGrain;
+                    float pencil = paper - (line * (0.54 + (uEffectStrength * 0.06))) + graphiteGrain;
                     rgb = vec3(clamp(pencil, 0.0, 1.0));
                 } else if (uEffect > 1.5) {
                     float localTone = blurredLuma(vTexCoord, 1.0 + (uEffectTone * 1.4));

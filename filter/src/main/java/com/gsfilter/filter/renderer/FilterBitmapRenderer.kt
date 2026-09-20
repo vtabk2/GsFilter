@@ -694,18 +694,18 @@ internal object FilterBitmapRenderer {
                 FilterEffect.Pencil -> {
                     val sourceGray = gray(sourceRed, sourceGreen, sourceBlue)
                     val softness = mix(0.045f, 0.145f, params.effectThreshold)
-                    val lineOpacity = mix(0.58f, 0.78f, params.effectThreshold)
-                    val line = lineFromEdge(edge, params, softness) * lineOpacity
-                    val blurredInverted = 1f - average(
+                    val lineOpacity = mix(0.28f, 0.48f, params.effectThreshold)
+                    val hardPencil = 1f - smoothstep(0.24f, 0.42f, params.effectThreshold)
+                    val line = lineFromEdge(edge, params, softness) * (lineOpacity + (hardPencil * 0.10f))
+                    val blurredGray = average(
                         gray(red(left), green(left), blue(left)),
                         gray(red(right), green(right), blue(right)),
                         gray(red(up), green(up), blue(up)),
                         gray(red(down), green(down), blue(down)),
                     )
-                    val pencilShade = dodge(sourceGray, blurredInverted)
-                    val hardPencil = 1f - smoothstep(0.24f, 0.42f, params.effectThreshold)
+                    val pencilShade = mix(sourceGray, blurredGray, 0.60f)
                     val softPencil = smoothstep(0.54f, 0.72f, params.effectThreshold)
-                    var shadeAmount = (0.34f + (params.effectTone * 0.42f)) * (1f - (hardPencil * 0.42f))
+                    var shadeAmount = (0.48f + (params.effectTone * 0.42f)) * (1f - (hardPencil * 0.30f))
                     shadeAmount += softPencil * 0.10f
                     val graphiteMaterial = smoothstep(0.60f, 0.76f, params.effectTone)
                     val graphiteShadow = smoothstep(0.20f, 0.82f, 1f - sourceGray)
@@ -714,7 +714,7 @@ internal object FilterBitmapRenderer {
                         ) * 0.18f * graphiteMaterial * graphiteShadow
                     val paper = mix(1f, pencilShade, shadeAmount)
                     val pencil = clamp(
-                        paper - (line * (0.76f + (params.effectStrength * 0.10f))) + graphiteGrain,
+                        paper - (line * (0.54f + (params.effectStrength * 0.06f))) + graphiteGrain,
                         0f,
                         1f,
                     )
@@ -733,18 +733,18 @@ internal object FilterBitmapRenderer {
 
                 FilterEffect.Graphite -> {
                     val sourceGray = gray(sourceRed, sourceGreen, sourceBlue)
-                    val line = lineFromEdge(edge, params, 0.08f) * 0.75f
-                    val blurredInverted = 1f - average(
+                    val line = lineFromEdge(edge, params, 0.08f) * 0.42f
+                    val blurredGray = average(
                         gray(red(left), green(left), blue(left)),
                         gray(red(right), green(right), blue(right)),
                         gray(red(up), green(up), blue(up)),
                         gray(red(down), green(down), blue(down)),
                     )
-                    val pencilShade = dodge(sourceGray, blurredInverted)
-                    val paper = mix(1f, pencilShade, 0.50f + (params.effectTone * 0.35f))
+                    val graphiteShade = mix(sourceGray, blurredGray, 0.40f)
+                    val paper = mix(0.96f, graphiteShade, 0.66f + (params.effectTone * 0.16f))
                     val shadow = smoothstep(0.18f, 0.86f, 1f - sourceGray)
-                    val grain = (random(textureX * 1215f, textureY * 1620f) - 0.5f) * 0.24f * shadow
-                    val graphite = clamp(paper - (line * 0.78f) + grain, 0f, 1f)
+                    val grain = (random(textureX * 1215f, textureY * 1620f) - 0.5f) * 0.10f * shadow
+                    val graphite = clamp(paper - (line * 0.58f) + grain, 0f, 1f)
                     red = graphite
                     green = graphite
                     blue = graphite
@@ -759,9 +759,10 @@ internal object FilterBitmapRenderer {
                         gray(red(up), green(up), blue(up)),
                         gray(red(down), green(down), blue(down)),
                     )
-                    val paper = mix(1f, mix(sourceGray, shaded, 0.72f), 0.42f + (params.effectTone * 0.34f))
+                    val sourceShading = mix(sourceGray, shaded, 0.55f)
+                    val paper = mix(0.98f, sourceShading, 0.35f + (params.effectTone * 0.22f))
                     val sketch = clamp(
-                        paper - (line * 0.86f) + ((random(textureX * 900f, textureY * 1200f) - 0.5f) * 0.03f),
+                        paper - (line * 0.52f) + ((random(textureX * 900f, textureY * 1200f) - 0.5f) * 0.01f),
                         0f,
                         1f,
                     )

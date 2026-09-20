@@ -5820,3 +5820,42 @@ Created: 2026-09-20
 
 - Fixed `mix(1.0, color.rgb, ...)` to use a `vec3` base and made the subsequent subtraction explicitly vector-typed.
 - `:filter:compileDebugKotlin` passed. The shader must still be exercised on the device because GLSL compilation happens at runtime.
+- Built and installed the Debug APK on Samsung A56 (`R5CYA0JB80`); app launch produced no `FATAL EXCEPTION`, `AndroidRuntime`, or `Shader compilation failed` log entries.
+- `:filter:testDebugUnitTest` and `:app:testDebugUnitTest --tests com.gsfilter.FilterUiStateTest` passed.
+
+### Follow-up: Pencil visual tuning
+
+- [x] Reduce Pencil's ink-like edge weight and restore visible graphite shading.
+- [x] Mirror the Pencil tuning in the CPU fallback.
+- [ ] Build, install, and inspect the Pencil result on the test device.
+
+### Follow-up result
+
+- Pencil now uses lower edge opacity, a lighter line multiplier, and grayscale/blur-based shading instead of the overly bright dodge result.
+- GPU and CPU branches were updated together; `:app:assembleDebug`, `:filter:testDebugUnitTest`, and the focused app unit test passed.
+- The existing device became `offline` after the ADB restart, so the post-tuning Pencil screenshot is still pending.
+
+### Follow-up: Visual review from three Sketch screenshots
+
+- [x] Reduce Graphite's remaining line-art look and restore midtone graphite material.
+- [x] Separate B&W Sketch from Charcoal with cleaner paper and lighter texture.
+- [x] Re-run tests/build and record the visual review result.
+
+### Follow-up result
+
+- Graphite now has visible midtone shading and restrained material grain instead of a black outline-only result.
+- B&W Sketch now uses lighter edge weight and minimal texture, separating it from Charcoal's dark rough fill.
+- The three submitted screenshots were used as the visual baseline; the updated Graphite, B&W Sketch, and Pencil outputs were checked on Samsung A56 without shader or runtime errors.
+- `:filter:testDebugUnitTest`, focused app unit tests, and `:app:assembleDebug` passed.
+
+### Follow-up: Sequential Sketch tuning — Hard Pencil
+
+- [x] Increase Hard Pencil stroke visibility while preserving thin/sharp edges.
+- [x] Mirror the Hard Pencil adjustment in the CPU fallback.
+- [x] Build/install and wait for the three-image visual review before moving to Soft Pencil.
+
+### Follow-up result
+
+- Hard Pencil now receives a small hard-stroke visibility boost only when the shared Pencil branch detects the hard threshold range; Soft Pencil and regular Pencil are not darkened by this change.
+- CPU and GPU implementations match, `:filter:testDebugUnitTest`, focused app tests, and `:app:assembleDebug` passed.
+- The updated APK was installed/launched on Samsung A56 without runtime or shader errors. Visual acceptance remains pending until the three screenshots are provided; Soft Pencil is intentionally not changed yet.
