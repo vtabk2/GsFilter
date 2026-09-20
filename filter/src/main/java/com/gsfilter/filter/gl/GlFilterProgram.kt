@@ -1200,17 +1200,17 @@ internal object GlFilterProgram {
                     rgb = vec3(1.0 - clamp(line, 0.0, 1.0));
                 } else if (uEffect > 5.5) {
                     float darkness = 1.0 - smoothstep(0.10, 0.90, sourceGray);
-                    float spacing = mix(9.0, 5.0, darkness);
+                    float spacing = mix(8.0, 4.5, darkness);
                     float lightHatch = smoothstep(0.18, 0.48, darkness);
-                    float shadowHatch = smoothstep(0.40, 0.78, darkness);
-                    float deepHatch = smoothstep(0.70, 0.96, darkness);
+                    float shadowHatch = smoothstep(0.32, 0.72, darkness);
+                    float deepHatch = smoothstep(0.62, 0.92, darkness);
                     float hatchA = hatchStroke(sourceCoord, 0.785398, spacing) * lightHatch;
                     float hatchB = hatchStroke(sourceCoord, -0.785398, spacing * 1.12) * shadowHatch;
                     float hatchC = hatchStroke(sourceCoord, 0.0, spacing * 1.45) * deepHatch;
                     float contour = smoothstep(0.08, 0.24, edge);
-                    float hatch = clamp((hatchA * 0.42) + (hatchB * 0.34) + (hatchC * 0.24), 0.0, 1.0);
+                    float hatch = clamp((hatchA * 0.38) + (hatchB * 0.38) + (hatchC * 0.24), 0.0, 1.0);
                     float paper = mix(0.985, sourceGray, 0.08 + (darkness * 0.10));
-                    float ink = clamp((hatch * (0.34 + (darkness * 0.32)) * uEffectStrength) + (contour * 0.52), 0.0, 0.82);
+                    float ink = clamp((hatch * (0.36 + (darkness * 0.36)) * uEffectStrength) + (contour * 0.52), 0.0, 0.86);
                     rgb = vec3(clamp(paper - ink, 0.0, 1.0));
                 } else if (uEffect > 4.5) {
                     float line = lineFromEdge(edge, 0.15);
@@ -1229,13 +1229,14 @@ internal object GlFilterProgram {
                     float softness = mix(0.045, 0.145, uEffectThreshold);
                     float lineOpacity = mix(0.28, 0.48, uEffectThreshold);
                     float hardPencil = 1.0 - smoothstep(0.24, 0.42, uEffectThreshold);
-                    float line = lineFromEdge(edge, softness) * (lineOpacity + (hardPencil * 0.10));
-                    float blurRadius = 0.9 + (uEffectThreshold * 2.3);
-                    float blurredGray = blurredLuma(sourceCoord, blurRadius);
-                    float pencilShade = mix(sourceGray, blurredGray, 0.60);
                     float softPencil = smoothstep(0.54, 0.72, uEffectThreshold);
+                    float line = lineFromEdge(edge, softness) *
+                        (lineOpacity * (1.0 - (softPencil * 0.18)) + (hardPencil * 0.10));
+                    float blurRadius = 0.9 + (uEffectThreshold * 2.3) + (softPencil * 0.55);
+                    float blurredGray = blurredLuma(sourceCoord, blurRadius);
+                    float pencilShade = mix(sourceGray, blurredGray, 0.60 + (softPencil * 0.20));
                     float shadeAmount = (0.48 + (uEffectTone * 0.42)) * (1.0 - (hardPencil * 0.30));
-                    shadeAmount += softPencil * 0.10;
+                    shadeAmount += softPencil * 0.16;
                     float paper = mix(1.0, pencilShade, shadeAmount);
                     float graphiteMaterial = smoothstep(0.60, 0.76, uEffectTone);
                     float graphiteShadow = smoothstep(0.20, 0.82, 1.0 - sourceGray);

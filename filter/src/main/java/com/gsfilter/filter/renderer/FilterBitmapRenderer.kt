@@ -696,17 +696,18 @@ internal object FilterBitmapRenderer {
                     val softness = mix(0.045f, 0.145f, params.effectThreshold)
                     val lineOpacity = mix(0.28f, 0.48f, params.effectThreshold)
                     val hardPencil = 1f - smoothstep(0.24f, 0.42f, params.effectThreshold)
-                    val line = lineFromEdge(edge, params, softness) * (lineOpacity + (hardPencil * 0.10f))
+                    val softPencil = smoothstep(0.54f, 0.72f, params.effectThreshold)
+                    val line = lineFromEdge(edge, params, softness) *
+                            (lineOpacity * (1f - (softPencil * 0.18f)) + (hardPencil * 0.10f))
                     val blurredGray = average(
                         gray(red(left), green(left), blue(left)),
                         gray(red(right), green(right), blue(right)),
                         gray(red(up), green(up), blue(up)),
                         gray(red(down), green(down), blue(down)),
                     )
-                    val pencilShade = mix(sourceGray, blurredGray, 0.60f)
-                    val softPencil = smoothstep(0.54f, 0.72f, params.effectThreshold)
+                    val pencilShade = mix(sourceGray, blurredGray, 0.60f + (softPencil * 0.20f))
                     var shadeAmount = (0.48f + (params.effectTone * 0.42f)) * (1f - (hardPencil * 0.30f))
-                    shadeAmount += softPencil * 0.10f
+                    shadeAmount += softPencil * 0.16f
                     val graphiteMaterial = smoothstep(0.60f, 0.76f, params.effectTone)
                     val graphiteShadow = smoothstep(0.20f, 0.82f, 1f - sourceGray)
                     val graphiteGrain = (
@@ -818,20 +819,20 @@ internal object FilterBitmapRenderer {
                 FilterEffect.CrossHatch -> {
                     val sourceGray = gray(sourceRed, sourceGreen, sourceBlue)
                     val darkness = 1f - smoothstep(0.10f, 0.90f, sourceGray)
-                    val spacing = mix(9f, 5f, darkness)
+                    val spacing = mix(8f, 4.5f, darkness)
                     val lightHatch = smoothstep(0.18f, 0.48f, darkness)
-                    val shadowHatch = smoothstep(0.40f, 0.78f, darkness)
-                    val deepHatch = smoothstep(0.70f, 0.96f, darkness)
+                    val shadowHatch = smoothstep(0.32f, 0.72f, darkness)
+                    val deepHatch = smoothstep(0.62f, 0.92f, darkness)
                     val hatchA = hatchStroke(textureX, textureY, 0.785398f, spacing, width, height) * lightHatch
                     val hatchB = hatchStroke(textureX, textureY, -0.785398f, spacing * 1.12f, width, height) * shadowHatch
                     val hatchC = hatchStroke(textureX, textureY, 0f, spacing * 1.45f, width, height) * deepHatch
                     val contour = smoothstep(0.08f, 0.24f, edge)
-                    val hatch = clamp((hatchA * 0.42f) + (hatchB * 0.34f) + (hatchC * 0.24f), 0f, 1f)
+                    val hatch = clamp((hatchA * 0.38f) + (hatchB * 0.38f) + (hatchC * 0.24f), 0f, 1f)
                     val paper = mix(0.985f, sourceGray, 0.08f + (darkness * 0.10f))
                     val ink = clamp(
-                        (hatch * (0.34f + (darkness * 0.32f)) * params.effectStrength) + (contour * 0.52f),
+                        (hatch * (0.36f + (darkness * 0.36f)) * params.effectStrength) + (contour * 0.52f),
                         0f,
-                        0.82f,
+                        0.86f,
                     )
                     val hatched = clamp(paper - ink, 0f, 1f)
                     red = hatched

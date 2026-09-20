@@ -5752,7 +5752,8 @@ Completed: 2026-09-11
 - `:filter:testDebugUnitTest`, `:filter:compileDebugKotlin`, and `:app:compileDebugKotlin` passed.
 
 ## Task: Implement shared GPU Sketch engine
-Status: IN PROGRESS
+Status: DONE
+Completed: 2026-09-20
 Created: 2026-09-20
 
 ### Requirements
@@ -5858,4 +5859,33 @@ Created: 2026-09-20
 
 - Hard Pencil now receives a small hard-stroke visibility boost only when the shared Pencil branch detects the hard threshold range; Soft Pencil and regular Pencil are not darkened by this change.
 - CPU and GPU implementations match, `:filter:testDebugUnitTest`, focused app tests, and `:app:assembleDebug` passed.
-- The updated APK was installed/launched on Samsung A56 without runtime or shader errors. Visual acceptance remains pending until the three screenshots are provided; Soft Pencil is intentionally not changed yet.
+- The updated APK was installed/launched on Samsung A56 without runtime or shader errors. The three submitted screenshots were visually accepted; Soft Pencil was intentionally not changed in that pass.
+
+### Follow-up: Sequential Sketch tuning — Soft Pencil
+
+Status: IN PROGRESS
+
+- [x] Increase Soft Pencil tonal shading and blur separation from Pencil.
+- [x] Mirror the Soft Pencil adjustment in the CPU fallback.
+- [x] Build/install and wait for the three-image visual review before moving to Cross Hatch.
+
+### Follow-up result
+
+- Soft Pencil now adds threshold-gated blur, stronger tonal shading, and slightly softer/lighter edge weight while leaving regular Pencil and Hard Pencil behavior unchanged.
+- GPU and CPU paths match. `:filter:testDebugUnitTest`, focused app tests, and `:app:assembleDebug` passed.
+- The updated APK was installed/launched on Samsung A56 without runtime or shader errors. The three submitted screenshots were visually accepted; Soft Pencil is now distinct enough from Pencil to proceed.
+
+### Follow-up: Sequential Sketch tuning — Cross Hatch
+
+Status: IN PROGRESS
+
+- [x] Increase visible cross-hatch strokes in shadow regions without filling highlights.
+- [x] Mirror the Cross Hatch adjustment in the CPU fallback.
+- [x] Build/install.
+- [ ] Wait for the three-image visual review before moving to Chalk.
+
+### Follow-up result
+
+- Cross Hatch now uses denser shadow spacing, earlier secondary/deep hatch activation, and a stronger diagonal cross layer while keeping highlights mostly clean.
+- GPU and CPU paths match. `:filter:testDebugUnitTest`, focused app tests, and `:app:assembleDebug` passed.
+- The updated APK was installed/launched on Samsung A56 without runtime or shader errors. Visual acceptance is pending until three Cross Hatch screenshots are provided.
