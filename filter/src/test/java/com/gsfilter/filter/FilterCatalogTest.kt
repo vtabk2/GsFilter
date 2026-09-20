@@ -155,6 +155,31 @@ class FilterCatalogTest {
     }
 
     @Test
+    fun `sketch pack uses distinct shared effect families`() {
+        val sketchEffects = requiredSketchFilterIds.associateWith { id ->
+            FilterCatalog.options.first { it.id == id }.recipe.effect
+        }
+
+        assertEquals(
+            mapOf(
+                "pencil" to FilterEffect.Pencil,
+                "soft_pencil" to FilterEffect.Pencil,
+                "hard_pencil" to FilterEffect.Pencil,
+                "graphite" to FilterEffect.Pencil,
+                "charcoal" to FilterEffect.Charcoal,
+                "ink" to FilterEffect.Ink,
+                "black_white_sketch" to FilterEffect.Sketch,
+                "color_pencil" to FilterEffect.ColorPencil,
+                "cross_hatch" to FilterEffect.CrossHatch,
+                "fine_line" to FilterEffect.FineLine,
+                "blueprint" to FilterEffect.Blueprint,
+                "chalk" to FilterEffect.Chalk,
+            ),
+            sketchEffects,
+        )
+    }
+
+    @Test
     fun `filter pack exposes only the requested filters`() {
         val pack = FilterCatalog.packFor(requiredArtFilterIds)
 
@@ -234,5 +259,20 @@ class FilterCatalogTest {
         "pop_art",
         "vintage_painting",
         "impression_style",
+    )
+
+    private val requiredSketchFilterIds = listOf(
+        "pencil",
+        "soft_pencil",
+        "hard_pencil",
+        "graphite",
+        "charcoal",
+        "ink",
+        "black_white_sketch",
+        "color_pencil",
+        "cross_hatch",
+        "fine_line",
+        "blueprint",
+        "chalk",
     )
 }

@@ -654,6 +654,38 @@ internal object GlFilterProgram {
             return smoothstep(threshold - softness, threshold + softness, edge) * uEffectStrength;
         }
 
+        float blurredLuma(vec2 coord, float radius) {
+            vec2 step = uTexelSize * clamp(radius, 0.75, 3.0);
+            float center = lumaAt(coord);
+            float horizontal = lumaAt(coord - vec2(step.x, 0.0)) + lumaAt(coord + vec2(step.x, 0.0));
+            float vertical = lumaAt(coord - vec2(0.0, step.y)) + lumaAt(coord + vec2(0.0, step.y));
+            return (center * 0.40) + ((horizontal + vertical) * 0.15);
+        }
+
+        float dodge(float base, float blend) {
+            return clamp(base / max(0.05, 1.0 - blend), 0.0, 1.0);
+        }
+
+        float hatchStroke(vec2 coord, float angle, float spacing) {
+            float minDimension = 1.0 / max(max(uTexelSize.x, uTexelSize.y), 0.00001);
+            vec2 pixel = coord * minDimension;
+            float sine = sin(angle);
+            float cosine = cos(angle);
+            float axis = (pixel.x * cosine) + (pixel.y * sine);
+            float perpendicular = (-pixel.x * sine) + (pixel.y * cosine);
+            float distanceFromStroke = abs(fract(axis / spacing) - 0.5);
+            float segment = random(vec2(
+                floor(axis / spacing),
+                floor(perpendicular / max(spacing * 2.5, 1.0))
+            ));
+            float stroke = 1.0 - smoothstep(0.40, 0.50, distanceFromStroke);
+            return stroke * mix(0.35, 1.0, smoothstep(0.25, 0.70, segment));
+        }
+
+        float sketchGrain(vec2 coord, float scale) {
+            return random(coord * vec2(900.0, 1200.0) * scale) - 0.5;
+        }
+
         float skinMask(vec3 rgb) {
             float cb = 0.5 - (0.168736 * rgb.r) - (0.331264 * rgb.g) + (0.5 * rgb.b);
             float cr = 0.5 + (0.5 * rgb.r) - (0.418688 * rgb.g) - (0.081312 * rgb.b);
@@ -1109,28 +1141,102 @@ internal object GlFilterProgram {
                 float sourceGray = dot(color.rgb, vec3(0.299, 0.587, 0.114));
                 float edge = 0.0;
                 if (uEffectStrength > 0.0) {
-                    edge = edgeAt(vTexCoord);
+                    edge = edgeAt(sourceCoord);
                 }
-                if (uEffect > 4.5) {
-                    float line = lineFromEdge(edge, 0.14);
-                    float texture = (random(vTexCoord * vec2(680.0, 920.0)) - 0.5) * 0.28 * uEffectStrength;
-                    float charcoal = clamp(mix(0.92, sourceGray, 0.65 + (uEffectTone * 0.2)) - (line * 0.95) - texture, 0.0, 1.0);
-                    rgb = vec3(charcoal);
+                if (uEffect > 8.5) {
+                    float expandedEdge = max(edge, edgeAt(sourceCoord + uTexelSize * vec2(1.0, 0.0)));
+                    expandedEdge = max(expandedEdge, edgeAt(sourceCoord + uTexelSize * vec2(-1.0, 0.0)));
+                    expandedEdge = max(expandedEdge, edgeAt(sourceCoord + uTexelSize * vec2(0.0, 1.0)));
+                    expandedEdge = max(expandedEdge, edgeAt(sourceCoord + uTexelSize * vec2(0.0, -1.0)));
+                    float chalkLine = smoothstep(
+                        (0.20 + (uEffectThreshold * 0.22)) - 0.10,
+                        (0.20 + (uEffectThreshold * 0.22)) + 0.10,
+                        expandedEdge
+                    ) * uEffectStrength;
+                    float chalkDust = smoothstep(
+                        0.20,
+                        0.78,
+                        random(sourceCoord * vec2(210.0, 310.0))
+                    );
+                    float roughness = sketchGrain(sourceCoord, 0.85) * 0.30 * chalkLine;
+                    float chalk = clamp(chalkLine * (0.56 + (0.44 * chalkDust) + roughness), 0.0, 1.0);
+                    rgb = mix(vec3(0.035, 0.045, 0.075), vec3(0.86, 0.88, 0.82), chalk);
+                } else if (uEffect > 7.5) {
+                    float line = lineFromEdge(edge, 0.045);
+                    float blueprintLine = smoothstep(0.10, 0.72, line);
+                    vec3 paperBlue = vec3(0.025, 0.12, 0.30);
+                    vec3 cyanLine = vec3(0.55, 0.86, 1.0);
+                    rgb = mix(paperBlue, cyanLine, blueprintLine);
+                } else if (uEffect > 6.5) {
+                    float line = smoothstep(
+                        mix(0.03, 0.22, uEffectThreshold) - 0.025,
+                        mix(0.03, 0.22, uEffectThreshold) + 0.025,
+                        edge
+                    ) * uEffectStrength;
+                    rgb = vec3(1.0 - clamp(line, 0.0, 1.0));
+                } else if (uEffect > 5.5) {
+                    float darkness = 1.0 - smoothstep(0.10, 0.90, sourceGray);
+                    float spacing = mix(9.0, 5.0, darkness);
+                    float lightHatch = smoothstep(0.18, 0.48, darkness);
+                    float shadowHatch = smoothstep(0.40, 0.78, darkness);
+                    float deepHatch = smoothstep(0.70, 0.96, darkness);
+                    float hatchA = hatchStroke(sourceCoord, 0.785398, spacing) * lightHatch;
+                    float hatchB = hatchStroke(sourceCoord, -0.785398, spacing * 1.12) * shadowHatch;
+                    float hatchC = hatchStroke(sourceCoord, 0.0, spacing * 1.45) * deepHatch;
+                    float contour = smoothstep(0.08, 0.24, edge);
+                    float hatch = clamp((hatchA * 0.42) + (hatchB * 0.34) + (hatchC * 0.24), 0.0, 1.0);
+                    float paper = mix(0.985, sourceGray, 0.08 + (darkness * 0.10));
+                    float ink = clamp((hatch * (0.34 + (darkness * 0.32)) * uEffectStrength) + (contour * 0.52), 0.0, 0.82);
+                    rgb = vec3(clamp(paper - ink, 0.0, 1.0));
+                } else if (uEffect > 4.5) {
+                    float line = lineFromEdge(edge, 0.15);
+                    float coarseTexture = sketchGrain(vTexCoord, 0.75) * 0.22;
+                    float fineTexture = sketchGrain(vTexCoord * 1.7, 1.3) * 0.10;
+                    float broadShade = blurredLuma(vTexCoord, 2.3);
+                    float charcoal = mix(0.96, mix(sourceGray, broadShade, 0.55), 0.58 + (uEffectTone * 0.22));
+                    charcoal -= line * 0.92;
+                    charcoal += (coarseTexture + fineTexture) * (0.45 + (uEffectStrength * 0.35));
+                    rgb = vec3(clamp(charcoal, 0.0, 1.0));
                 } else if (uEffect > 3.5) {
-                    float line = lineFromEdge(edge, 0.11);
-                    vec3 paper = mix(vec3(1.0), color.rgb, 0.35 + (uEffectTone * 0.5));
-                    rgb = clamp(paper - (line * 0.58), 0.0, 1.0);
-                } else if (uEffect > 2.5) {
                     float line = lineFromEdge(edge, 0.10);
-                    float paper = mix(1.0, sourceGray, 0.35 + (uEffectTone * 0.35));
-                    rgb = vec3(clamp(paper - (line * 0.92), 0.0, 1.0));
+                    float blurRadius = 0.9 + (uEffectThreshold * 2.3);
+                    float blurredInverted = 1.0 - blurredLuma(sourceCoord, blurRadius);
+                    float pencilShade = dodge(sourceGray, blurredInverted);
+                    float paper = mix(1.0, pencilShade, 0.36 + (uEffectTone * 0.42));
+                    float grain = sketchGrain(sourceCoord, 0.75) * 0.10;
+                    float colorRetention = 0.28 + (uEffectTone * 0.12);
+                    vec3 paperColor = mix(vec3(paper + grain), color.rgb, colorRetention);
+                    rgb = clamp(paperColor - (line * 0.58), 0.0, 1.0);
+                } else if (uEffect > 2.5) {
+                    float softness = mix(0.045, 0.145, uEffectThreshold);
+                    float lineOpacity = mix(0.58, 0.78, uEffectThreshold);
+                    float line = lineFromEdge(edge, softness) * lineOpacity;
+                    float blurRadius = 0.9 + (uEffectThreshold * 2.3);
+                    float blurredInverted = 1.0 - blurredLuma(sourceCoord, blurRadius);
+                    float pencilShade = dodge(sourceGray, blurredInverted);
+                    float hardPencil = 1.0 - smoothstep(0.24, 0.42, uEffectThreshold);
+                    float softPencil = smoothstep(0.54, 0.72, uEffectThreshold);
+                    float shadeAmount = (0.34 + (uEffectTone * 0.42)) * (1.0 - (hardPencil * 0.42));
+                    shadeAmount += softPencil * 0.10;
+                    float paper = mix(1.0, pencilShade, shadeAmount);
+                    float graphiteMaterial = smoothstep(0.60, 0.76, uEffectTone);
+                    float graphiteShadow = smoothstep(0.20, 0.82, 1.0 - sourceGray);
+                    float graphiteGrain = sketchGrain(sourceCoord * 1.35, 1.1) * 0.18 * graphiteMaterial * graphiteShadow;
+                    float pencil = paper - (line * (0.76 + (uEffectStrength * 0.10))) + graphiteGrain;
+                    rgb = vec3(clamp(pencil, 0.0, 1.0));
                 } else if (uEffect > 1.5) {
-                    float line = lineFromEdge(edge, 0.08);
-                    rgb = vec3(1.0 - line);
+                    float localTone = blurredLuma(vTexCoord, 1.0 + (uEffectTone * 1.4));
+                    float localThreshold = mix(0.24, 0.68, uEffectThreshold) + ((localTone - 0.5) * 0.12);
+                    float inkLine = smoothstep(localThreshold - 0.08, localThreshold + 0.08, edge) * uEffectStrength;
+                    float cleanup = smoothstep(0.02, 0.22, edge);
+                    rgb = vec3(1.0 - (inkLine * cleanup));
                 } else {
-                    float line = lineFromEdge(edge, 0.12);
-                    float paper = mix(1.0, sourceGray, uEffectTone);
-                    rgb = vec3(clamp(paper - (line * 0.8), 0.0, 1.0));
+                    float line = lineFromEdge(edge, 0.13);
+                    float shaded = blurredLuma(vTexCoord, 1.5 + (uEffectTone * 1.2));
+                    float paper = mix(1.0, shaded, 0.42 + (uEffectTone * 0.34));
+                    float texture = sketchGrain(vTexCoord, 0.65) * 0.08;
+                    float sketch = clamp(paper - (line * 0.86) + texture, 0.0, 1.0);
+                    rgb = vec3(sketch);
                 }
                 rgb = mix(beforeEffect, rgb, uIntensity);
             }

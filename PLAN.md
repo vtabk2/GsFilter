@@ -5750,3 +5750,49 @@ Completed: 2026-09-11
 - Sequential offscreen renders at the same size reuse EGL setup and shader program compilation.
 - Sessions are replaced on size changes and invalidated after runtime GL failures.
 - `:filter:testDebugUnitTest`, `:filter:compileDebugKotlin`, and `:app:compileDebugKotlin` passed.
+
+## Task: Implement shared GPU Sketch engine
+Status: IN PROGRESS
+Created: 2026-09-20
+
+### Requirements
+
+- Implement the exact 12 Sketch presets from the product document.
+- Reuse the current GPU preview/export renderer and shared shader building blocks.
+- Keep thumbnail and preview behavior on the same recipe/pipeline.
+- Keep CPU fallback/export behavior aligned with the GPU effect family.
+- Preserve the separate Painting / Art category for later tuning.
+
+### Checklist
+
+- [x] Extend the effect model and shared shader parameters.
+- [x] Implement distinct shared-pipeline behavior for all 12 Sketch presets.
+- [x] Update CPU fallback and catalog defaults.
+- [x] Add focused coverage and run filter/app verification.
+- [x] Record visual-tuning limits and mark the task complete.
+
+### Result
+
+- Added shared GPU helpers for bounded blur, dodge, Sobel edge reuse, threshold cleanup, directional hatch, blueprint mapping, chalk roughness, and paper grain.
+- The 12 Sketch IDs now map to Pencil, Sketch, Ink, Color Pencil, Charcoal, Cross Hatch, Fine Line, Blueprint, and Chalk effect families instead of generic Ink/Charcoal placeholders.
+- CPU fallback mirrors the effect families and uses warped source coordinates for art edge sampling.
+- Preview, thumbnail, and offscreen export continue using the existing renderer/program path; no parallel filter framework or per-frame preview bitmap was added.
+- Verification passed: `:filter:testDebugUnitTest`, `:app:testDebugUnitTest --tests com.gsfilter.FilterUiStateTest`, and `:app:compileDebugKotlin`.
+- Visual tuning on a physical/emulated device remains a manual follow-up because no `adb` device is available in this environment.
+
+### Follow-up: P0/P1 visual differentiation
+
+- [x] Rework Cross Hatch to use luminance-gated, segmented hatch strokes on a light paper base.
+- [x] Separate Hard Pencil and Soft Pencil by line softness, shading amount, and stroke opacity.
+- [x] Make Chalk wider, broken, and grainy only on strokes.
+- [x] Recheck Graphite, B&W Sketch, and Color Pencil after the P0/P1 pass.
+- [x] Run unit tests and compile verification; record remaining visual limits.
+
+### Follow-up result
+
+- Cross Hatch now suppresses hatch in highlights, adds denser directional layers only in shadows, segments procedural strokes, and preserves a bright paper base.
+- Hard Pencil now uses lower line opacity, sharper edge softness, lighter shading, and a cleaner background; Soft Pencil uses broader softness and more tonal shading.
+- Chalk now expands strokes in four directions and applies deterministic dust/breakup only to the stroke mask.
+- Graphite receives luminance-gated material grain; B&W Sketch has reduced global grain; Color Pencil retains more source color while staying desaturated.
+- Verification passed: `:filter:testDebugUnitTest`, `:app:testDebugUnitTest --tests com.gsfilter.FilterUiStateTest`, and `:app:compileDebugKotlin`.
+- Physical/emulator visual acceptance remains pending because no `adb` device is available; shader compile/link and thumbnail comparison must be checked there.

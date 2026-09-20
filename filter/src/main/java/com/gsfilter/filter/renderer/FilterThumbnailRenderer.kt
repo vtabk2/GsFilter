@@ -293,6 +293,7 @@ internal object FilterThumbnailRenderer {
             FilterEffect.Charcoal -> recipe.copy(
                 adjustments = recipe.adjustments.copy(grain = recipe.adjustments.grain.scale(50)),
             )
+            FilterEffect.CrossHatch, FilterEffect.FineLine, FilterEffect.Blueprint, FilterEffect.Chalk -> recipe
         }
 
     internal fun filterPixel(

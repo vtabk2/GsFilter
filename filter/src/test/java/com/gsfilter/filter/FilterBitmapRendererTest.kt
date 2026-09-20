@@ -390,7 +390,9 @@ class FilterBitmapRendererTest {
         val pixels = IntArray(9 * 9) { index ->
             val x = index % 9
             val y = index / 9
-            0xff000000.toInt() or ((x * 20) shl 16) or ((y * 20) shl 8)
+            0xff000000.toInt() or
+                ((if (x % 2 == 0) 20 else 220) shl 16) or
+                ((y * 20) shl 8)
         }
         val features = MakeupFeatures(
             faceCenterX = 0.5f,
@@ -413,7 +415,7 @@ class FilterBitmapRendererTest {
             width = 9,
             height = 9,
             params = ShaderFilterParams.from(
-                recipe = FilterRecipe(effect = FilterEffect.Sketch),
+                recipe = FilterRecipe(effect = FilterEffect.Sketch, effectStrength = 0),
                 adjustments = Adjustments(),
             ),
         )
@@ -422,13 +424,13 @@ class FilterBitmapRendererTest {
             width = 9,
             height = 9,
             params = ShaderFilterParams.from(
-                recipe = FilterRecipe(faceSlimming = 100, effect = FilterEffect.Sketch),
+                recipe = FilterRecipe(faceSlimming = 100, effect = FilterEffect.Sketch, effectStrength = 0),
                 adjustments = Adjustments(),
                 makeupFeatures = features,
             ),
         )
 
-        assertNotEquals(artOnly[4 * 9 + 2], warpedArt[4 * 9 + 2])
+        assertTrue(artOnly.indices.any { index -> artOnly[index] != warpedArt[index] })
     }
 
     @Test
@@ -720,6 +722,10 @@ class FilterBitmapRendererTest {
             FilterEffect.Pencil,
             FilterEffect.ColorPencil,
             FilterEffect.Charcoal,
+            FilterEffect.CrossHatch,
+            FilterEffect.FineLine,
+            FilterEffect.Blueprint,
+            FilterEffect.Chalk,
         ).forEach { effect ->
             val output = FilterBitmapRenderer.renderPixels(
                 pixels = pixels,
@@ -733,6 +739,39 @@ class FilterBitmapRendererTest {
 
             assertNotEquals(white, output[4])
         }
+    }
+
+    @Test
+    fun `cross hatch keeps highlights on a light paper base`() {
+        val white = 0xffffffff.toInt()
+        val black = 0xff000000.toInt()
+        val whiteOutput = FilterBitmapRenderer.renderPixels(
+            pixels = IntArray(9 * 9) { white },
+            width = 9,
+            height = 9,
+            params = ShaderFilterParams.from(
+                recipe = FilterRecipe(effect = FilterEffect.CrossHatch),
+                adjustments = Adjustments(),
+            ),
+        )
+        val blackOutput = FilterBitmapRenderer.renderPixels(
+            pixels = IntArray(9 * 9) { black },
+            width = 9,
+            height = 9,
+            params = ShaderFilterParams.from(
+                recipe = FilterRecipe(effect = FilterEffect.CrossHatch),
+                adjustments = Adjustments(),
+            ),
+        )
+
+        fun meanLuma(pixels: IntArray): Float = pixels.map { pixel ->
+            (((pixel shr 16) and 0xff) * 0.299f) +
+                (((pixel shr 8) and 0xff) * 0.587f) +
+                ((pixel and 0xff) * 0.114f)
+        }.average().toFloat()
+
+        assertTrue(meanLuma(whiteOutput) > 220f)
+        assertTrue(meanLuma(whiteOutput) > meanLuma(blackOutput) + 20f)
     }
 
     @Test

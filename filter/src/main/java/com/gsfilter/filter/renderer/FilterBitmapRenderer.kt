@@ -129,7 +129,7 @@ internal object FilterBitmapRenderer {
         val exposure = 2.0.pow(params.exposure.toDouble()).toFloat()
         val hasWarp = hasActiveWarp(params)
         val sharpAmount = (params.sharpness * 0.65f) + (params.clarity * 0.35f)
-        val needsNeighborhood = params.skinSmoothing != 0f || sharpAmount != 0f
+        val needsNeighborhood = params.skinSmoothing != 0f || sharpAmount != 0f || (params.effect != FilterEffect.Color && params.intensity != 0f)
         val needsEdge = params.skinSmoothing != 0f ||
             (params.effect != FilterEffect.Color &&
                 params.intensity != 0f &&
@@ -309,8 +309,25 @@ internal object FilterBitmapRenderer {
             blurredGreen = sourceGreen
             blurredBlue = sourceBlue
         }
+        val edgeX = if (hasWarp) {
+            ((sourceX * width) - 0.5f).roundToInt().coerceIn(0, width - 1)
+        } else {
+            x
+        }
+        val edgeY = if (hasWarp) {
+            ((sourceY * height) - 0.5f).roundToInt().coerceIn(0, height - 1)
+        } else {
+            y
+        }
         val edge = if (needsEdge) {
-            edgeAt(pixels, x, width, rowStart, topRowStart, bottomRowStart)
+            edgeAt(
+                pixels,
+                edgeX,
+                width,
+                edgeY * width,
+                (edgeY - 1).coerceAtLeast(0) * width,
+                (edgeY + 1).coerceAtMost(height - 1) * width,
+            )
         } else {
             0f
         }
@@ -650,17 +667,38 @@ internal object FilterBitmapRenderer {
             when (params.effect) {
                 FilterEffect.Color -> Unit
                 FilterEffect.Sketch -> {
-                    val sourceGray = gray(sourceRed, sourceGreen, sourceBlue)
                     val line = lineFromEdge(edge, params, 0.12f)
-                    val sketch = clamp(mix(1f, sourceGray, params.effectTone) - (line * 0.8f), 0f, 1f)
+                    val sourceGray = gray(sourceRed, sourceGreen, sourceBlue)
+                    val neighborhoodGray = average(
+                        gray(red(left), green(left), blue(left)),
+                        gray(red(right), green(right), blue(right)),
+                        gray(red(up), green(up), blue(up)),
+                        gray(red(down), green(down), blue(down)),
+                    )
+                    val shaded = mix(sourceGray, neighborhoodGray, 0.72f)
+                    val sketch = clamp(
+                        mix(1f, shaded, 0.42f + (params.effectTone * 0.34f)) -
+                                (line * 0.86f) +
+                                ((random(textureX * 900f, textureY * 1200f) - 0.5f) * 0.08f),
+                        0f,
+                        1f,
+                    )
                     red = sketch
                     green = sketch
                     blue = sketch
                 }
 
                 FilterEffect.Ink -> {
-                    val line = lineFromEdge(edge, params, 0.08f)
-                    val ink = 1f - line
+                    val localTone = average(
+                        gray(red(left), green(left), blue(left)),
+                        gray(red(right), green(right), blue(right)),
+                        gray(red(up), green(up), blue(up)),
+                        gray(red(down), green(down), blue(down)),
+                    )
+                    val localThreshold = mix(0.24f, 0.68f, params.effectThreshold) +
+                            ((localTone - 0.5f) * 0.12f)
+                    val inkLine = smoothstep(localThreshold - 0.08f, localThreshold + 0.08f, edge) * params.effectStrength
+                    val ink = 1f - (inkLine * smoothstep(0.02f, 0.22f, edge))
                     red = ink
                     green = ink
                     blue = ink
@@ -668,9 +706,31 @@ internal object FilterBitmapRenderer {
 
                 FilterEffect.Pencil -> {
                     val sourceGray = gray(sourceRed, sourceGreen, sourceBlue)
-                    val line = lineFromEdge(edge, params, 0.10f)
-                    val paper = mix(1f, sourceGray, 0.35f + (params.effectTone * 0.35f))
-                    val pencil = clamp(paper - (line * 0.92f), 0f, 1f)
+                    val softness = mix(0.045f, 0.145f, params.effectThreshold)
+                    val lineOpacity = mix(0.58f, 0.78f, params.effectThreshold)
+                    val line = lineFromEdge(edge, params, softness) * lineOpacity
+                    val blurredInverted = 1f - average(
+                        gray(red(left), green(left), blue(left)),
+                        gray(red(right), green(right), blue(right)),
+                        gray(red(up), green(up), blue(up)),
+                        gray(red(down), green(down), blue(down)),
+                    )
+                    val pencilShade = dodge(sourceGray, blurredInverted)
+                    val hardPencil = 1f - smoothstep(0.24f, 0.42f, params.effectThreshold)
+                    val softPencil = smoothstep(0.54f, 0.72f, params.effectThreshold)
+                    var shadeAmount = (0.34f + (params.effectTone * 0.42f)) * (1f - (hardPencil * 0.42f))
+                    shadeAmount += softPencil * 0.10f
+                    val graphiteMaterial = smoothstep(0.60f, 0.76f, params.effectTone)
+                    val graphiteShadow = smoothstep(0.20f, 0.82f, 1f - sourceGray)
+                    val graphiteGrain = (
+                        random(textureX * 1215f, textureY * 1620f) - 0.5f
+                        ) * 0.18f * graphiteMaterial * graphiteShadow
+                    val paper = mix(1f, pencilShade, shadeAmount)
+                    val pencil = clamp(
+                        paper - (line * (0.76f + (params.effectStrength * 0.10f))) + graphiteGrain,
+                        0f,
+                        1f,
+                    )
                     red = pencil
                     green = pencil
                     blue = pencil
@@ -678,23 +738,107 @@ internal object FilterBitmapRenderer {
 
                 FilterEffect.ColorPencil -> {
                     val line = lineFromEdge(edge, params, 0.11f)
-                    red = clamp(mix(1f, sourceRed, 0.35f + (params.effectTone * 0.5f)) - (line * 0.58f), 0f, 1f)
-                    green = clamp(mix(1f, sourceGreen, 0.35f + (params.effectTone * 0.5f)) - (line * 0.58f), 0f, 1f)
-                    blue = clamp(mix(1f, sourceBlue, 0.35f + (params.effectTone * 0.5f)) - (line * 0.58f), 0f, 1f)
+                    val shade = average(
+                        gray(red(left), green(left), blue(left)),
+                        gray(red(right), green(right), blue(right)),
+                        gray(red(up), green(up), blue(up)),
+                        gray(red(down), green(down), blue(down)),
+                    )
+                    val paperMix = 0.28f + (params.effectTone * 0.12f)
+                    val paperRed = mix(1f, sourceRed, paperMix) * (0.75f + (shade * 0.25f))
+                    val paperGreen = mix(1f, sourceGreen, paperMix) * (0.75f + (shade * 0.25f))
+                    val paperBlue = mix(1f, sourceBlue, paperMix) * (0.75f + (shade * 0.25f))
+                    red = clamp(paperRed - (line * 0.42f), 0f, 1f)
+                    green = clamp(paperGreen - (line * 0.42f), 0f, 1f)
+                    blue = clamp(paperBlue - (line * 0.42f), 0f, 1f)
                 }
 
                 FilterEffect.Charcoal -> {
                     val sourceGray = gray(sourceRed, sourceGreen, sourceBlue)
                     val line = lineFromEdge(edge, params, 0.14f)
-                    val texture = (random(textureX * 680f, textureY * 920f) - 0.5f) * 0.28f * params.effectStrength
+                    val broadShade = average(
+                        gray(red(left), green(left), blue(left)),
+                        gray(red(right), green(right), blue(right)),
+                        gray(red(up), green(up), blue(up)),
+                        gray(red(down), green(down), blue(down)),
+                    )
+                    val texture = (
+                            (random(textureX * 680f, textureY * 920f) - 0.5f) * 0.22f +
+                                    (random(textureX * 160f, textureY * 220f) - 0.5f) * 0.16f
+                            ) * params.effectStrength
                     val charcoal = clamp(
-                        mix(0.92f, sourceGray, 0.65f + (params.effectTone * 0.2f)) - (line * 0.95f) - texture,
+                        mix(0.96f, mix(sourceGray, broadShade, 0.55f), 0.58f + (params.effectTone * 0.22f)) -
+                                (line * 0.92f) + texture,
                         0f,
                         1f,
                     )
                     red = charcoal
                     green = charcoal
                     blue = charcoal
+                }
+
+                FilterEffect.CrossHatch -> {
+                    val sourceGray = gray(sourceRed, sourceGreen, sourceBlue)
+                    val darkness = 1f - smoothstep(0.10f, 0.90f, sourceGray)
+                    val spacing = mix(9f, 5f, darkness)
+                    val lightHatch = smoothstep(0.18f, 0.48f, darkness)
+                    val shadowHatch = smoothstep(0.40f, 0.78f, darkness)
+                    val deepHatch = smoothstep(0.70f, 0.96f, darkness)
+                    val hatchA = hatchStroke(textureX, textureY, 0.785398f, spacing, width, height) * lightHatch
+                    val hatchB = hatchStroke(textureX, textureY, -0.785398f, spacing * 1.12f, width, height) * shadowHatch
+                    val hatchC = hatchStroke(textureX, textureY, 0f, spacing * 1.45f, width, height) * deepHatch
+                    val contour = smoothstep(0.08f, 0.24f, edge)
+                    val hatch = clamp((hatchA * 0.42f) + (hatchB * 0.34f) + (hatchC * 0.24f), 0f, 1f)
+                    val paper = mix(0.985f, sourceGray, 0.08f + (darkness * 0.10f))
+                    val ink = clamp(
+                        (hatch * (0.34f + (darkness * 0.32f)) * params.effectStrength) + (contour * 0.52f),
+                        0f,
+                        0.82f,
+                    )
+                    val hatched = clamp(paper - ink, 0f, 1f)
+                    red = hatched
+                    green = hatched
+                    blue = hatched
+                }
+
+                FilterEffect.FineLine -> {
+                    val threshold = mix(0.03f, 0.22f, params.effectThreshold)
+                    val line = smoothstep(threshold - 0.025f, threshold + 0.025f, edge) * params.effectStrength
+                    val fineLine = 1f - clamp(line, 0f, 1f)
+                    red = fineLine
+                    green = fineLine
+                    blue = fineLine
+                }
+
+                FilterEffect.Blueprint -> {
+                    val line = lineFromEdge(edge, params, 0.045f)
+                    val blueprintLine = smoothstep(0.10f, 0.72f, line)
+                    val background = floatArrayOf(0.025f, 0.12f, 0.30f)
+                    val lineColor = floatArrayOf(0.55f, 0.86f, 1f)
+                    red = mix(background[0], lineColor[0], blueprintLine)
+                    green = mix(background[1], lineColor[1], blueprintLine)
+                    blue = mix(background[2], lineColor[2], blueprintLine)
+                }
+
+                FilterEffect.Chalk -> {
+                    val expandedEdge = max(
+                        max(
+                            edge,
+                            edgeAt(pixels, (x + 1).coerceAtMost(width - 1), width, rowStart, topRowStart, bottomRowStart),
+                        ),
+                        max(
+                            edgeAt(pixels, (x - 1).coerceAtLeast(0), width, rowStart, topRowStart, bottomRowStart),
+                            edgeAt(pixels, x, width, rowStart, topRowStart, bottomRowStart),
+                        ),
+                    )
+                    val threshold = 0.20f + (params.effectThreshold * 0.22f)
+                    val chalkLine = smoothstep(threshold - 0.10f, threshold + 0.10f, expandedEdge) * params.effectStrength
+                    val chalkDust = smoothstep(0.20f, 0.78f, random(textureX * 210f, textureY * 310f))
+                    val roughness = (random(textureX * 900f, textureY * 1200f) - 0.5f) * 0.30f * chalkLine
+                    val chalk = clamp(chalkLine * (0.56f + (0.44f * chalkDust) + roughness), 0f, 1f)
+                    red = mix(0.035f, 0.86f, chalk)
+                    green = mix(0.045f, 0.88f, chalk)
+                    blue = mix(0.075f, 0.82f, chalk)
                 }
 
             }
@@ -964,6 +1108,31 @@ internal object FilterBitmapRenderer {
     }
 
     private fun luma(color: Int): Float = gray(red(color), green(color), blue(color))
+
+    private fun dodge(base: Float, blend: Float): Float =
+        clamp(base / max(0.05f, 1f - blend), 0f, 1f)
+
+    private fun hatchStroke(
+        textureX: Float,
+        textureY: Float,
+        angle: Float,
+        spacing: Float,
+        width: Int,
+        height: Int,
+    ): Float {
+        val minDimension = min(width, height).toFloat()
+        val pixelX = textureX * minDimension
+        val pixelY = textureY * minDimension
+        val axis = (pixelX * cos(angle)) + (pixelY * sin(angle))
+        val distanceFromStroke = abs((axis / spacing) - floor(axis / spacing) - 0.5f)
+        val perpendicular = (-pixelX * sin(angle)) + (pixelY * cos(angle))
+        val segment = random(
+            floor(axis / spacing),
+            floor(perpendicular / (spacing * 2.5f).coerceAtLeast(1f)),
+        )
+        val stroke = 1f - smoothstep(0.40f, 0.50f, distanceFromStroke)
+        return stroke * mix(0.35f, 1f, smoothstep(0.25f, 0.70f, segment))
+    }
 
     private fun lineFromEdge(edge: Float, params: ShaderFilterParams, softness: Float): Float {
         val threshold = mix(0.04f, 0.34f, params.effectThreshold)

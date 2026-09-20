@@ -39,7 +39,11 @@ enum class FilterEffect(
     Ink(jsonName = "ink", shaderValue = 2f),
     Pencil(jsonName = "pencil", shaderValue = 3f),
     ColorPencil(jsonName = "color_pencil", shaderValue = 4f),
-    Charcoal(jsonName = "charcoal", shaderValue = 5f);
+    Charcoal(jsonName = "charcoal", shaderValue = 5f),
+    CrossHatch(jsonName = "cross_hatch", shaderValue = 6f),
+    FineLine(jsonName = "fine_line", shaderValue = 7f),
+    Blueprint(jsonName = "blueprint", shaderValue = 8f),
+    Chalk(jsonName = "chalk", shaderValue = 9f);
 
     companion object {
         fun fromJsonName(name: String): FilterEffect =
