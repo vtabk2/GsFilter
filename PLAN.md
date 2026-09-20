@@ -34,6 +34,32 @@ Created: 2026-09-20
 - `BeautyOptions` remains a follow-up API extraction: `FilterRecipe` still exposes its flattened constructor fields to avoid a breaking API or duplicate beauty state in this migration.
 - Gradle verification is currently blocked because Java/JAVA_HOME is unavailable in the environment.
 
+## Task: Extract beauty controls into a dedicated view
+
+Status: DONE
+Created: 2026-09-20
+
+### Requirements
+
+- Move beauty control rendering and interaction logic out of `FilterControlsView`.
+- Keep the existing beauty tab, compact seekbar behavior, callbacks, styles, and resources unchanged.
+- Expose the beauty seek row and seekbar only as the host needs for compact layout movement.
+- Preserve the existing `FilterRecipe` and ViewModel state flow.
+
+### Checklist
+
+- [x] Add `BeautyControlsView` while preserving the existing public `FilterControlsView.BeautyControl` type.
+- [x] Move the beauty layout block into its own layout.
+- [x] Wire the extracted view into `FilterControlsView`.
+- [x] Preserve app callback wiring and run static checks.
+- [ ] Run focused unit tests and compilation when Java/JAVA_HOME is available.
+
+### Notes
+
+- `FilterControlsView` remains the tab/filter host; `BeautyControlsView` owns beauty item state, seekbar state, reset behavior, and beauty styling.
+- The compact seek row is still temporarily moved by the host, using the same exposed row/seekbar boundary as `AdjustControlsView`.
+- Gradle verification is blocked because Java/JAVA_HOME is unavailable in the environment.
+
 ## Task: Show the full filter rail when Popular is hidden
 
 Status: DONE

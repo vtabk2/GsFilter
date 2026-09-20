@@ -55,7 +55,6 @@ class FilterControlsView @JvmOverloads constructor(
     private var showHeader = style.showHeader
     private var isOriginalPreviewPressed = false
     private var isRenderingFilterIntensity = false
-    private var isRenderingBeauty = false
     private var selectedTab = ControlTab.Filter
     private var filterIntensityRowOriginalIndex = -1
     private var beautySeekRowOriginalIndex = -1
@@ -104,20 +103,13 @@ class FilterControlsView @JvmOverloads constructor(
     private val compactReset: RippleImageView?
     private val compactOriginal: RippleImageView?
     private val filterContent: LinearLayout?
-    private val beautyContainer: LinearLayout?
+    private val beautyContainer: FrameLayout?
+    private val beautyContent: BeautyControlsView
     private val beautySeekRow: View?
-    private val beautyControlsContainer: LinearLayout?
-    private val beautyResetButton: RippleImageView?
     private val beautySeekBar: SeekBar?
-    private val beautyValueText: TextView?
-    private val beautyResetAll: TextView?
     private val adjustContainer: FrameLayout?
     private val adjustContent: AdjustControlsView
     private val adjustSeekRow: View?
-    private val beautyLabels = mutableMapOf<BeautyControl, TextView>()
-    private val beautyIcons = mutableMapOf<BeautyControl, ImageView>()
-    private val beautyDots = mutableMapOf<BeautyControl, View>()
-    private var selectedBeautyControl = BeautyControl.Smoothing
 
     init {
         orientation = VERTICAL
@@ -151,12 +143,15 @@ class FilterControlsView @JvmOverloads constructor(
         filterContent = findViewById(R.id.gs_filter_content)
         style.contentBackgroundRes?.let { filterContent?.setBackgroundResource(it) }
         beautyContainer = findViewById(R.id.gs_beauty_container)
-        beautySeekRow = findViewById(R.id.gs_beauty_seek_row)
-        beautyControlsContainer = findViewById(R.id.gs_beauty_controls_container)
-        beautyResetButton = findViewById(R.id.gs_beauty_reset)
-        beautySeekBar = findViewById(R.id.gs_beauty_seek_bar)
-        beautyValueText = findViewById(R.id.gs_beauty_value)
-        beautyResetAll = findViewById(R.id.gs_beauty_reset_all)
+        beautyContent = BeautyControlsView(context, attrs)
+        beautyContainer?.addView(
+            beautyContent,
+            FrameLayout.LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT),
+        )
+        beautyContent.onBeautyChanged = { control, value -> onBeautyChanged?.invoke(control, value) }
+        beautyContent.onResetAllClick = { onResetBeautyClick?.invoke() }
+        beautySeekRow = beautyContent.seekRow
+        beautySeekBar = beautyContent.seekBar
         adjustContainer = findViewById(R.id.gs_adjust_container)
         adjustContent = AdjustControlsView(context, attrs)
         adjustContainer?.addView(
@@ -165,13 +160,12 @@ class FilterControlsView @JvmOverloads constructor(
         )
         adjustSeekRow = adjustContent.seekRow
         filterIntensityRowOriginalIndex = filterIntensityRow?.let { filterContent?.indexOfChild(it) } ?: -1
-        beautySeekRowOriginalIndex = beautySeekRow?.let { beautyContainer?.indexOfChild(it) } ?: -1
+        beautySeekRowOriginalIndex = beautyContent.indexOfChild(beautyContent.seekRow)
         adjustSeekRowOriginalIndex = adjustSeekRow?.let { adjustContent.indexOfChild(it) } ?: -1
         setShowHeader(showHeader)
 
         bindHeader()
         bindFilterContent()
-        bindBeautyContent()
         bindAdjustContent()
         setCatalog(catalog)
         setSelectedTab(ControlTab.Filter)
@@ -604,7 +598,7 @@ class FilterControlsView @JvmOverloads constructor(
         )
         beautySeekRowOriginalIndex = moveSeekRow(
             row = beautySeekRow,
-            originalParent = beautyContainer,
+            originalParent = beautyContent,
             originalIndex = beautySeekRowOriginalIndex,
             compactParent = compact,
             shouldBeCompact = activeRow === beautySeekRow,
@@ -695,68 +689,6 @@ class FilterControlsView @JvmOverloads constructor(
         }
         isOriginalPreviewPressed = false
         onOriginalFilterPressedChanged?.invoke(false)
-    }
-
-    private fun bindBeautyContent() {
-        beautyControlsContainer?.let { container ->
-            BeautyControl.entries.forEachIndexed { index, control ->
-                container.addView(createBeautyControlItem(index, control, container))
-            }
-        }
-        beautyResetButton?.iconRippleRes = R.drawable.selector_ic_gs_adjust_reset
-        style.iconPadding?.let { beautyResetButton?.paddingRipple = it }
-        beautyResetButton?.setOnClickListener {
-            onBeautyChanged?.invoke(
-                selectedBeautyControl,
-                beautyValue(selectedBeautyControl, selectedFilter.recipe),
-            )
-        }
-        beautySeekBar?.max = BEAUTY_MAX
-        beautySeekBar?.progressBackgroundTintList = ColorStateList.valueOf(style.intensityTrackColor)
-        beautySeekBar?.progressTintList = ColorStateList.valueOf(style.intensityProgressColor)
-        beautySeekBar?.thumbTintList = ColorStateList.valueOf(style.intensityProgressColor)
-        beautySeekBar?.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
-            override fun onProgressChanged(view: SeekBar, progress: Int, fromUser: Boolean) {
-                if (fromUser && !isRenderingBeauty) {
-                    onBeautyChanged?.invoke(selectedBeautyControl, progress)
-                }
-            }
-
-            override fun onStartTrackingTouch(view: SeekBar) = Unit
-
-            override fun onStopTrackingTouch(view: SeekBar) = Unit
-        })
-        bindSeekBarTouch(beautySeekBar)
-        beautyValueText?.setTextColor(style.intensityTextColor)
-        beautyResetAll?.text = context.getString(R.string.gs_action_reset_beauty)
-        beautyResetAll?.setTextColor(beautyResetAllTextColors())
-        beautyResetAll?.setOnClickListener { onResetBeautyClick?.invoke() }
-    }
-
-    private fun createBeautyControlItem(index: Int, control: BeautyControl, parent: LinearLayout): View {
-        val item = LayoutInflater.from(context).inflate(
-            R.layout.gs_item_beauty_control,
-            parent,
-            false,
-        )
-        val label: TextView = item.findViewById(R.id.gs_beauty_item_label)
-        val icon: ImageView = item.findViewById(R.id.gs_beauty_item_icon)
-        val dot: View = item.findViewById(R.id.gs_beauty_changed_dot)
-        beautyLabels[control] = label
-        beautyIcons[control] = icon
-        beautyDots[control] = dot
-        return item.apply {
-            setOnClickListener {
-                selectedBeautyControl = control
-                renderBeauty()
-            }
-            if (index > 0) {
-                (layoutParams as? LayoutParams)?.marginStart = itemSpacing()
-            }
-            dot.backgroundTintList = ColorStateList.valueOf(style.intensityProgressColor)
-            icon.setImageResource(control.iconRes)
-            label.setText(control.labelRes)
-        }
     }
 
     private fun bindAdjustContent() {
@@ -908,50 +840,8 @@ class FilterControlsView @JvmOverloads constructor(
     }
 
     private fun renderBeauty() {
-        val activeValue = beautyValue(selectedBeautyControl, selectedRecipe).coerceIn(0, BEAUTY_MAX)
-        val defaultValue = beautyValue(selectedBeautyControl, selectedFilter.recipe).coerceIn(0, BEAUTY_MAX)
-        isRenderingBeauty = true
-        beautySeekBar?.progress = activeValue
-        beautyValueText?.text = activeValue.toString()
-        beautyResetButton?.isEnabled = activeValue != defaultValue
-
-        var hasChangedValue = false
-        BeautyControl.entries.forEach { control ->
-            val isSelected = control == selectedBeautyControl
-            val hasChanged = beautyValue(control, selectedRecipe) != beautyValue(control, selectedFilter.recipe)
-            hasChangedValue = hasChangedValue || hasChanged
-            val textColor = if (isSelected) style.intensityProgressColor else style.beautyTextColor
-            beautyDots[control]?.visibility = if (hasChanged) VISIBLE else INVISIBLE
-            beautyIcons[control]?.setColorFilter(textColor)
-            beautyLabels[control]?.setTextColor(textColor)
-        }
-        beautyResetAll?.isEnabled = hasChangedValue
-        isRenderingBeauty = false
+        beautyContent.setState(selectedRecipe, selectedFilter.recipe)
     }
-
-    private fun beautyResetAllTextColors(): ColorStateList =
-        ColorStateList(
-            arrayOf(
-                intArrayOf(-android.R.attr.state_enabled),
-                intArrayOf(),
-            ),
-            intArrayOf(style.beautyTextColor, style.intensityProgressColor),
-        )
-
-    private fun beautyValue(control: BeautyControl, recipe: FilterRecipe): Int =
-        when (control) {
-            BeautyControl.Smoothing -> recipe.skinSmoothing
-            BeautyControl.Whitening -> recipe.skinWhitening
-            BeautyControl.Blush -> recipe.blush
-            BeautyControl.Lipstick -> recipe.lipstick
-            BeautyControl.UnderEye -> recipe.underEye
-            BeautyControl.TeethWhitening -> recipe.teethWhitening
-            BeautyControl.EyeShadow -> recipe.eyeShadow
-            BeautyControl.Eyeliner -> recipe.eyeliner
-            BeautyControl.Eyebrow -> recipe.eyebrow
-            BeautyControl.FaceSlimming -> recipe.faceSlimming
-            BeautyControl.EyeEnlargement -> recipe.eyeEnlargement
-        }
 
     private fun renderTab(tab: LinearLayout?, isSelected: Boolean) {
         tab?.isSelected = isSelected
@@ -1015,7 +905,6 @@ class FilterControlsView @JvmOverloads constructor(
 
     private companion object {
         const val FILTER_INTENSITY_MAX = 100
-        const val BEAUTY_MAX = 100
         const val TAB_INDICATOR_WIDTH_FULL = 0
         const val TAB_INDICATOR_WIDTH_MIN = 1
         const val TAB_INDICATOR_WIDTH_TEXT = 2
@@ -1086,7 +975,6 @@ class FilterControlsView @JvmOverloads constructor(
         val showBeauty: Boolean,
         val showIntensity: Boolean,
         val showPopular: Boolean,
-        val beautyTextColor: Int,
         val intensityTextColor: Int,
         val intensityProgressColor: Int,
         val intensityTrackColor: Int,
@@ -1236,10 +1124,6 @@ class FilterControlsView @JvmOverloads constructor(
             showBeauty = array.getBoolean(R.styleable.FilterControlsView_gsFilterShowBeauty, true),
             showIntensity = array.getBoolean(R.styleable.FilterControlsView_gsFilterShowIntensity, true),
             showPopular = array.getBoolean(R.styleable.FilterControlsView_gsFilterShowPopular, true),
-            beautyTextColor = array.getColor(
-                R.styleable.FilterControlsView_gsFilterBeautyTextColor,
-                context.getColor(R.color.gs_adjust_text_secondary),
-            ),
             intensityTextColor = array.getColor(
                 R.styleable.FilterControlsView_gsFilterIntensityTextColor,
                 array.getColor(

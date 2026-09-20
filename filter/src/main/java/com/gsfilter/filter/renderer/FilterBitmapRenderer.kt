@@ -402,8 +402,8 @@ internal object FilterBitmapRenderer {
         } else {
             0f
         }
-        val faceMask: Float
-        val beautyMask: Float
+        var faceMask: Float
+        var beautyMask: Float
         if (hasBeauty) {
             faceMask = if (needsFaceMask) {
                 params.makeupFeatures?.let { features ->
