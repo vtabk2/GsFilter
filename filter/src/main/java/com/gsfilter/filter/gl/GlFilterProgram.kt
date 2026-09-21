@@ -695,6 +695,20 @@ internal object GlFilterProgram {
             return clamp(cbMask * crMask * redBias, 0.0, 1.0);
         }
 
+        float skinContext(vec2 coord) {
+            vec2 step = uTexelSize;
+            float context = skinMask(texture2D(uTexture, coord).rgb);
+            context = max(context, skinMask(texture2D(uTexture, coord - vec2(step.x, 0.0)).rgb) * 0.86);
+            context = max(context, skinMask(texture2D(uTexture, coord + vec2(step.x, 0.0)).rgb) * 0.86);
+            context = max(context, skinMask(texture2D(uTexture, coord - vec2(0.0, step.y)).rgb) * 0.86);
+            context = max(context, skinMask(texture2D(uTexture, coord + vec2(0.0, step.y)).rgb) * 0.86);
+            context = max(context, skinMask(texture2D(uTexture, coord - vec2(step.x * 2.0, 0.0)).rgb) * 0.68);
+            context = max(context, skinMask(texture2D(uTexture, coord + vec2(step.x * 2.0, 0.0)).rgb) * 0.68);
+            context = max(context, skinMask(texture2D(uTexture, coord - vec2(0.0, step.y * 2.0)).rgb) * 0.68);
+            context = max(context, skinMask(texture2D(uTexture, coord + vec2(0.0, step.y * 2.0)).rgb) * 0.68);
+            return context;
+        }
+
         float ellipseMask(vec2 coord, vec4 area, float rotation, float innerEdge, float outerEdge) {
             vec2 radius = max(area.zw, vec2(0.0001));
             vec2 delta = (coord - area.xy) / radius;
@@ -1153,12 +1167,104 @@ internal object GlFilterProgram {
                     vec3 paperColor = mix(vec3(paper + grain), color.rgb, colorRetention);
                     rgb = clamp(paperColor - (line * 0.52), 0.0, 1.0);
                 } else if (uEffect > 10.5) {
-                    float line = lineFromEdge(edge, 0.13);
-                    float shaded = blurredLuma(sourceCoord, 1.5 + (uEffectTone * 1.2));
-                    float sourceShading = mix(sourceGray, shaded, 0.55);
-                    float paper = mix(0.98, sourceShading, 0.35 + (uEffectTone * 0.22));
-                    float sketch = clamp(paper - (line * 0.52) + (sketchGrain(sourceCoord, 0.65) * 0.01), 0.0, 1.0);
-                    rgb = vec3(sketch);
+                    float localBlurredGray = blurredLuma(sourceCoord, 1.0);
+                    float shaded = blurredLuma(sourceCoord, 3.0);
+                    float localDetail = max(
+                        abs(sourceGray - localBlurredGray),
+                        abs(localBlurredGray - shaded)
+                    );
+                    float structuralContrast = abs(sourceGray - shaded);
+                    float detailSuppress = smoothstep(0.02, 0.12, localDetail);
+                    float skinKeep = skinMask(color.rgb) * 0.90;
+                    float facialKeep = skinContext(sourceCoord) * 0.95;
+                    float strongEdge = smoothstep(0.26, 0.48, edge);
+                    float brightRegion = smoothstep(0.55, 0.88, sourceGray);
+                    float structuralKeep = max(
+                        max(skinKeep, facialKeep),
+                        smoothstep(0.22, 0.45, structuralContrast) * 0.22
+                    );
+                    float structuralProtection = smoothstep(0.22, 0.45, structuralContrast) * 0.18;
+                    float weakBrightEdge = (1.0 - strongEdge) * brightRegion;
+                    float facialMidtone = facialKeep * smoothstep(0.30, 0.78, sourceGray);
+                    float weakFacialEdge = detailSuppress * (1.0 - strongEdge) * facialMidtone;
+                    float repetitiveBackground = detailSuppress * (1.0 - facialKeep) *
+                        (1.0 - structuralProtection) * (1.0 - strongEdge);
+                    float edgeSuppression = max(
+                        weakBrightEdge * 0.55,
+                        max(repetitiveBackground, weakFacialEdge * 0.55)
+                    );
+                    float protectedEdge = max(strongEdge, structuralKeep * 0.35);
+                    float edgeMaterial = mix(0.06, 1.0, protectedEdge);
+                    float materialEdgeReduction = detailSuppress * (1.0 - skinKeep) * 0.28;
+                    float baseLine = lineFromEdge(edge, 0.13) * edgeMaterial *
+                        (1.0 - (edgeSuppression * 0.95)) *
+                        (1.0 - materialEdgeReduction);
+                    float brightNeighbor = smoothstep(0.44, 0.78, localBlurredGray);
+                    float darkCenter = 1.0 - smoothstep(0.40, 0.76, sourceGray);
+                    float facialDarkDetail = brightNeighbor * darkCenter *
+                        smoothstep(0.10, 0.28, abs(sourceGray - localBlurredGray)) * facialKeep;
+                    float line = max(baseLine, facialDarkDetail * 0.75);
+                    float shadeAmount = mix(0.78, 0.55, skinKeep) +
+                        (detailSuppress * 0.12 * (1.0 - facialKeep));
+                    float sourceShading = mix(sourceGray, shaded, shadeAmount);
+                    float shadowMass = (1.0 - smoothstep(0.22, 0.68, min(sourceGray, shaded))) *
+                        mix(0.45, 1.0, 1.0 - detailSuppress);
+                    float cleanBackground = mix(0.72, 1.0, detailSuppress) *
+                        (1.0 - facialKeep) * (1.0 - (shadowMass * 0.45));
+                    float darkRegion = 1.0 - smoothstep(0.28, 0.72, min(sourceGray, shaded));
+                    float skinHighlight = skinKeep * smoothstep(0.55, 0.90, sourceGray);
+                    float shadeMix = mix(0.28, 0.40, darkRegion) *
+                        (1.0 - (skinHighlight * 0.60)) *
+                        (1.0 - (cleanBackground * 0.25));
+                    float tonalMass = darkRegion *
+                        (1.0 - (skinKeep * 0.65)) *
+                        mix(0.65, 1.0, 1.0 - cleanBackground);
+                    float darkTone = tonalMass * pow(clamp(1.0 - sourceShading, 0.0, 1.0), 1.15);
+                    float paperLift = 1.0 - shadeMix;
+                    float detailPreserve = smoothstep(0.025, 0.14, localDetail) *
+                        (1.0 - (cleanBackground * 0.65)) *
+                        (1.0 - (skinHighlight * 0.35));
+                    float liftedPaper = mix(sourceShading, 0.97, paperLift);
+                    float paper = mix(liftedPaper, sourceShading, detailPreserve * 0.55) -
+                        (darkTone * 0.30) - (facialDarkDetail * 0.18);
+                    float materialMask = darkRegion *
+                        (1.0 - (skinKeep * 0.85)) *
+                        (1.0 - (cleanBackground * 0.65));
+                    float materialDetail = smoothstep(0.025, 0.14, localDetail);
+                    float darkSourceMask = 1.0 - smoothstep(0.18, 0.35, sourceGray);
+                    float midtoneSourceMask = smoothstep(0.30, 0.38, sourceGray) *
+                        (1.0 - smoothstep(0.52, 0.60, sourceGray));
+                    float lowFrequencyContribution = materialMask *
+                        mix(0.10, 0.15, darkSourceMask);
+                    float highFrequencyContribution = materialMask * materialDetail *
+                        ((darkSourceMask * 0.15) + (midtoneSourceMask * 0.10));
+                    float lowFrequencyPaper = mix(paper, sourceShading, lowFrequencyContribution);
+                    float highFrequencyTexture = sourceGray - localBlurredGray;
+                    float texturedPaper = lowFrequencyPaper +
+                        (highFrequencyTexture * highFrequencyContribution);
+                    float lowLuminance = 1.0 - smoothstep(0.16, 0.38, sourceShading);
+                    float hairShadowMask = materialMask * lowLuminance;
+                    float hairDarken = hairShadowMask * mix(0.10, 0.15, lowLuminance);
+                    float hatchStructure = max(
+                        smoothstep(0.015, 0.085, localDetail),
+                        smoothstep(0.08, 0.24, edge)
+                    );
+                    float hatchSpacing = mix(8.0, 5.0, darkRegion);
+                    float hatchA = hatchStroke(sourceCoord, 0.785398, hatchSpacing);
+                    float hatchB = hatchStroke(sourceCoord, -0.785398, hatchSpacing * 1.12);
+                    float graphiteHatch = clamp(
+                        ((hatchA * 0.42) + (hatchB * 0.58)) * hatchStructure * materialMask *
+                            (0.08 + (darkRegion * 0.10)),
+                        0.0,
+                        0.18
+                    );
+                    float sketch = clamp(
+                        (texturedPaper * (1.0 - hairDarken)) -
+                            (line * 0.52) + (sketchGrain(sourceCoord, 0.65) * 0.01),
+                        0.0,
+                        1.0
+                    );
+                    rgb = vec3(clamp(sketch - graphiteHatch, 0.0, 1.0));
                 } else if (uEffect > 9.5) {
                     float localBlurredGray = blurredLuma(sourceCoord, 1.0);
                     float blurredGray = blurredLuma(sourceCoord, 3.0);

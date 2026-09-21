@@ -780,23 +780,146 @@ internal object FilterBitmapRenderer {
 
                 FilterEffect.BlackWhiteSketch -> {
                     val sourceGray = gray(sourceRed, sourceGreen, sourceBlue)
-                    val line = lineFromEdge(edge, params, 0.13f)
-                    val shaded = average(
+                    val localBlurredGray = average(
                         gray(red(left), green(left), blue(left)),
                         gray(red(right), green(right), blue(right)),
                         gray(red(up), green(up), blue(up)),
                         gray(red(down), green(down), blue(down)),
                     )
-                    val sourceShading = mix(sourceGray, shaded, 0.55f)
-                    val paper = mix(0.98f, sourceShading, 0.35f + (params.effectTone * 0.22f))
+                    val farLeft = pixels[rowStart + (x - 2).coerceAtLeast(0)]
+                    val farRight = pixels[rowStart + (x + 2).coerceAtMost(width - 1)]
+                    val farUp = pixels[(y - 2).coerceAtLeast(0) * width + x]
+                    val farDown = pixels[(y + 2).coerceAtMost(height - 1) * width + x]
+                    val shaded = average(
+                        gray(red(farLeft), green(farLeft), blue(farLeft)),
+                        gray(red(farRight), green(farRight), blue(farRight)),
+                        gray(red(farUp), green(farUp), blue(farUp)),
+                        gray(red(farDown), green(farDown), blue(farDown)),
+                    )
+                    val localDetail = maxOf(
+                        abs(sourceGray - localBlurredGray),
+                        abs(localBlurredGray - shaded),
+                    )
+                    val structuralContrast = abs(sourceGray - shaded)
+                    val detailSuppress = smoothstep(0.02f, 0.12f, localDetail)
+                    val skinKeep = skinMask(sourceRed, sourceGreen, sourceBlue) * 0.90f
+                    val facialKeep = maxOf(
+                        skinKeep,
+                        skinMask(red(left), green(left), blue(left)) * 0.86f,
+                        skinMask(red(right), green(right), blue(right)) * 0.86f,
+                        skinMask(red(up), green(up), blue(up)) * 0.86f,
+                        skinMask(red(down), green(down), blue(down)) * 0.86f,
+                        skinMask(red(farLeft), green(farLeft), blue(farLeft)) * 0.68f,
+                        skinMask(red(farRight), green(farRight), blue(farRight)) * 0.68f,
+                        skinMask(red(farUp), green(farUp), blue(farUp)) * 0.68f,
+                        skinMask(red(farDown), green(farDown), blue(farDown)) * 0.68f,
+                    ) * 0.95f
+                    val strongEdge = smoothstep(0.26f, 0.48f, edge)
+                    val brightRegion = smoothstep(0.55f, 0.88f, sourceGray)
+                    val structuralKeep = maxOf(
+                        maxOf(skinKeep, facialKeep),
+                        smoothstep(0.22f, 0.45f, structuralContrast) * 0.22f,
+                    )
+                    val structuralProtection = smoothstep(0.22f, 0.45f, structuralContrast) * 0.18f
+                    val weakBrightEdge = (1f - strongEdge) * brightRegion
+                    val facialMidtone = facialKeep * smoothstep(0.30f, 0.78f, sourceGray)
+                    val weakFacialEdge = detailSuppress * (1f - strongEdge) * facialMidtone
+                    val repetitiveBackground = detailSuppress * (1f - facialKeep) *
+                        (1f - structuralProtection) * (1f - strongEdge)
+                    val edgeSuppression = maxOf(
+                        weakBrightEdge * 0.55f,
+                        maxOf(repetitiveBackground, weakFacialEdge * 0.55f),
+                    )
+                    val protectedEdge = maxOf(strongEdge, structuralKeep * 0.35f)
+                    val edgeMaterial = mix(0.06f, 1f, protectedEdge)
+                    val materialEdgeReduction = detailSuppress * (1f - skinKeep) * 0.28f
+                    val baseLine = lineFromEdge(edge, params, 0.13f) * edgeMaterial *
+                        (1f - (edgeSuppression * 0.95f)) *
+                        (1f - materialEdgeReduction)
+                    val brightNeighbor = smoothstep(0.44f, 0.78f, localBlurredGray)
+                    val darkCenter = 1f - smoothstep(0.40f, 0.76f, sourceGray)
+                    val facialDarkDetail = brightNeighbor * darkCenter *
+                        smoothstep(0.10f, 0.28f, abs(sourceGray - localBlurredGray)) * facialKeep
+                    val line = maxOf(baseLine, facialDarkDetail * 0.75f)
+                    val shadeAmount = mix(0.78f, 0.55f, skinKeep) +
+                        (detailSuppress * 0.12f * (1f - facialKeep))
+                    val sourceShading = mix(sourceGray, shaded, shadeAmount)
+                    val shadowMass = (1f - smoothstep(0.22f, 0.68f, minOf(sourceGray, shaded))) *
+                        mix(0.45f, 1f, 1f - detailSuppress)
+                    val cleanBackground = mix(0.72f, 1f, detailSuppress) *
+                        (1f - facialKeep) * (1f - (shadowMass * 0.45f))
+                    val darkRegion = 1f - smoothstep(0.28f, 0.72f, minOf(sourceGray, shaded))
+                    val skinHighlight = skinKeep * smoothstep(0.55f, 0.90f, sourceGray)
+                    val shadeMix = mix(0.28f, 0.40f, darkRegion) *
+                        (1f - (skinHighlight * 0.60f)) *
+                        (1f - (cleanBackground * 0.25f))
+                    val tonalMass = darkRegion *
+                        (1f - (skinKeep * 0.65f)) *
+                        mix(0.65f, 1f, 1f - cleanBackground)
+                    val darkTone = tonalMass *
+                        (1f - sourceShading).coerceIn(0f, 1f).toDouble().pow(1.15).toFloat()
+                    val paperLift = 1f - shadeMix
+                    val detailPreserve = smoothstep(0.025f, 0.14f, localDetail) *
+                        (1f - (cleanBackground * 0.65f)) *
+                        (1f - (skinHighlight * 0.35f))
+                    val liftedPaper = mix(sourceShading, 0.97f, paperLift)
+                    val paper = mix(liftedPaper, sourceShading, detailPreserve * 0.55f) -
+                        (darkTone * 0.30f) - (facialDarkDetail * 0.18f)
+                    val materialMask = darkRegion *
+                        (1f - (skinKeep * 0.85f)) *
+                        (1f - (cleanBackground * 0.65f))
+                    val materialDetail = smoothstep(0.025f, 0.14f, localDetail)
+                    val darkSourceMask = 1f - smoothstep(0.18f, 0.35f, sourceGray)
+                    val midtoneSourceMask = smoothstep(0.30f, 0.38f, sourceGray) *
+                        (1f - smoothstep(0.52f, 0.60f, sourceGray))
+                    val lowFrequencyContribution = materialMask *
+                        mix(0.10f, 0.15f, darkSourceMask)
+                    val highFrequencyContribution = materialMask * materialDetail *
+                        ((darkSourceMask * 0.15f) + (midtoneSourceMask * 0.10f))
+                    val lowFrequencyPaper = mix(paper, sourceShading, lowFrequencyContribution)
+                    val highFrequencyTexture = sourceGray - localBlurredGray
+                    val texturedPaper = lowFrequencyPaper +
+                        (highFrequencyTexture * highFrequencyContribution)
+                    val lowLuminance = 1f - smoothstep(0.16f, 0.38f, sourceShading)
+                    val hairShadowMask = materialMask * lowLuminance
+                    val hairDarken = hairShadowMask * mix(0.10f, 0.15f, lowLuminance)
+                    val hatchStructure = maxOf(
+                        smoothstep(0.015f, 0.085f, localDetail),
+                        smoothstep(0.08f, 0.24f, edge),
+                    )
+                    val hatchSpacing = mix(8f, 5f, darkRegion)
+                    val hatchA = hatchStroke(
+                        textureX,
+                        textureY,
+                        0.785398f,
+                        hatchSpacing,
+                        width,
+                        height,
+                    )
+                    val hatchB = hatchStroke(
+                        textureX,
+                        textureY,
+                        -0.785398f,
+                        hatchSpacing * 1.12f,
+                        width,
+                        height,
+                    )
+                    val graphiteHatch = clamp(
+                        ((hatchA * 0.42f) + (hatchB * 0.58f)) *
+                            hatchStructure * materialMask * (0.08f + (darkRegion * 0.10f)),
+                        0f,
+                        0.18f,
+                    )
                     val sketch = clamp(
-                        paper - (line * 0.52f) + ((random(textureX * 900f, textureY * 1200f) - 0.5f) * 0.01f),
+                        (texturedPaper * (1f - hairDarken)) -
+                            (line * 0.52f) + ((random(textureX * 900f, textureY * 1200f) - 0.5f) * 0.01f),
                         0f,
                         1f,
                     )
-                    red = sketch
-                    green = sketch
-                    blue = sketch
+                    val graphite = clamp(sketch - graphiteHatch, 0f, 1f)
+                    red = graphite
+                    green = graphite
+                    blue = graphite
                 }
 
                 FilterEffect.SketchColorPencil -> {

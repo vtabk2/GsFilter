@@ -1912,13 +1912,13 @@ object FilterCatalog {
             nameRes = R.string.gs_filter_black_white_sketch,
             recipe = FilterRecipe(
                 effect = FilterEffect.BlackWhiteSketch,
-                effectStrength = 90,
+                effectStrength = 76,
                 effectThreshold = 50,
-                effectTone = 38,
+                effectTone = 44,
                 isMonochrome = true,
                 adjustments = Adjustments(
-                    contrast = 14,
-                    grain = 3,
+                    contrast = 8,
+                    grain = 0,
                 ),
             ),
         ),
