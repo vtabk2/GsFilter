@@ -734,18 +734,45 @@ internal object FilterBitmapRenderer {
 
                 FilterEffect.Graphite -> {
                     val sourceGray = gray(sourceRed, sourceGreen, sourceBlue)
-                    val line = lineFromEdge(edge, params, 0.08f) * 0.42f
-                    val blurredGray = average(
+                    val localBlurredGray = average(
                         gray(red(left), green(left), blue(left)),
                         gray(red(right), green(right), blue(right)),
                         gray(red(up), green(up), blue(up)),
                         gray(red(down), green(down), blue(down)),
                     )
-                    val graphiteShade = mix(sourceGray, blurredGray, 0.40f)
-                    val paper = mix(0.96f, graphiteShade, 0.66f + (params.effectTone * 0.16f))
-                    val shadow = smoothstep(0.18f, 0.86f, 1f - sourceGray)
-                    val grain = (random(textureX * 1215f, textureY * 1620f) - 0.5f) * 0.10f * shadow
-                    val graphite = clamp(paper - (line * 0.58f) + grain, 0f, 1f)
+                    val farLeft = pixels[rowStart + (x - 2).coerceAtLeast(0)]
+                    val farRight = pixels[rowStart + (x + 2).coerceAtMost(width - 1)]
+                    val farUp = pixels[(y - 2).coerceAtLeast(0) * width + x]
+                    val farDown = pixels[(y + 2).coerceAtMost(height - 1) * width + x]
+                    val blurredGray = average(
+                        gray(red(farLeft), green(farLeft), blue(farLeft)),
+                        gray(red(farRight), green(farRight), blue(farRight)),
+                        gray(red(farUp), green(farUp), blue(farUp)),
+                        gray(red(farDown), green(farDown), blue(farDown)),
+                    )
+                    val localDetail = maxOf(
+                        abs(sourceGray - localBlurredGray),
+                        abs(localBlurredGray - blurredGray),
+                    )
+                    val structuralContrast = abs(sourceGray - blurredGray)
+                    val skinKeep = skinMask(sourceRed, sourceGreen, sourceBlue) * 0.90f
+                    val structuralKeep = maxOf(
+                        skinKeep,
+                        smoothstep(0.22f, 0.45f, structuralContrast) * 0.25f,
+                    )
+                    val detailSuppress = smoothstep(0.02f, 0.12f, localDetail)
+                    val edgeSuppression = detailSuppress * (1f - structuralKeep)
+                    val edgeMaterial = mix(0.35f, 1f, structuralKeep)
+                    val line = lineFromEdge(edge, params, 0.08f) * 0.36f *
+                        edgeMaterial * (1f - (edgeSuppression * 0.95f))
+                    val shadeAmount = mix(0.80f, 0.52f, skinKeep) + (detailSuppress * 0.12f)
+                    val graphiteShade = mix(sourceGray, blurredGray, shadeAmount)
+                    val paper = mix(0.97f, graphiteShade, 0.72f + (params.effectTone * 0.12f))
+                    val shadow = smoothstep(0.12f, 0.90f, 1f - sourceGray)
+                    val coarseGrain = (random(textureX * 648f, textureY * 816f) - 0.5f) * 0.07f
+                    val fineGrain = (random(textureX * 1215f, textureY * 1620f) - 0.5f) * 0.035f
+                    val grain = (coarseGrain + fineGrain) * shadow
+                    val graphite = clamp(paper - (line * 0.50f) + grain, 0f, 1f)
                     red = graphite
                     green = graphite
                     blue = graphite

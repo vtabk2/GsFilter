@@ -1160,13 +1160,31 @@ internal object GlFilterProgram {
                     float sketch = clamp(paper - (line * 0.52) + (sketchGrain(sourceCoord, 0.65) * 0.01), 0.0, 1.0);
                     rgb = vec3(sketch);
                 } else if (uEffect > 9.5) {
-                    float line = lineFromEdge(edge, 0.08) * 0.42;
-                    float blurredGray = blurredLuma(sourceCoord, 2.0);
-                    float graphiteShade = mix(sourceGray, blurredGray, 0.40);
-                    float paper = mix(0.96, graphiteShade, 0.66 + (uEffectTone * 0.16));
-                    float shadow = smoothstep(0.18, 0.86, 1.0 - sourceGray);
-                    float grain = sketchGrain(sourceCoord * 1.35, 1.1) * 0.10 * shadow;
-                    rgb = vec3(clamp(paper - (line * 0.58) + grain, 0.0, 1.0));
+                    float localBlurredGray = blurredLuma(sourceCoord, 1.0);
+                    float blurredGray = blurredLuma(sourceCoord, 3.0);
+                    float localDetail = max(
+                        abs(sourceGray - localBlurredGray),
+                        abs(localBlurredGray - blurredGray)
+                    );
+                    float structuralContrast = abs(sourceGray - blurredGray);
+                    float detailSuppress = smoothstep(0.02, 0.12, localDetail);
+                    float skinKeep = skinMask(color.rgb) * 0.90;
+                    float structuralKeep = max(
+                        skinKeep,
+                        smoothstep(0.22, 0.45, structuralContrast) * 0.25
+                    );
+                    float edgeSuppression = detailSuppress * (1.0 - structuralKeep);
+                    float edgeMaterial = mix(0.35, 1.0, structuralKeep);
+                    float line = lineFromEdge(edge, 0.08) * 0.36 *
+                        edgeMaterial * (1.0 - (edgeSuppression * 0.95));
+                    float shadeAmount = mix(0.80, 0.52, skinKeep) + (detailSuppress * 0.12);
+                    float graphiteShade = mix(sourceGray, blurredGray, shadeAmount);
+                    float paper = mix(0.97, graphiteShade, 0.72 + (uEffectTone * 0.12));
+                    float shadow = smoothstep(0.12, 0.90, 1.0 - sourceGray);
+                    float coarseGrain = sketchGrain(sourceCoord * 0.72, 0.85) * 0.07;
+                    float fineGrain = sketchGrain(sourceCoord * 1.35, 1.1) * 0.035;
+                    float grain = (coarseGrain + fineGrain) * shadow;
+                    rgb = vec3(clamp(paper - (line * 0.50) + grain, 0.0, 1.0));
                 } else if (uEffect > 8.5) {
                     float expandedEdge = max(edge, edgeAt(sourceCoord + uTexelSize * vec2(1.0, 0.0)));
                     expandedEdge = max(expandedEdge, edgeAt(sourceCoord + uTexelSize * vec2(-1.0, 0.0)));
