@@ -1199,18 +1199,26 @@ internal object GlFilterProgram {
                     ) * uEffectStrength;
                     rgb = vec3(1.0 - clamp(line, 0.0, 1.0));
                 } else if (uEffect > 5.5) {
-                    float darkness = 1.0 - smoothstep(0.10, 0.90, sourceGray);
+                    float darkness = 1.0 - smoothstep(0.24, 0.90, sourceGray);
                     float spacing = mix(8.0, 4.5, darkness);
-                    float lightHatch = smoothstep(0.18, 0.48, darkness);
-                    float shadowHatch = smoothstep(0.32, 0.72, darkness);
-                    float deepHatch = smoothstep(0.62, 0.92, darkness);
+                    float lightHatch = smoothstep(0.28, 0.46, darkness);
+                    float shadowHatch = smoothstep(0.48, 0.64, darkness);
+                    float deepHatch = smoothstep(0.66, 0.82, darkness);
+                    float localContrast = abs(sourceGray - blurredLuma(sourceCoord, 2.0));
+                    float hatchStructure = max(
+                        smoothstep(0.015, 0.085, localContrast),
+                        smoothstep(0.08, 0.24, edge)
+                    );
+                    lightHatch *= hatchStructure;
+                    shadowHatch *= hatchStructure;
+                    deepHatch *= hatchStructure;
                     float hatchA = hatchStroke(sourceCoord, 0.785398, spacing) * lightHatch;
                     float hatchB = hatchStroke(sourceCoord, -0.785398, spacing * 1.12) * shadowHatch;
                     float hatchC = hatchStroke(sourceCoord, 0.0, spacing * 1.45) * deepHatch;
                     float contour = smoothstep(0.08, 0.24, edge);
-                    float hatch = clamp((hatchA * 0.38) + (hatchB * 0.38) + (hatchC * 0.24), 0.0, 1.0);
-                    float paper = mix(0.985, sourceGray, 0.08 + (darkness * 0.10));
-                    float ink = clamp((hatch * (0.36 + (darkness * 0.36)) * uEffectStrength) + (contour * 0.52), 0.0, 0.86);
+                    float hatch = clamp((hatchA * 0.32) + (hatchB * 0.44) + (hatchC * 0.24), 0.0, 1.0);
+                    float paper = mix(0.985, sourceGray, 0.04 + (darkness * 0.06));
+                    float ink = clamp((hatch * (0.36 + (darkness * 0.36)) * uEffectStrength) + (contour * 0.42), 0.0, 0.86);
                     rgb = vec3(clamp(paper - ink, 0.0, 1.0));
                 } else if (uEffect > 4.5) {
                     float line = lineFromEdge(edge, 0.15);
