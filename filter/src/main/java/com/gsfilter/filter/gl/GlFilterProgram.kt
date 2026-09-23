@@ -662,6 +662,13 @@ internal object GlFilterProgram {
             return (center * 0.40) + ((horizontal + vertical) * 0.15);
         }
 
+        float cardinalBlurredLuma(vec2 coord, float radius) {
+            vec2 step = uTexelSize * radius;
+            float horizontal = lumaAt(coord - vec2(step.x, 0.0)) + lumaAt(coord + vec2(step.x, 0.0));
+            float vertical = lumaAt(coord - vec2(0.0, step.y)) + lumaAt(coord + vec2(0.0, step.y));
+            return (horizontal + vertical) * 0.25;
+        }
+
         float dodge(float base, float blend) {
             return clamp(base / max(0.05, 1.0 - blend), 0.0, 1.0);
         }
@@ -1167,8 +1174,8 @@ internal object GlFilterProgram {
                     vec3 paperColor = mix(vec3(paper + grain), color.rgb, colorRetention);
                     rgb = clamp(paperColor - (line * 0.52), 0.0, 1.0);
                 } else if (uEffect > 10.5) {
-                    float localBlurredGray = blurredLuma(sourceCoord, 1.0);
-                    float shaded = blurredLuma(sourceCoord, 3.0);
+                    float localBlurredGray = cardinalBlurredLuma(sourceCoord, 1.0);
+                    float shaded = cardinalBlurredLuma(sourceCoord, 2.0);
                     float localDetail = max(
                         abs(sourceGray - localBlurredGray),
                         abs(localBlurredGray - shaded)
@@ -1266,8 +1273,8 @@ internal object GlFilterProgram {
                     );
                     rgb = vec3(clamp(sketch - graphiteHatch, 0.0, 1.0));
                 } else if (uEffect > 9.5) {
-                    float localBlurredGray = blurredLuma(sourceCoord, 1.0);
-                    float blurredGray = blurredLuma(sourceCoord, 3.0);
+                    float localBlurredGray = cardinalBlurredLuma(sourceCoord, 1.0);
+                    float blurredGray = cardinalBlurredLuma(sourceCoord, 2.0);
                     float localDetail = max(
                         abs(sourceGray - localBlurredGray),
                         abs(localBlurredGray - blurredGray)
@@ -1364,8 +1371,7 @@ internal object GlFilterProgram {
                     float softPencil = smoothstep(0.54, 0.72, uEffectThreshold);
                     float line = lineFromEdge(edge, softness) *
                         (lineOpacity * (1.0 - (softPencil * 0.18)) + (hardPencil * 0.10));
-                    float blurRadius = 0.9 + (uEffectThreshold * 2.3) + (softPencil * 0.55);
-                    float blurredGray = blurredLuma(sourceCoord, blurRadius);
+                    float blurredGray = cardinalBlurredLuma(sourceCoord, 1.0);
                     float pencilShade = mix(sourceGray, blurredGray, 0.60 + (softPencil * 0.20));
                     float shadeAmount = (0.48 + (uEffectTone * 0.42)) * (1.0 - (hardPencil * 0.30));
                     shadeAmount += softPencil * 0.16;

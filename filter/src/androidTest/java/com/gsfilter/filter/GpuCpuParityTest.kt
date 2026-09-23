@@ -38,6 +38,9 @@ class GpuCpuParityTest {
         listOf(
             FilterRecipe(effect = FilterEffect.Sketch, faceSlimming = 65),
             FilterRecipe(effect = FilterEffect.Ink, eyeEnlargement = 55),
+            FilterRecipe(effect = FilterEffect.Pencil),
+            FilterRecipe(effect = FilterEffect.Graphite),
+            FilterRecipe(effect = FilterEffect.BlackWhiteSketch),
         ).forEach { recipe ->
             val source = Bitmap.createBitmap(32, 32, Bitmap.Config.ARGB_8888)
             val pixels = IntArray(32 * 32) { index ->

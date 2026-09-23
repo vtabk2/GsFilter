@@ -5889,3 +5889,17 @@ Status: IN PROGRESS
 - Cross Hatch now uses denser shadow spacing, earlier secondary/deep hatch activation, and a stronger diagonal cross layer while keeping highlights mostly clean.
 - GPU and CPU paths match. `:filter:testDebugUnitTest`, focused app tests, and `:app:assembleDebug` passed.
 - The updated APK was installed/launched on Samsung A56 without runtime or shader errors. Visual acceptance is pending until three Cross Hatch screenshots are provided.
+
+### Follow-up: Align CPU/GPU tonal blur for Sketch effects
+
+Status: IN PROGRESS
+
+- [x] Use the same cardinal-neighbor blur kernel for Pencil, Graphite, and Black & White Sketch.
+- [x] Add CPU/GPU parity coverage for the affected effects.
+- [ ] Compile and run the available verification checks.
+
+### Result
+
+- Added a GPU cardinal-neighbor blur matching the CPU renderer's 4-tap kernel.
+- Pencil, Graphite, and Black & White Sketch now use matching 1-pixel and 2-pixel sampling in both paths.
+- `git diff --check` passed. Gradle verification is blocked because `JAVA_HOME` and `java` are unavailable in the environment.
