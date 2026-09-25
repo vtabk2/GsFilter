@@ -1336,10 +1336,10 @@ internal object GlFilterProgram {
                     float shadowHatch = smoothstep(0.48, 0.64, darkness);
                     float deepHatch = smoothstep(0.66, 0.82, darkness);
                     float localContrast = abs(sourceGray - blurredLuma(sourceCoord, 2.0));
-                    float hatchStructure = max(
-                        smoothstep(0.015, 0.085, localContrast),
-                        smoothstep(0.08, 0.24, edge)
-                    );
+                    float textureHatch = smoothstep(0.012, 0.060, localContrast) *
+                        smoothstep(0.30, 0.78, darkness);
+                    float contourHatch = smoothstep(0.14, 0.30, edge) * 0.30;
+                    float hatchStructure = max(textureHatch, contourHatch);
                     lightHatch *= hatchStructure;
                     shadowHatch *= hatchStructure;
                     deepHatch *= hatchStructure;

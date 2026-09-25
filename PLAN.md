@@ -5906,16 +5906,20 @@ Status: IN PROGRESS
 
 ### Follow-up: Cross Hatch collar-area tuning
 
-Status: IN PROGRESS
+Status: DONE
 
 - [x] Build/install and visually verify the collar area on the device.
 - [x] Confirm the global hatch increase adds noise across the image.
 - [x] Revert the failed global tuning to the previous baseline.
-- [ ] Design a localized collar-aware hatch mask without adding global noise.
+- [x] Design a localized collar-aware hatch mask without adding global noise.
+- [x] Build/install and verify that the collar is textured while the face/background stay clean.
 
 ### Result
 
 - The denser global hatch experiment was rejected: it introduced visible cross-hatch noise over the face and background.
 - The CPU and GPU branches were restored to the previous baseline.
-- The next attempt must limit hatch activation spatially/materially to the collar texture instead of changing global darkness thresholds.
+- The new attempt limits hatch activation to local texture contrast inside shadow regions, with a restrained contour fallback.
+- Device visual check passed: the face/background remain clean and the collar keeps visible material texture.
+- Additional portrait check passed: hatch follows the textured hair while the door/background stay mostly clean.
+- Product acceptance: the 12-filter Sketch set is complete; only environment-limited Gradle verification remains.
 - `git diff --check` passed; Gradle verification remains blocked because `JAVA_HOME` and `java` are unavailable.

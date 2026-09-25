@@ -981,10 +981,10 @@ internal object FilterBitmapRenderer {
                             gray(red(down), green(down), blue(down)),
                         ),
                     )
-                    val hatchStructure = max(
-                        smoothstep(0.015f, 0.085f, localContrast),
-                        smoothstep(0.08f, 0.24f, edge),
-                    )
+                    val textureHatch = smoothstep(0.012f, 0.060f, localContrast) *
+                        smoothstep(0.30f, 0.78f, darkness)
+                    val contourHatch = smoothstep(0.14f, 0.30f, edge) * 0.30f
+                    val hatchStructure = max(textureHatch, contourHatch)
                     val hatchA = hatchStroke(
                         textureX,
                         textureY,
