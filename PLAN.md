@@ -5903,3 +5903,19 @@ Status: IN PROGRESS
 - Added a GPU cardinal-neighbor blur matching the CPU renderer's 4-tap kernel.
 - Pencil, Graphite, and Black & White Sketch now use matching 1-pixel and 2-pixel sampling in both paths.
 - `git diff --check` passed. Gradle verification is blocked because `JAVA_HOME` and `java` are unavailable in the environment.
+
+### Follow-up: Cross Hatch collar-area tuning
+
+Status: IN PROGRESS
+
+- [x] Build/install and visually verify the collar area on the device.
+- [x] Confirm the global hatch increase adds noise across the image.
+- [x] Revert the failed global tuning to the previous baseline.
+- [ ] Design a localized collar-aware hatch mask without adding global noise.
+
+### Result
+
+- The denser global hatch experiment was rejected: it introduced visible cross-hatch noise over the face and background.
+- The CPU and GPU branches were restored to the previous baseline.
+- The next attempt must limit hatch activation spatially/materially to the collar texture instead of changing global darkness thresholds.
+- `git diff --check` passed; Gradle verification remains blocked because `JAVA_HOME` and `java` are unavailable.
